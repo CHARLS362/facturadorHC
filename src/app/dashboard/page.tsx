@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, Users, PackageMinus, PackagePlus, BarChart3, PieChartIcon, LineChartIcon } from "lucide-react";
+import { DollarSign, TrendingUp, Users, PackageMinus, PackagePlus, BarChart3, PieChartIcon, LineChartIcon, LayoutDashboard } from "lucide-react";
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
