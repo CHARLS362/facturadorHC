@@ -66,7 +66,8 @@ export default function DashboardLayout({
         <SidebarInset className="flex-1 flex flex-col bg-background">
           <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-6 shadow-sm">
             <div className="flex items-center">
-              <SidebarTrigger className="md:hidden text-foreground hover:bg-accent" />
+              {/* This trigger is now visible on desktop as well to toggle icon/expanded sidebar */}
+              <SidebarTrigger className="text-foreground hover:bg-accent" />
               {/* Breadcrumbs or page title can go here */}
             </div>
             <UserNav user={user} />
@@ -79,3 +80,4 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
