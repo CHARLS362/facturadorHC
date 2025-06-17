@@ -4,28 +4,38 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { 
-  DollarSign, 
-  TrendingUp, 
-  Users, 
-  PackageMinus, 
-  PackagePlus, 
-  BarChart3, 
-  PieChartIcon, 
-  LineChartIcon, 
   LayoutDashboard,
   ShoppingCart,
-  UserPlus2
+  UserPlus2,
+  PackagePlus as PackagePlusIcon, // Renamed to avoid conflict if KpiCard uses PackagePlus directly
+  BarChart3, 
+  PieChartIcon, 
+  LineChartIcon,
+  // Lucide icons like DollarSign, Users, etc., are now resolved within KpiCard
 } from "lucide-react";
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
+import { KpiCard, type KpiCardProps as ImportedKpiCardProps } from "@/components/dashboard/kpi-card"; // Use imported KpiCardProps if needed, or define locally
 
-const kpiData: KpiCardProps[] = [
-  { title: "Ventas Hoy", value: "S/ 1,250.75", change: "+15.2%", icon: DollarSign, description: "Comparado con ayer", trend: "up", href: "/dashboard/ventas" },
-  { title: "Nuevos Clientes", value: "12", change: "+5", icon: Users, description: "Este mes", trend: "up", href: "/dashboard/clientes" },
-  { title: "Stock Bajo", value: "8 productos", change: "-2", icon: PackageMinus, description: "Necesitan reabastecimiento", trend: "down", variant: "destructive", href: "/dashboard/productos" },
-  { title: "Productos Activos", value: "256", change: "+10", icon: PackagePlus, description: "Total en catálogo", trend: "up", href: "/dashboard/productos" },
+// Define a local type for kpiData items if KpiCardProps is not directly compatible or for clarity
+interface KpiData {
+  title: string;
+  value: string;
+  change?: string;
+  iconName: ImportedKpiCardProps['iconName']; // Use the iconName type from KpiCardProps
+  description?: string;
+  trend?: "up" | "down" | "neutral";
+  href?: string;
+  variant?: "default" | "destructive";
+}
+
+
+const kpiData: KpiData[] = [
+  { title: "Ventas Hoy", value: "S/ 1,250.75", change: "+15.2%", iconName: "DollarSign", description: "Comparado con ayer", trend: "up", href: "/dashboard/ventas" },
+  { title: "Nuevos Clientes", value: "12", change: "+5", iconName: "Users", description: "Este mes", trend: "up", href: "/dashboard/clientes" },
+  { title: "Stock Bajo", value: "8 productos", change: "-2", iconName: "PackageMinus", description: "Necesitan reabastecimiento", trend: "down", variant: "destructive", href: "/dashboard/productos" },
+  { title: "Productos Activos", value: "256", change: "+10", iconName: "PackagePlus", description: "Total en catálogo", trend: "up", href: "/dashboard/productos" },
 ];
 
 export default function DashboardPage() {
@@ -39,7 +49,17 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {kpiData.map((kpi, index) => (
-          <KpiCard key={index} {...kpi} />
+          <KpiCard 
+            key={index} 
+            title={kpi.title} 
+            value={kpi.value} 
+            change={kpi.change} 
+            iconName={kpi.iconName} 
+            description={kpi.description} 
+            trend={kpi.trend} 
+            href={kpi.href}
+            variant={kpi.variant}
+          />
         ))}
       </div>
 
@@ -63,7 +83,7 @@ export default function DashboardPage() {
           </Button>
           <Button asChild size="lg" variant="outline" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out border-primary/50 hover:border-primary hover:bg-primary/5">
             <Link href="/dashboard/productos/nuevo">
-              <PackagePlus className="mr-3 h-6 w-6" />
+              <PackagePlusIcon className="mr-3 h-6 w-6" /> {/* Using renamed import */}
               Añadir Nuevo Producto
             </Link>
           </Button>
