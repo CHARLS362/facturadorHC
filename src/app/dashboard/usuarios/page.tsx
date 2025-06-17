@@ -59,7 +59,7 @@ export default function UsuariosPage() {
               {mockUsers.map((user) => (
                 <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium flex items-center gap-2">
-                     <Image src={`https://avatar.vercel.sh/${user.email}.png`} alt={user.name} width={32} height={32} className="rounded-full" />
+                     <Image src={`https://avatar.vercel.sh/${user.email}.png`} alt={user.name} width={32} height={32} className="rounded-full" data-ai-hint="user avatar" />
                     {user.name}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>

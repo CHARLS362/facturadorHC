@@ -58,7 +58,7 @@ export default function ClientesPage() {
               {mockClients.map((client) => (
                 <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium flex items-center gap-2">
-                     <Image src={`https://avatar.vercel.sh/${client.email}.png?size=40`} alt={client.name} width={32} height={32} className="rounded-full" data-ai-hint="company client logo" />
+                     <Image src={`https://avatar.vercel.sh/${client.email}.png?size=40`} alt={client.name} width={32} height={32} className="rounded-full" data-ai-hint="client avatar" />
                     {client.name}
                   </TableCell>
                   <TableCell>{client.contactName}</TableCell>
