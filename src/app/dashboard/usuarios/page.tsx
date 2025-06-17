@@ -1,3 +1,6 @@
+
+"use client";
+import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,9 +29,11 @@ export default function UsuariosPage() {
               <FileDown className="mr-2 h-4 w-4" />
               Exportar
             </Button>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Usuario
+            <Button asChild>
+              <Link href="/dashboard/usuarios/nuevo">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Añadir Usuario
+              </Link>
             </Button>
           </div>
         }
