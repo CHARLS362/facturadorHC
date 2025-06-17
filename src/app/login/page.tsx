@@ -1,11 +1,53 @@
+
+"use client";
+
 import { LoginForm } from '@/components/auth/login-form';
 import Image from 'next/image';
-import { FileText, DollarSign, TrendingUp, ShieldCheck } from 'lucide-react';
+import { FileText, DollarSign, TrendingUp, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useTheme } from 'next-themes';
+import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
+  const renderThemeToggle = () => {
+    if (!mounted) {
+      return (
+        <Button variant="ghost" size="icon" className="h-9 w-9 opacity-0" aria-label="Toggle theme">
+          <Sun className="h-5 w-5" />
+        </Button>
+      );
+    }
+    return (
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={toggleTheme}
+        aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+        className="h-10 w-10 text-foreground hover:bg-accent hover:text-accent-foreground rounded-full"
+      >
+        {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+      </Button>
+    );
+  };
+
   return (
     <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/20 to-background bg-[length:400%_400%] animate-gradient-flow flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary">
       
+      <div className="absolute top-4 right-4 z-20">
+        {renderThemeToggle()}
+      </div>
+
       {/* Animated Floating Elements */}
       <FileText className="absolute top-[10%] left-[10%] h-16 w-16 text-primary/20 opacity-70 animate-float-subtle-1" style={{ animationDelay: '0s' }} />
       <DollarSign className="absolute top-[20%] right-[15%] h-12 w-12 text-accent/20 opacity-60 animate-float-subtle-2" style={{ animationDelay: '1s' }}/>
