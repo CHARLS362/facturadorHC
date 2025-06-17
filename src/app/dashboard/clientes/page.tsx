@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, Search, UsersRound, FileDown, Mail, Phone, Edit, Trash2, AlertTriangle } from "lucide-react";
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,19 @@ const initialMockClients: MockClient[] = [
   { id: "CLI002", name: "Ana Morales", contactName: "Ana Morales", email: "ana.morales@personal.com", phone: "912345678", type: "Persona", registrationDate: "2023-06-22" },
   { id: "CLI003", name: "Servicios Globales EIRL", contactName: "Luisa Castro", email: "luisa.castro@serviciosglobales.com", phone: "999888777", type: "Empresa", registrationDate: "2024-01-05" },
 ];
+
+const getInitials = (name?: string): string => {
+  if (!name || name.trim() === "") return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    const singleName = parts[0];
+    if (singleName.length > 1) {
+      return singleName.substring(0, 2).toUpperCase();
+    }
+    return singleName.substring(0, 1).toUpperCase();
+  }
+  return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
+};
 
 export default function ClientesPage() {
   const [clients, setClients] = useState<MockClient[]>(initialMockClients);
@@ -92,7 +105,7 @@ export default function ClientesPage() {
           </div>
         }
       />
-      <Card className="shadow-lg rounded-lg">
+      <Card className="shadow-lg rounded-lg w-full">
         <CardHeader>
           <CardTitle>Listado de Clientes</CardTitle>
           <CardDescription>Busca y gestiona la información de tus clientes.</CardDescription>
@@ -120,40 +133,47 @@ export default function ClientesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.map((client) => (
-                <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
-                  <TableCell className="font-medium flex items-center gap-2">
-                     <Image src={`https://avatar.vercel.sh/${client.email}.png?size=40`} alt={client.name} width={32} height={32} className="rounded-full" data-ai-hint="client avatar" />
-                    {client.name}
-                  </TableCell>
-                  <TableCell>{client.contactName}</TableCell>
-                  <TableCell>
-                    <a href={`mailto:${client.email}`} className="text-primary hover:underline flex items-center gap-1">
-                      <Mail className="h-3.5 w-3.5" /> {client.email}
-                    </a>
-                  </TableCell>
-                  <TableCell>
-                     <a href={`tel:${client.phone}`} className="text-primary hover:underline flex items-center gap-1">
-                      <Phone className="h-3.5 w-3.5" /> {client.phone}
-                    </a>
-                  </TableCell>
-                  <TableCell>{client.type}</TableCell>
-                  <TableCell>{client.registrationDate}</TableCell>
-                  <TableCell className="text-right">
-                    {/* <Button variant="ghost" size="sm">Ver Perfil</Button> */}
-                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
-                      <Link href={`/dashboard/clientes/${client.id}/editar`}>
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Editar</span>
-                      </Link>
-                    </Button>
-                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(client)}>
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Eliminar</span>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredClients.map((client) => {
+                const clientName = client.name;
+                const clientInitials = getInitials(client.type === "Empresa" ? client.contactName : client.name);
+                return (
+                  <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="font-medium flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={`https://avatar.vercel.sh/${client.email}.png?size=40`} alt={clientName} />
+                        <AvatarFallback>{clientInitials}</AvatarFallback>
+                      </Avatar>
+                      {client.name}
+                    </TableCell>
+                    <TableCell>{client.contactName}</TableCell>
+                    <TableCell>
+                      <a href={`mailto:${client.email}`} className="text-primary hover:underline flex items-center gap-1">
+                        <Mail className="h-3.5 w-3.5" /> {client.email}
+                      </a>
+                    </TableCell>
+                    <TableCell>
+                      <a href={`tel:${client.phone}`} className="text-primary hover:underline flex items-center gap-1">
+                        <Phone className="h-3.5 w-3.5" /> {client.phone}
+                      </a>
+                    </TableCell>
+                    <TableCell>{client.type}</TableCell>
+                    <TableCell>{client.registrationDate}</TableCell>
+                    <TableCell className="text-right">
+                      {/* <Button variant="ghost" size="sm">Ver Perfil</Button> */}
+                      <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                        <Link href={`/dashboard/clientes/${client.id}/editar`}>
+                          <Edit className="h-4 w-4" />
+                          <span className="sr-only">Editar</span>
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(client)}>
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
            {filteredClients.length === 0 && searchTerm && (

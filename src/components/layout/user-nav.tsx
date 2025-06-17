@@ -22,6 +22,19 @@ interface UserNavProps {
   user: { email?: string; name?: string } | null;
 }
 
+const getInitials = (name?: string): string => {
+  if (!name || name.trim() === "") return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    const singleName = parts[0];
+    if (singleName.length > 1) {
+      return singleName.substring(0, 2).toUpperCase();
+    }
+    return singleName.substring(0, 1).toUpperCase();
+  }
+  return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
+};
+
 export function UserNav({ user }: UserNavProps) {
   const { logout } = useAuth();
   const { theme, setTheme } = useTheme();
@@ -31,14 +44,7 @@ export function UserNav({ user }: UserNavProps) {
     setMounted(true);
   }, []);
 
-  const getInitials = (name?: string) => {
-    if (!name) return "U";
-    const nameParts = name.split(' ');
-    if (nameParts.length > 1) {
-      return nameParts[0][0].toUpperCase() + nameParts[1][0].toUpperCase();
-    }
-    return name[0].toUpperCase() + (name.length > 1 ? name[1].toLowerCase() : '');
-  };
+  const userInitials = getInitials(user?.name);
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
@@ -48,9 +54,7 @@ export function UserNav({ user }: UserNavProps) {
     return (
       <Button variant="ghost" className="relative h-10 w-10 rounded-full">
         <Avatar className="h-10 w-10 border-2 border-primary/50">
-           <AvatarFallback className="bg-primary text-primary-foreground font-headline">
-              {getInitials(user?.name)}
-            </AvatarFallback>
+          <AvatarFallback>{userInitials}</AvatarFallback>
         </Avatar>
       </Button>
     );
@@ -72,9 +76,7 @@ export function UserNav({ user }: UserNavProps) {
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar className="h-10 w-10 border-2 border-primary/50">
               <AvatarImage src={`https://avatar.vercel.sh/${user?.email || 'default'}.png`} alt={user?.name || "Usuario"} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-headline">
-                {getInitials(user?.name)}
-              </AvatarFallback>
+              <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>

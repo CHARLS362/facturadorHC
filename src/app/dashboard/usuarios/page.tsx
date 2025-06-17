@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PlusCircle, Search, Users, FileDown, Edit, Trash2, AlertTriangle } from "lucide-react";
-import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +36,19 @@ const initialMockUsers: MockUser[] = [
   { id: "USR003", name: "Laura Martínez", email: "laura.martinez@example.com", role: "Vendedor", joinedDate: "2023-03-10", status: "Inactivo" },
   { id: "USR004", name: "Pedro Rodríguez", email: "pedro.rodriguez@example.com", role: "Soporte", joinedDate: "2023-04-05", status: "Activo" },
 ];
+
+const getInitials = (name?: string): string => {
+  if (!name || name.trim() === "") return "??";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) {
+    const singleName = parts[0];
+    if (singleName.length > 1) {
+      return singleName.substring(0, 2).toUpperCase();
+    }
+    return singleName.substring(0, 1).toUpperCase();
+  }
+  return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
+};
 
 export default function UsuariosPage() {
   const [users, setUsers] = useState<MockUser[]>(initialMockUsers);
@@ -93,7 +106,7 @@ export default function UsuariosPage() {
         }
       />
 
-      <Card className="shadow-lg rounded-lg">
+      <Card className="shadow-lg rounded-lg w-full">
         <CardHeader>
           <CardTitle>Lista de Usuarios</CardTitle>
           <CardDescription>Busca y gestiona los usuarios existentes.</CardDescription>
@@ -120,34 +133,41 @@ export default function UsuariosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
-                  <TableCell className="font-medium flex items-center gap-2">
-                     <Image src={`https://avatar.vercel.sh/${user.email}.png`} alt={user.name} width={32} height={32} className="rounded-full" data-ai-hint="user avatar"/>
-                    {user.name}
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.joinedDate}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"}`}>
-                      {user.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
-                        <Link href={`/dashboard/usuarios/${user.id}/editar`}>
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Editar</span>
-                        </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(user)}>
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Eliminar</span>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {filteredUsers.map((user) => {
+                const userName = user.name;
+                const userInitials = getInitials(userName);
+                return (
+                  <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell className="font-medium flex items-center gap-3">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={`https://avatar.vercel.sh/${user.email}.png`} alt={userName} />
+                        <AvatarFallback>{userInitials}</AvatarFallback>
+                      </Avatar>
+                      {userName}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.role}</TableCell>
+                    <TableCell>{user.joinedDate}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"}`}>
+                        {user.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                          <Link href={`/dashboard/usuarios/${user.id}/editar`}>
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">Editar</span>
+                          </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(user)}>
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
            {filteredUsers.length === 0 && searchTerm && (
