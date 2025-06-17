@@ -1,15 +1,37 @@
 
 "use client";
 import Link from 'next/link';
+import React, { useState } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Search, Users, FileDown } from "lucide-react";
+import { PlusCircle, Search, Users, FileDown, Edit, Trash2, AlertTriangle } from "lucide-react";
 import Image from "next/image";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
-const mockUsers = [
+interface MockUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  joinedDate: string;
+  status: string;
+}
+
+const initialMockUsers: MockUser[] = [
   { id: "USR001", name: "Ana García", email: "ana.garcia@example.com", role: "Admin", joinedDate: "2023-01-15", status: "Activo" },
   { id: "USR002", name: "Carlos López", email: "carlos.lopez@example.com", role: "Vendedor", joinedDate: "2023-02-20", status: "Activo" },
   { id: "USR003", name: "Laura Martínez", email: "laura.martinez@example.com", role: "Vendedor", joinedDate: "2023-03-10", status: "Inactivo" },
@@ -17,6 +39,28 @@ const mockUsers = [
 ];
 
 export default function UsuariosPage() {
+  const [users, setUsers] = useState<MockUser[]>(initialMockUsers);
+  const [userToDelete, setUserToDelete] = useState<MockUser | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleDeleteUser = (userId: string) => {
+    // Simulate API call for deletion
+    setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+    toast({
+      title: "Usuario Eliminado",
+      description: `El usuario ${userToDelete?.name} ha sido eliminado exitosamente.`,
+      variant: "default", // Or success if you add that variant
+    });
+    setUserToDelete(null);
+    setIsDeleteDialogOpen(false);
+  };
+
+  const openDeleteDialog = (user: MockUser) => {
+    setUserToDelete(user);
+    setIsDeleteDialogOpen(true);
+  };
+
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -61,7 +105,7 @@ export default function UsuariosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockUsers.map((user) => (
+              {users.map((user) => (
                 <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium flex items-center gap-2">
                      <Image src={`https://avatar.vercel.sh/${user.email}.png`} alt={user.name} width={32} height={32} className="rounded-full" data-ai-hint="user avatar" />
@@ -76,8 +120,14 @@ export default function UsuariosPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">Editar</Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">Eliminar</Button>
+                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors">
+                        <Edit className="h-4 w-4" />
+                        <span className="sr-only">Editar</span>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(user)}>
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Eliminar</span>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -85,6 +135,32 @@ export default function UsuariosPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {userToDelete && (
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
+                Confirmar Eliminación
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                ¿Estás seguro de que deseas eliminar al usuario <strong>{userToDelete.name}</strong>? 
+                Esta acción no se puede deshacer.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={() => handleDeleteUser(userToDelete.id)}
+                className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              >
+                Eliminar Usuario
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
