@@ -41,7 +41,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider defaultOpen>
       <div className="flex min-h-screen">
-        <Sidebar collapsible="icon" variant="sidebar" className="border-r bg-sidebar text-sidebar-foreground shadow-md">
+        <Sidebar collapsible="icon" variant="sidebar" className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground shadow-md">
           <SidebarHeader className="p-4 flex items-center gap-2 justify-between">
              <div className="flex items-center gap-2 overflow-hidden group-data-[collapsible=icon]:hidden">
                 <Image 
