@@ -100,6 +100,27 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
+        'gradient-flow': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
+        },
+        'float-subtle-1': {
+          '0%, 100%': { transform: 'translateY(0) rotate(-5deg)', opacity: '0.7' },
+          '50%': { transform: 'translateY(-15px) rotate(5deg)', opacity: '0.5' },
+        },
+        'float-subtle-2': {
+          '0%, 100%': { transform: 'translateY(0) rotate(3deg)', opacity: '0.6' },
+          '50%': { transform: 'translateY(-12px) rotate(-3deg)', opacity: '0.4' },
+        },
+        'float-subtle-3': {
+          '0%, 100%': { transform: 'translateY(0) rotate(-2deg)', opacity: '0.7' },
+          '50%': { transform: 'translateY(-10px) rotate(2deg)', opacity: '0.5' },
+        },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '0.3' , transform: 'scale(0.95)'},
+          '50%': { opacity: '0.6' , transform: 'scale(1.05)'},
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -107,8 +128,26 @@ export default {
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'content-show': 'content-show 0.4s ease-out forwards',
+        'gradient-flow': 'gradient-flow 15s ease infinite',
+        'float-subtle-1': 'float-subtle-1 10s ease-in-out infinite',
+        'float-subtle-2': 'float-subtle-2 12s ease-in-out infinite',
+        'float-subtle-3': 'float-subtle-3 9s ease-in-out infinite',
+        'pulse-slow': 'pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
+      animationDelay: {
+        '2000': '2000ms',
+      }
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    function ({ addUtilities, theme }: { addUtilities: any, theme: any }) {
+      const newUtilities = {
+        '.animation-delay-2000': {
+          'animation-delay': '2s',
+        },
+      }
+      addUtilities(newUtilities, ['responsive', 'hover'])
+    }
+  ],
 } satisfies Config;
