@@ -99,7 +99,7 @@ export default function EditarUsuarioPage() {
             </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full max-w-4xl mx-auto border-border/50">
+      <Card className="shadow-xl rounded-lg w-full border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Usuario</CardTitle>
           <CardDescription>Actualice los campos necesarios.</CardDescription>
