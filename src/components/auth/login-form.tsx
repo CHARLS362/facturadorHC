@@ -140,10 +140,8 @@ export function LoginForm() {
                   </FormItem>
                 )}
               />
-              <Link href="/forgot-password" legacyBehavior>
-                <a className="text-sm text-primary hover:underline font-medium transition-colors">
-                  ¿Olvidaste tu contraseña?
-                </a>
+              <Link href="/forgot-password" className="text-sm text-primary hover:underline font-medium transition-colors">
+                ¿Olvidaste tu contraseña?
               </Link>
             </div>
             <Button 
