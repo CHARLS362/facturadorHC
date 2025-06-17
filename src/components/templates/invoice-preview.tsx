@@ -1,9 +1,20 @@
+
+"use client";
+
 import Image from "next/image";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
+import React, { useState, useEffect } from "react";
 
 export function InvoicePreview() {
-  const currentDate = new Date().toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
+  const [currentDateString, setCurrentDateString] = useState<string | null>(null);
+  const [dueDateString, setDueDateString] = useState<string | null>(null);
+
+  useEffect(() => {
+    const today = new Date();
+    setCurrentDateString(today.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
+    setDueDateString(new Date(today.setDate(today.getDate() + 30)).toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
+  }, []);
 
   return (
     <div className="bg-card p-8 rounded-lg shadow-2xl border border-border/50 max-w-4xl mx-auto font-body text-sm text-foreground">
@@ -28,8 +39,8 @@ export function InvoicePreview() {
           <h1 className="text-3xl font-headline font-bold text-primary mb-1">FACTURA</h1>
           <p className="text-lg">F001-00012345</p>
           <Separator className="my-2 bg-border/70" />
-          <p><span className="font-semibold">Fecha de Emisión:</span> {currentDate}</p>
-          <p><span className="font-semibold">Fecha de Vencimiento:</span> {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString('es-PE')}</p>
+          <p><span className="font-semibold">Fecha de Emisión:</span> {currentDateString || "Calculando..."}</p>
+          <p><span className="font-semibold">Fecha de Vencimiento:</span> {dueDateString || "Calculando..."}</p>
         </div>
       </header>
 
