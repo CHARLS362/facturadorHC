@@ -2,7 +2,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
 import * as _ from "lodash";
 import * as z from "zod";
 import { PageHeader } from "@/components/shared/page-header";
@@ -11,27 +11,45 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { ShoppingCart, Save, RotateCcw, SearchCheck, AlertTriangle, Calculator } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ShoppingCart, Save, RotateCcw, SearchCheck, AlertTriangle, Calculator, PlusCircle, Trash2, Check, ChevronsUpDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 const IGV_RATE = 0.18; // 18% IGV for Peru
+
+// Mock product data (replace with actual data fetching in a real app)
+const availableProducts = [
+  { id: "PROD001", name: "Camisa de Algodón Premium", price: 79.90, stock: 120 },
+  { id: "PROD002", name: "Pantalón Cargo Resistente", price: 119.90, stock: 75 },
+  { id: "PROD003", name: "Zapatillas Urbanas Clásicas", price: 249.90, stock: 0 },
+  { id: "PROD004", name: "Mochila Antirrobo Impermeable", price: 189.50, stock: 45 },
+  { id: "PROD005", name: "Servicio de Consultoría Digital", price: 800.00, stock: Infinity },
+  { id: "PROD006", name: "Desarrollo Web Landing Page", price: 1200.00, stock: Infinity },
+];
 
 const ventaSchema = z.object({
   clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione el tipo de documento del cliente." }),
   clientDocumentNumber: z.string()
-    .min(1, { message: "El número de documento es requerido."}) // General message, refined below
+    .min(1, { message: "El número de documento es requerido."})
     .refine(val => /^\d+$/.test(val), { message: "Solo se permiten números." }),
   clientFullName: z.string().min(3, { message: "Nombre del cliente es requerido (mín. 3 caracteres)." }),
   clientAddress: z.string().optional(),
   
   documentType: z.enum(["Boleta", "Factura"], { required_error: "Seleccione un tipo de comprobante." }),
   
-  itemsDescription: z.string().min(10, { message: "Describa los productos/servicios (mín. 10 caracteres)." }),
-  subtotal: z.coerce.number().positive({ message: "El subtotal debe ser un número positivo." }),
+  saleItems: z.array(z.object({
+    productId: z.string(),
+    name: z.string(),
+    quantity: z.coerce.number().min(1, "Cantidad debe ser mayor a 0."),
+    price: z.coerce.number(),
+  })).min(1, { message: "Debe agregar al menos un producto." }),
+
   igvAmount: z.coerce.number().nonnegative(),
   grandTotal: z.coerce.number().positive(),
   
@@ -54,13 +72,16 @@ const ventaSchema = z.object({
   }
 });
 
-
 type VentaFormValues = z.infer<typeof ventaSchema>;
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
   const [isClientDataFetched, setIsClientDataFetched] = useState(false);
   const [isConsultingSunat, setIsConsultingSunat] = useState(false);
+
+  const [currentProductId, setCurrentProductId] = useState<string | null>(null);
+  const [currentQuantity, setCurrentQuantity] = useState<number>(1);
+  const [productSearchOpen, setProductSearchOpen] = useState(false);
 
   const form = useForm<VentaFormValues>({
     resolver: zodResolver(ventaSchema),
@@ -70,8 +91,7 @@ export default function NuevaVentaPage() {
       clientFullName: "",
       clientAddress: "",
       documentType: undefined,
-      itemsDescription: "",
-      subtotal: 0,
+      saleItems: [],
       igvAmount: 0,
       grandTotal: 0,
       paymentMethod: "",
@@ -79,22 +99,25 @@ export default function NuevaVentaPage() {
     },
   });
 
-  const subtotalValue = form.watch("subtotal");
+  const { fields: saleItemsFields, append: appendSaleItem, remove: removeSaleItem } = useFieldArray({
+    control: form.control,
+    name: "saleItems",
+  });
+
   const clientDocType = form.watch("clientDocumentType");
+  const saleItems = form.watch("saleItems");
+
+  const calculatedSubtotal = useMemo(() => {
+    return _.round(saleItems.reduce((acc, item) => acc + (item.price * item.quantity), 0), 2);
+  }, [saleItems]);
 
   useEffect(() => {
-    if (typeof subtotalValue === 'number' && subtotalValue > 0) {
-      const igv = _.round(subtotalValue * IGV_RATE, 2);
-      const total = _.round(subtotalValue + igv, 2);
-      form.setValue("igvAmount", igv, { shouldValidate: true });
-      form.setValue("grandTotal", total, { shouldValidate: true });
-    } else {
-      form.setValue("igvAmount", 0);
-      form.setValue("grandTotal", 0);
-    }
-  }, [subtotalValue, form]);
+    const igv = _.round(calculatedSubtotal * IGV_RATE, 2);
+    const total = _.round(calculatedSubtotal + igv, 2);
+    form.setValue("igvAmount", igv, { shouldValidate: true });
+    form.setValue("grandTotal", total, { shouldValidate: true });
+  }, [calculatedSubtotal, form]);
 
-  // Clear client data when doc type changes
   useEffect(() => {
     form.setValue("clientDocumentNumber", "");
     form.setValue("clientFullName", "");
@@ -103,12 +126,10 @@ export default function NuevaVentaPage() {
     form.clearErrors("clientDocumentNumber");
   }, [clientDocType, form]);
 
-
   const handleSunatQuery = async () => {
     const docType = form.getValues("clientDocumentType");
     const docNumber = form.getValues("clientDocumentNumber");
 
-    // Trigger validation for document number before proceeding
     const isValidDocNumber = await form.trigger("clientDocumentNumber");
     if (!isValidDocNumber) {
          toast({
@@ -118,18 +139,9 @@ export default function NuevaVentaPage() {
           });
         return;
     }
-
-    if (!docType || !docNumber) { // This check might be redundant due to schema validation but good for safety
-      toast({
-        variant: "destructive",
-        title: "Error de Validación",
-        description: "Por favor, seleccione tipo y número de documento.",
-      });
-      return;
-    }
+    if (!docType || !docNumber) return;
     
     setIsConsultingSunat(true);
-    // Simulate API call to SUNAT
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     let mockName = "Cliente Ejemplo S.A.C.";
@@ -137,8 +149,6 @@ export default function NuevaVentaPage() {
     if (docType === "DNI") {
       mockName = "Juan Pérez Gonzales";
       mockAddress = "Calle Las Begonias 456, Lince, Lima";
-    } else if (docType === "RUC") {
-        // Keep mock RUC data or adjust if needed
     }
     
     form.setValue("clientFullName", mockName, { shouldValidate: true });
@@ -151,8 +161,31 @@ export default function NuevaVentaPage() {
     });
   };
 
+  const handleAddProduct = () => {
+    if (!currentProductId) {
+      toast({ title: "Error", description: "Seleccione un producto.", variant: "destructive" });
+      return;
+    }
+    if (currentQuantity <= 0) {
+      toast({ title: "Error", description: "La cantidad debe ser mayor a cero.", variant: "destructive" });
+      return;
+    }
+    const product = availableProducts.find(p => p.id === currentProductId);
+    if (product) {
+      appendSaleItem({
+        productId: product.id,
+        name: product.name,
+        quantity: currentQuantity,
+        price: product.price,
+      });
+      setCurrentProductId(null);
+      setCurrentQuantity(1);
+      form.trigger("saleItems"); // Validate saleItems after adding
+    }
+  };
+
   function onSubmit(data: VentaFormValues) {
-    console.log(data);
+    console.log(data); // Data includes saleItems array
     toast({
       title: "Venta Registrada",
       description: `La venta para ${data.clientFullName} ha sido registrada exitosamente.`,
@@ -160,7 +193,12 @@ export default function NuevaVentaPage() {
     });
     form.reset(); 
     setIsClientDataFetched(false);
+    setCurrentProductId(null);
+    setCurrentQuantity(1);
   }
+
+  const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
+
 
   return (
     <div className="space-y-8 pb-12">
@@ -176,7 +214,7 @@ export default function NuevaVentaPage() {
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Card className="shadow-xl rounded-lg max-w-4xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg max-w-3xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
               <CardDescription>Ingrese los datos del cliente. Puede consultar en SUNAT (simulado).</CardDescription>
@@ -220,7 +258,6 @@ export default function NuevaVentaPage() {
                           maxLength={form.getValues("clientDocumentType") === "DNI" ? 8 : form.getValues("clientDocumentType") === "RUC" ? 11 : undefined}
                           onChange={(e) => {
                             const { value } = e.target;
-                             // Allow only numbers
                             if (/^\d*$/.test(value)) {
                                 field.onChange(value);
                             }
@@ -250,7 +287,7 @@ export default function NuevaVentaPage() {
                   <FormItem>
                     <FormLabel>Nombre / Razón Social</FormLabel>
                     <FormControl>
-                      <Input placeholder="Se completará tras consulta" {...field} readOnly={!isClientDataFetched} className={!isClientDataFetched ? "bg-muted/50 cursor-not-allowed" : ""} />
+                      <Input placeholder="Se completará tras consulta" {...field} readOnly={isClientDataFetched} className={!isClientDataFetched && clientDocType ? "bg-muted/50 cursor-not-allowed" : ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -263,7 +300,7 @@ export default function NuevaVentaPage() {
                   <FormItem>
                     <FormLabel>Dirección del Cliente (Opcional)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Se completará tras consulta (opcional)" {...field} readOnly={!isClientDataFetched} className={!isClientDataFetched ? "bg-muted/50 cursor-not-allowed" : ""} />
+                      <Input placeholder="Se completará tras consulta (opcional)" {...field} readOnly={isClientDataFetched} className={!isClientDataFetched && clientDocType ? "bg-muted/50 cursor-not-allowed" : ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -272,9 +309,9 @@ export default function NuevaVentaPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl rounded-lg max-w-4xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg max-w-5xl mx-auto border-border/50">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl">Detalles del Comprobante</CardTitle>
+              <CardTitle className="font-headline text-2xl">Detalles del Comprobante y Productos</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <FormField
@@ -296,31 +333,115 @@ export default function NuevaVentaPage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="itemsDescription"
-                render={({ field }) => (
+
+              <Separator />
+              
+              <div>
+                <FormLabel>Añadir Productos/Servicios</FormLabel>
+                <div className="grid grid-cols-1 md:grid-cols-[2fr_1fr_auto] gap-4 items-end mt-2">
                   <FormItem>
-                    <FormLabel>Descripción de Productos/Servicios</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Ej: 2x Camisa Talla M, 1x Pantalón Jean Azul."
-                        className="resize-none min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription className="flex items-center gap-1.5">
-                        <AlertTriangle className="h-3.5 w-3.5 text-yellow-500" />
-                        <span>Mejora futura: selección de productos existentes.</span>
-                    </FormDescription>
-                    <FormMessage />
+                    <FormLabel htmlFor="product-combobox" className="sr-only">Producto</FormLabel>
+                     <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={productSearchOpen}
+                          className="w-full justify-between font-normal"
+                          id="product-combobox"
+                        >
+                          {selectedProductName}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                        <Command>
+                          <CommandInput placeholder="Buscar producto..." />
+                          <CommandEmpty>No se encontró el producto.</CommandEmpty>
+                          <CommandList>
+                            <CommandGroup>
+                              {availableProducts.map((product) => (
+                                <CommandItem
+                                  key={product.id}
+                                  value={product.id}
+                                  onSelect={(currentValue) => {
+                                    setCurrentProductId(currentValue === currentProductId ? null : currentValue);
+                                    setProductSearchOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      currentProductId === product.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {product.name} (S/ {product.price.toFixed(2)})
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </FormItem>
-                )}
-              />
+                  <FormItem>
+                     <FormLabel htmlFor="quantity" className="sr-only">Cantidad</FormLabel>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      placeholder="Cantidad"
+                      value={currentQuantity}
+                      onChange={(e) => setCurrentQuantity(parseInt(e.target.value, 10) || 1)}
+                      min="1"
+                    />
+                  </FormItem>
+                  <Button type="button" onClick={handleAddProduct} className="whitespace-nowrap">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Añadir
+                  </Button>
+                </div>
+              </div>
+              
+              {saleItemsFields.length > 0 && (
+                <div className="mt-6 space-y-2">
+                    <FormLabel>Productos/Servicios Añadidos</FormLabel>
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Producto/Servicio</TableHead>
+                            <TableHead className="text-right">Cantidad</TableHead>
+                            <TableHead className="text-right">P. Unitario (S/)</TableHead>
+                            <TableHead className="text-right">P. Total (S/)</TableHead>
+                            <TableHead className="text-right">Acción</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {saleItemsFields.map((item, index) => (
+                            <TableRow key={item.id}>
+                            <TableCell>{item.name}</TableCell>
+                            <TableCell className="text-right">{item.quantity}</TableCell>
+                            <TableCell className="text-right">{item.price.toFixed(2)}</TableCell>
+                            <TableCell className="text-right">{(item.price * item.quantity).toFixed(2)}</TableCell>
+                            <TableCell className="text-right">
+                                <Button variant="ghost" size="icon" type="button" onClick={() => removeSaleItem(index)} className="text-destructive hover:text-destructive/80">
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Eliminar</span>
+                                </Button>
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                    <FormField
+                        control={form.control}
+                        name="saleItems"
+                        render={() => ( <FormMessage /> )}
+                    />
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl rounded-lg max-w-4xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl flex items-center gap-2">
                 <Calculator className="h-6 w-6 text-primary" />
@@ -329,19 +450,13 @@ export default function NuevaVentaPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="subtotal"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Subtotal (S/)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="0.01" placeholder="Ej: 127.12" {...field} onChange={e => field.onChange(parseFloat(e.target.value) || 0)} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                 {/* Subtotal Display (Calculated) */}
+                <div>
+                    <FormLabel>Subtotal (S/)</FormLabel>
+                    <p className="text-lg font-semibold mt-1 h-10 flex items-center px-3 py-2 border rounded-md bg-muted/50">
+                        {calculatedSubtotal.toFixed(2)}
+                    </p>
+                </div>
                 <FormField
                   control={form.control}
                   name="paymentMethod"
@@ -391,9 +506,8 @@ export default function NuevaVentaPage() {
                   <FormItem>
                     <FormLabel>Notas Adicionales (Opcional)</FormLabel>
                     <FormControl>
-                      <Textarea
+                      <Input
                         placeholder="Alguna nota o comentario sobre la venta..."
-                        className="resize-none"
                         {...field}
                       />
                     </FormControl>
@@ -403,7 +517,16 @@ export default function NuevaVentaPage() {
               />
             </CardContent>
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border/30 mt-6">
-              <Button type="button" variant="outline" onClick={() => { form.reset(); setIsClientDataFetched(false); }}>
+              <Button type="button" variant="outline" onClick={() => { 
+                  form.reset(); 
+                  setIsClientDataFetched(false); 
+                  setCurrentProductId(null);
+                  setCurrentQuantity(1);
+                  // Ensure saleItems array is also cleared if form.reset doesn't handle useFieldArray well by default
+                  while(saleItemsFields.length > 0) {
+                      removeSaleItem(0);
+                  }
+                }}>
                 <RotateCcw className="mr-2 h-4 w-4" /> Limpiar Formulario
               </Button>
               <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={form.formState.isSubmitting}>
