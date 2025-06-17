@@ -71,7 +71,7 @@ export default function DashboardLayout({
             </div>
             <UserNav user={user} />
           </header>
-          <main className="flex-1 overflow-y-auto p-6 w-full max-w-screen-2xl mx-auto">
+          <main className="flex-1 overflow-y-auto p-6 w-full max-w-screen-2xl mx-auto animate-content-show">
             {children}
           </main>
         </SidebarInset>
