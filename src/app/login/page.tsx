@@ -3,7 +3,7 @@
 
 import { LoginForm } from '@/components/auth/login-form';
 import Image from 'next/image';
-import { FileText, DollarSign, TrendingUp, ShieldCheck, Sun, Moon } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -42,20 +42,22 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/20 to-background bg-[length:400%_400%] animate-gradient-flow flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-200 via-sky-100 to-background dark:from-slate-900 dark:via-sky-950 dark:to-background flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary">
       
       <div className="absolute top-4 right-4 z-20">
         {renderThemeToggle()}
       </div>
-
-      {/* Animated Floating Elements */}
-      <FileText className="absolute top-[10%] left-[10%] h-16 w-16 text-primary/20 opacity-70 animate-float-subtle-1" style={{ animationDelay: '0s' }} />
-      <DollarSign className="absolute top-[20%] right-[15%] h-12 w-12 text-accent/20 opacity-60 animate-float-subtle-2" style={{ animationDelay: '1s' }}/>
-      <TrendingUp className="absolute bottom-[15%] left-[20%] h-14 w-14 text-primary/15 opacity-70 animate-float-subtle-3" style={{ animationDelay: '2s' }}/>
-      <ShieldCheck className="absolute bottom-[10%] right-[10%] h-10 w-10 text-accent/15 opacity-60 animate-float-subtle-1" style={{ animationDelay: '3s' }}/>
       
-      <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/5 rounded-full filter blur-2xl animate-pulse-slow opacity-50"></div>
-      <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-accent/5 rounded-full filter blur-2xl animate-pulse-slow animation-delay-2000 opacity-50"></div>
+      {/* Animated Wave Elements */}
+      <div className="absolute bottom-0 left-0 w-full h-[200px] sm:h-[250px] md:h-[300px] z-0 opacity-40">
+        <div className="absolute bottom-0 left-0 w-full h-full bg-primary/30 rounded-t-[100%] animate-ocean-wave-1"></div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-full h-[150px] sm:h-[200px] md:h-[250px] z-1 opacity-50">
+        <div className="absolute bottom-0 left-0 w-full h-full bg-accent/40 rounded-t-[100%] animate-ocean-wave-2" style={{animationDelay: '1s'}}></div>
+      </div>
+      <div className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[150px] md:h-[200px] z-2 opacity-60">
+         <div className="absolute bottom-0 left-0 w-full h-full bg-primary/50 rounded-t-[100%] animate-ocean-wave-3" style={{animationDelay: '0.5s'}}></div>
+      </div>
 
 
       <main className="relative z-10 w-full max-w-md">

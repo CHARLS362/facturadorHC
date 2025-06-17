@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -100,26 +101,19 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
-        'gradient-flow': {
-          '0%': { backgroundPosition: '0% 50%' },
-          '50%': { backgroundPosition: '100% 50%' },
-          '100%': { backgroundPosition: '0% 50%' },
+        'ocean-wave': {
+          '0%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
+          '25%': { transform: 'translateX(-2%) translateY(2%) scale(1.02,0.98)' },
+          '50%': { transform: 'translateX(0%) translateY(5%) scale(1.05,0.95)' },
+          '75%': { transform: 'translateX(2%) translateY(2%) scale(1.02,0.98)' },
+          '100%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
         },
-        'float-subtle-1': {
-          '0%, 100%': { transform: 'translateY(0) rotate(-5deg)', opacity: '0.7' },
-          '50%': { transform: 'translateY(-15px) rotate(5deg)', opacity: '0.5' },
-        },
-        'float-subtle-2': {
-          '0%, 100%': { transform: 'translateY(0) rotate(3deg)', opacity: '0.6' },
-          '50%': { transform: 'translateY(-12px) rotate(-3deg)', opacity: '0.4' },
-        },
-        'float-subtle-3': {
-          '0%, 100%': { transform: 'translateY(0) rotate(-2deg)', opacity: '0.7' },
-          '50%': { transform: 'translateY(-10px) rotate(2deg)', opacity: '0.5' },
-        },
-        'pulse-slow': {
-          '0%, 100%': { opacity: '0.3' , transform: 'scale(0.95)'},
-          '50%': { opacity: '0.6' , transform: 'scale(1.05)'},
+         'ocean-wave-slow': {
+          '0%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
+          '25%': { transform: 'translateX(3%) translateY(3%) scale(1.03,0.97)' },
+          '50%': { transform: 'translateX(0%) translateY(6%) scale(1.06,0.94)' },
+          '75%': { transform: 'translateX(-3%) translateY(3%) scale(1.03,0.97)' },
+          '100%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
         }
       },
       animation: {
@@ -128,11 +122,9 @@ export default {
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'content-show': 'content-show 0.4s ease-out forwards',
-        'gradient-flow': 'gradient-flow 15s ease infinite',
-        'float-subtle-1': 'float-subtle-1 10s ease-in-out infinite',
-        'float-subtle-2': 'float-subtle-2 12s ease-in-out infinite',
-        'float-subtle-3': 'float-subtle-3 9s ease-in-out infinite',
-        'pulse-slow': 'pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'ocean-wave-1': 'ocean-wave 18s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite',
+        'ocean-wave-2': 'ocean-wave-slow 25s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite alternate',
+        'ocean-wave-3': 'ocean-wave 15s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite -2s',
       },
       animationDelay: {
         '2000': '2000ms',
