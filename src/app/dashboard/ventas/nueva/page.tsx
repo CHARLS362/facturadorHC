@@ -99,7 +99,7 @@ export default function NuevaVentaPage() {
     },
   });
 
-  const { fields: saleItemsFields, append: appendSaleItem, remove: removeSaleItem } = useFieldArray({
+  const { fields: saleItemsFields, append: appendSaleItem, remove: removeSaleItem, update: updateSaleItem } = useFieldArray({
     control: form.control,
     name: "saleItems",
   });
@@ -142,7 +142,8 @@ export default function NuevaVentaPage() {
     if (!docType || !docNumber) return;
     
     setIsConsultingSunat(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Simulate API call to SUNAT
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
     
     let mockName = "Cliente Ejemplo S.A.C.";
     let mockAddress = "Av. Javier Prado Este 123, San Isidro, Lima";
@@ -170,19 +171,37 @@ export default function NuevaVentaPage() {
       toast({ title: "Error", description: "La cantidad debe ser mayor a cero.", variant: "destructive" });
       return;
     }
-    const product = availableProducts.find(p => p.id === currentProductId);
-    if (product) {
-      appendSaleItem({
-        productId: product.id,
-        name: product.name,
-        quantity: currentQuantity,
-        price: product.price,
-      });
-      setCurrentProductId(null);
-      setCurrentQuantity(1);
-      form.trigger("saleItems"); // Validate saleItems after adding
+
+    const existingProductIndex = saleItems.findIndex(item => item.productId === currentProductId);
+    const productDetails = availableProducts.find(p => p.id === currentProductId);
+
+    if (!productDetails) {
+        toast({ title: "Error", description: "Producto no encontrado.", variant: "destructive" });
+        return;
     }
+
+    if (existingProductIndex > -1) {
+      // Product already in list, update quantity
+      const existingItem = saleItems[existingProductIndex];
+      updateSaleItem(existingProductIndex, {
+        ...existingItem,
+        quantity: existingItem.quantity + currentQuantity,
+      });
+    } else {
+      // Add new product to list
+      appendSaleItem({
+        productId: productDetails.id,
+        name: productDetails.name,
+        quantity: currentQuantity,
+        price: productDetails.price,
+      });
+    }
+    
+    setCurrentProductId(null); // Reset product selection
+    setCurrentQuantity(1); // Reset quantity
+    form.trigger("saleItems"); // Validate saleItems after adding/updating
   };
+
 
   function onSubmit(data: VentaFormValues) {
     console.log(data); // Data includes saleItems array
@@ -214,7 +233,7 @@ export default function NuevaVentaPage() {
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Card className="shadow-xl rounded-lg max-w-3xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg w-full max-w-6xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
               <CardDescription>Ingrese los datos del cliente. Puede consultar en SUNAT (simulado).</CardDescription>
@@ -258,9 +277,11 @@ export default function NuevaVentaPage() {
                           maxLength={form.getValues("clientDocumentType") === "DNI" ? 8 : form.getValues("clientDocumentType") === "RUC" ? 11 : undefined}
                           onChange={(e) => {
                             const { value } = e.target;
+                            // Allow only numbers
                             if (/^\d*$/.test(value)) {
                                 field.onChange(value);
                             }
+                            // Reset client data if document number changes
                             setIsClientDataFetched(false);
                             form.setValue("clientFullName", "", { shouldValidate: false });
                             form.setValue("clientAddress", "", { shouldValidate: false });
@@ -309,7 +330,7 @@ export default function NuevaVentaPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl rounded-lg max-w-5xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg w-full max-w-6xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Detalles del Comprobante y Productos</CardTitle>
             </CardHeader>
@@ -363,9 +384,10 @@ export default function NuevaVentaPage() {
                               {availableProducts.map((product) => (
                                 <CommandItem
                                   key={product.id}
-                                  value={product.id}
+                                  value={product.id} // Use product.id or product.name as value based on what you want cmdk to filter on
                                   onSelect={(currentValue) => {
-                                    setCurrentProductId(currentValue === currentProductId ? null : currentValue);
+                                    // currentValue will be product.id if value is set to product.id
+                                    setCurrentProductId(product.id); // Ensure this sets the ID, not the name
                                     setProductSearchOpen(false);
                                   }}
                                 >
@@ -404,44 +426,46 @@ export default function NuevaVentaPage() {
               {saleItemsFields.length > 0 && (
                 <div className="mt-6 space-y-2">
                     <FormLabel>Productos/Servicios Añadidos</FormLabel>
-                    <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>Producto/Servicio</TableHead>
-                            <TableHead className="text-right">Cantidad</TableHead>
-                            <TableHead className="text-right">P. Unitario (S/)</TableHead>
-                            <TableHead className="text-right">P. Total (S/)</TableHead>
-                            <TableHead className="text-right">Acción</TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {saleItemsFields.map((item, index) => (
-                            <TableRow key={item.id}>
-                            <TableCell>{item.name}</TableCell>
-                            <TableCell className="text-right">{item.quantity}</TableCell>
-                            <TableCell className="text-right">{item.price.toFixed(2)}</TableCell>
-                            <TableCell className="text-right">{(item.price * item.quantity).toFixed(2)}</TableCell>
-                            <TableCell className="text-right">
-                                <Button variant="ghost" size="icon" type="button" onClick={() => removeSaleItem(index)} className="text-destructive hover:text-destructive/80">
-                                <Trash2 className="h-4 w-4" />
-                                <span className="sr-only">Eliminar</span>
-                                </Button>
-                            </TableCell>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                            <TableRow>
+                                <TableHead>Producto/Servicio</TableHead>
+                                <TableHead className="text-right">Cantidad</TableHead>
+                                <TableHead className="text-right">P. Unitario (S/)</TableHead>
+                                <TableHead className="text-right">P. Total (S/)</TableHead>
+                                <TableHead className="text-right">Acción</TableHead>
                             </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
+                            </TableHeader>
+                            <TableBody>
+                            {saleItemsFields.map((item, index) => (
+                                <TableRow key={item.id}>
+                                <TableCell>{item.name}</TableCell>
+                                <TableCell className="text-right">{item.quantity}</TableCell>
+                                <TableCell className="text-right">{item.price.toFixed(2)}</TableCell>
+                                <TableCell className="text-right">{(item.price * item.quantity).toFixed(2)}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" type="button" onClick={() => removeSaleItem(index)} className="text-destructive hover:text-destructive/80">
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="sr-only">Eliminar</span>
+                                    </Button>
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                    </div>
                     <FormField
                         control={form.control}
                         name="saleItems"
-                        render={() => ( <FormMessage /> )}
+                        render={() => ( <FormMessage /> )} // This will display the general "Debe agregar al menos un producto." message
                     />
                 </div>
               )}
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl rounded-lg max-w-5xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg w-full max-w-6xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl flex items-center gap-2">
                 <Calculator className="h-6 w-6 text-primary" />
@@ -522,7 +546,7 @@ export default function NuevaVentaPage() {
                   setIsClientDataFetched(false); 
                   setCurrentProductId(null);
                   setCurrentQuantity(1);
-                  // Ensure saleItems array is also cleared if form.reset doesn't handle useFieldArray well by default
+                  // Ensure saleItems array is also cleared
                   while(saleItemsFields.length > 0) {
                       removeSaleItem(0);
                   }
@@ -544,3 +568,4 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
+
