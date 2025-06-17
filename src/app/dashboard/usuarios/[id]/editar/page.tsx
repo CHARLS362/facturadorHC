@@ -10,25 +10,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Save, RotateCcw, Eye, EyeOff } from "lucide-react";
+import { UserCog, Save, RotateCcw, Eye, EyeOff } from "lucide-react"; // Changed icon to UserCog
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useRouter } from 'next/navigation'; // For accessing route params
+
+// Mock data - in a real app, this would come from an API
+const mockUsers = [
+  { id: "USR001", fullName: "Ana García", email: "ana.garcia@example.com", role: "Admin", status: "Activo" },
+  { id: "USR002", fullName: "Carlos López", email: "carlos.lopez@example.com", role: "Vendedor", status: "Activo" },
+];
+
 
 const usuarioSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo es requerido (mín. 3 caracteres)." }),
   email: z.string().email({ message: "Ingrese un email válido." }),
-  password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }),
+  // Password can be optional on edit, or have different validation
+  password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }).optional().or(z.literal('')),
   role: z.enum(["Admin", "Vendedor", "Soporte"], { required_error: "Seleccione un rol para el usuario." }),
   status: z.enum(["Activo", "Inactivo"], { required_error: "Seleccione un estado."}),
 });
 
 type UsuarioFormValues = z.infer<typeof usuarioSchema>;
 
-export default function NuevoUsuarioPage() {
+export default function EditarUsuarioPage() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const params = useParams();
+  const userId = params.id as string; // Get user ID from URL
 
   const form = useForm<UsuarioFormValues>({
     resolver: zodResolver(usuarioSchema),
@@ -41,26 +53,46 @@ export default function NuevoUsuarioPage() {
     },
   });
 
+  useEffect(() => {
+    // Simulate fetching user data
+    if (userId) {
+      const userToEdit = mockUsers.find(u => u.id === userId);
+      if (userToEdit) {
+        form.reset({
+          fullName: userToEdit.fullName,
+          email: userToEdit.email,
+          password: "", // Password field should be empty or handled differently for edits
+          role: userToEdit.role as "Admin" | "Vendedor" | "Soporte",
+          status: userToEdit.status as "Activo" | "Inactivo",
+        });
+      } else {
+        toast({ title: "Error", description: "Usuario no encontrado.", variant: "destructive" });
+        router.push("/dashboard/usuarios");
+      }
+    }
+  }, [userId, form, router, toast]);
+
   async function onSubmit(data: UsuarioFormValues) {
     setIsSubmitting(true);
-    console.log(data);
+    console.log("Updating user:", userId, data);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     toast({
-      title: "Usuario Creado",
-      description: `El usuario ${data.fullName} ha sido creado exitosamente.`,
+      title: "Usuario Actualizado",
+      description: `El usuario ${data.fullName} ha sido actualizado exitosamente.`,
       variant: "default",
     });
-    form.reset(); 
+    // Optionally, redirect after update
+    // router.push("/dashboard/usuarios"); 
   }
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title="Crear Nuevo Usuario"
-        description="Añada un nuevo miembro al equipo de FacturacionHC."
-        icon={UserPlus}
+        title={`Editar Usuario: ${form.getValues("fullName") || userId}`}
+        description="Modifique la información del usuario."
+        icon={UserCog}
         actions={
             <Button variant="outline" asChild>
                 <Link href="/dashboard/usuarios">Volver al Listado</Link>
@@ -69,8 +101,8 @@ export default function NuevoUsuarioPage() {
       />
       <Card className="shadow-xl rounded-lg w-full max-w-4xl mx-auto border-border/50">
         <CardHeader>
-          <CardTitle className="font-headline text-2xl">Información del Nuevo Usuario</CardTitle>
-          <CardDescription>Complete los campos para registrar al nuevo usuario en el sistema.</CardDescription>
+          <CardTitle className="font-headline text-2xl">Información del Usuario</CardTitle>
+          <CardDescription>Actualice los campos necesarios.</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -106,12 +138,12 @@ export default function NuevoUsuarioPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Contraseña</FormLabel>
+                    <FormLabel>Nueva Contraseña (Opcional)</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <Input 
                           type={showPassword ? "text" : "password"} 
-                          placeholder="Mínimo 8 caracteres" 
+                          placeholder="Dejar en blanco para no cambiar" 
                           {...field} 
                           className="pr-10"
                         />
@@ -138,7 +170,7 @@ export default function NuevoUsuarioPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Rol del Usuario</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Seleccione un rol" />
@@ -160,7 +192,7 @@ export default function NuevoUsuarioPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Estado</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Seleccione estado" />
@@ -178,8 +210,8 @@ export default function NuevoUsuarioPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
-                  <RotateCcw className="mr-2 h-4 w-4" /> Limpiar
+                <Button type="button" variant="outline" onClick={() => router.back()} disabled={isSubmitting}>
+                  Cancelar
                 </Button>
                 <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isSubmitting}>
                   {isSubmitting ? (
@@ -187,7 +219,7 @@ export default function NuevoUsuarioPage() {
                   ) : (
                     <Save className="mr-2 h-4 w-4" />
                   )}
-                  Crear Usuario
+                  Guardar Cambios
                 </Button>
               </div>
             </form>

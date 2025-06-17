@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +18,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
@@ -42,15 +41,26 @@ export default function UsuariosPage() {
   const [users, setUsers] = useState<MockUser[]>(initialMockUsers);
   const [userToDelete, setUserToDelete] = useState<MockUser | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
-  const handleDeleteUser = (userId: string) => {
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users;
+    return users.filter(user =>
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.role.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [users, searchTerm]);
+
+  const handleDeleteUser = () => {
+    if (!userToDelete) return;
     // Simulate API call for deletion
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+    setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
     toast({
       title: "Usuario Eliminado",
       description: `El usuario ${userToDelete?.name} ha sido eliminado exitosamente.`,
-      variant: "default", // Or success if you add that variant
+      variant: "default",
     });
     setUserToDelete(null);
     setIsDeleteDialogOpen(false);
@@ -89,7 +99,12 @@ export default function UsuariosPage() {
           <CardDescription>Busca y gestiona los usuarios existentes.</CardDescription>
           <div className="pt-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input placeholder="Buscar usuarios por nombre, email o rol..." className="pl-10 max-w-sm" />
+            <Input 
+              placeholder="Buscar usuarios por nombre, email o rol..." 
+              className="pl-10 max-w-sm" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -105,10 +120,10 @@ export default function UsuariosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
+              {filteredUsers.map((user) => (
                 <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell className="font-medium flex items-center gap-2">
-                     <Image src={`https://avatar.vercel.sh/${user.email}.png`} alt={user.name} width={32} height={32} className="rounded-full" data-ai-hint="user avatar" />
+                     <Image src={`https://avatar.vercel.sh/${user.email}.png`} alt={user.name} width={32} height={32} className="rounded-full" data-ai-hint="user avatar"/>
                     {user.name}
                   </TableCell>
                   <TableCell>{user.email}</TableCell>
@@ -120,9 +135,11 @@ export default function UsuariosPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors">
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Editar</span>
+                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                        <Link href={`/dashboard/usuarios/${user.id}/editar`}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                        </Link>
                     </Button>
                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(user)}>
                         <Trash2 className="h-4 w-4" />
@@ -133,6 +150,9 @@ export default function UsuariosPage() {
               ))}
             </TableBody>
           </Table>
+           {filteredUsers.length === 0 && searchTerm && (
+            <p className="text-center text-muted-foreground py-4">No se encontraron usuarios con "{searchTerm}".</p>
+          )}
         </CardContent>
       </Card>
 
@@ -152,7 +172,7 @@ export default function UsuariosPage() {
             <AlertDialogFooter>
               <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancelar</AlertDialogCancel>
               <AlertDialogAction 
-                onClick={() => handleDeleteUser(userToDelete.id)}
+                onClick={handleDeleteUser}
                 className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
               >
                 Eliminar Usuario

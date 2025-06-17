@@ -1,6 +1,7 @@
 
 "use client";
 import Link from 'next/link';
+import React, { useState, useMemo } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,17 +14,30 @@ import {
   FileDown, 
   Eye, 
   FileEdit,
-  FileText, // For Factura
-  Receipt,  // For Boleta
-  FileCode2, // For XML
-  FileCheck2, // For CDR
+  FileText, 
+  Receipt,  
+  FileCode2, 
+  FileCheck2, 
   Printer,
-  Send, // For WhatsApp (using Send as a generic share/send icon)
+  Send, 
   Mail
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
-const mockSales = [
+interface MockSale {
+  id: string;
+  date: string;
+  customer: string;
+  total: string;
+  status: string;
+  paymentMethod: string;
+  documentType: "Factura" | "Boleta";
+  clientEmail: string;
+  clientPhone: string;
+}
+
+
+const initialMockSales: MockSale[] = [
   { id: "VENTA001", date: "2024-07-20", customer: "Carlos Mendoza", total: "S/ 150.00", status: "Pagado", paymentMethod: "Tarjeta", documentType: "Factura", clientEmail: "carlos.mendoza@example.com", clientPhone: "987654321" },
   { id: "VENTA002", date: "2024-07-19", customer: "Luisa Fernandez", total: "S/ 85.50", status: "Pendiente", paymentMethod: "Efectivo", documentType: "Boleta", clientEmail: "luisa.fernandez@example.com", clientPhone: "912345678" },
   { id: "VENTA003", date: "2024-07-19", customer: "Ana Torres", total: "S/ 220.00", status: "Pagado", paymentMethod: "Transferencia", documentType: "Factura", clientEmail: "ana.torres@example.com", clientPhone: "999888777" },
@@ -31,6 +45,19 @@ const mockSales = [
 ];
 
 export default function VentasPage() {
+  const [sales, setSales] = useState<MockSale[]>(initialMockSales);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredSales = useMemo(() => {
+    if (!searchTerm) return sales;
+    return sales.filter(sale =>
+      sale.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sale.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sale.date.includes(searchTerm) ||
+      sale.documentType.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [sales, searchTerm]);
+  
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case "pagado": return "default";
@@ -77,7 +104,12 @@ export default function VentasPage() {
           <CardDescription>Consulta todas las ventas realizadas y su estado.</CardDescription>
           <div className="pt-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input placeholder="Buscar ventas por ID, cliente, fecha..." className="pl-10 max-w-sm" />
+            <Input 
+              placeholder="Buscar ventas por ID, cliente, fecha..." 
+              className="pl-10 max-w-sm" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -96,7 +128,7 @@ export default function VentasPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockSales.map((sale) => (
+                {filteredSales.map((sale) => (
                   <TableRow key={sale.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell className="font-medium">{sale.id}</TableCell>
                     <TableCell>{sale.date}</TableCell>
@@ -119,9 +151,11 @@ export default function VentasPage() {
                         <Eye className="h-4 w-4" />
                          <span className="sr-only">Ver Detalle</span>
                       </Button>
-                      <Button variant="ghost" size="icon" title="Editar" className="text-yellow-500 hover:text-yellow-600 transition-colors">
-                        <FileEdit className="h-4 w-4" />
-                         <span className="sr-only">Editar</span>
+                      <Button variant="ghost" size="icon" title="Editar" className="text-yellow-500 hover:text-yellow-600 transition-colors" asChild>
+                        <Link href={`/dashboard/ventas/${sale.id}/editar`}>
+                          <FileEdit className="h-4 w-4" />
+                          <span className="sr-only">Editar</span>
+                        </Link>
                       </Button>
                       <Button variant="ghost" size="icon" title="Descargar PDF" className="text-red-500 hover:text-red-600 transition-colors">
                         <FileDown className="h-4 w-4" />
@@ -157,6 +191,9 @@ export default function VentasPage() {
               </TableBody>
             </Table>
           </div>
+           {filteredSales.length === 0 && searchTerm && (
+            <p className="text-center text-muted-foreground py-4">No se encontraron ventas con "{searchTerm}".</p>
+          )}
         </CardContent>
       </Card>
     </div>
