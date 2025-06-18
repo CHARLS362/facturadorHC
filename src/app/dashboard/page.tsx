@@ -17,52 +17,50 @@ import { ProductPopularityChart } from "@/components/dashboard/product-popularit
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
 
-// Define a local type for kpiData items if KpiCardProps is not directly compatible or for clarity
 interface CustomKpiData extends KpiCardProps {}
-
 
 const kpiData: CustomKpiData[] = [
   { 
-    title: "BUDGET", 
-    value: "$24k", 
-    change: "12%", 
+    title: "VENTAS DEL DÍA", 
+    value: "S/ 1,250.50", 
+    change: "+5%", 
     iconName: "DollarSign", 
-    description: "Since last month", 
+    description: "comparado a ayer", 
     trend: "up", 
-    href: "/dashboard/ventas", // Placeholder link
-    iconBgClass: "bg-red-500 dark:bg-red-600",
-    iconColorClass: "text-white"
-  },
-  { 
-    title: "TOTAL CUSTOMERS", 
-    value: "1.6k", 
-    change: "16%", 
-    iconName: "Users", 
-    description: "Since last month", 
-    trend: "down", 
-    href: "/dashboard/clientes",
+    href: "/dashboard/ventas",
     iconBgClass: "bg-green-500 dark:bg-green-600",
     iconColorClass: "text-white"
   },
   { 
-    title: "TASK PROGRESS", 
-    value: "75.5%", 
-    iconName: "List", 
-    description: "Overall project completion", // Updated description
-    progressValue: 75.5, 
-    href: "/dashboard/proyectos", // Placeholder link
+    title: "NUEVOS CLIENTES (MES)", 
+    value: "12", 
+    change: "+3", 
+    iconName: "UserPlus", 
+    description: "este mes", 
+    trend: "up", 
+    href: "/dashboard/clientes",
+    iconBgClass: "bg-blue-500 dark:bg-blue-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "FACTURAS EMITIDAS (MES)", 
+    value: "320 / 500", 
+    iconName: "FileText", 
+    description: "Meta mensual: 500", 
+    progressValue: 64, // (320/500)*100
+    href: "/dashboard/ventas",
     iconBgClass: "bg-orange-500 dark:bg-orange-600",
     iconColorClass: "text-white"
   },
   { 
-    title: "TOTAL PROFIT", 
-    value: "$15k", 
-    iconName: "DollarSign", 
-    description: "This fiscal year",  // Updated description
-    // No change or trend shown in image for this one
-    href: "/dashboard/finanzas", // Placeholder link
-    iconBgClass: "bg-blue-500 dark:bg-blue-600",
-    iconColorClass: "text-white"
+    title: "TOTAL FACTURADO (MES)", 
+    value: "S/ 25,800.00", 
+    iconName: "TrendingUp", 
+    description: "en el mes actual",
+    trend: "neutral", // Or 'up'/'down' if comparing to previous month
+    href: "/dashboard/ventas",
+    iconBgClass: "bg-primary", // Using theme primary
+    iconColorClass: "text-primary-foreground"
   },
 ];
 

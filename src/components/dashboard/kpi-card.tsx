@@ -3,12 +3,24 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { LucideIcon, LucideProps } from "lucide-react";
-import { ArrowUpRight, ArrowDownRight, DollarSign, Users, PackageMinus, PackagePlus, List, HelpCircle } from "lucide-react";
+import { 
+  ArrowUpRight, 
+  ArrowDownRight, 
+  DollarSign, 
+  Users, 
+  PackageMinus, 
+  PackagePlus, 
+  List, 
+  HelpCircle,
+  UserPlus,      // Added
+  FileText,      // Added
+  TrendingUp     // Added
+} from "lucide-react";
 import Link from "next/link";
 import type { FunctionComponent } from "react";
 import { Progress } from "@/components/ui/progress";
 
-type IconName = "DollarSign" | "Users" | "PackageMinus" | "PackagePlus" | "List" | string;
+type IconName = "DollarSign" | "Users" | "PackageMinus" | "PackagePlus" | "List" | "UserPlus" | "FileText" | "TrendingUp" | string;
 
 const iconMap: Record<IconName, FunctionComponent<LucideProps>> = {
   DollarSign: DollarSign,
@@ -16,6 +28,10 @@ const iconMap: Record<IconName, FunctionComponent<LucideProps>> = {
   PackageMinus: PackageMinus,
   PackagePlus: PackagePlus,
   List: List,
+  UserPlus: UserPlus,        // Added
+  FileText: FileText,        // Added
+  TrendingUp: TrendingUp,    // Added
+  HelpCircle: HelpCircle, // Fallback
 };
 
 export interface KpiCardProps {
@@ -29,7 +45,6 @@ export interface KpiCardProps {
   iconBgClass?: string;
   iconColorClass?: string;
   progressValue?: number;
-  // variant prop is no longer used with the new design
 }
 
 export function KpiCard({
@@ -71,9 +86,9 @@ export function KpiCard({
       </CardHeader>
       <CardContent className="pt-0">
         <div className="text-3xl font-bold font-headline text-foreground mb-1">{value}</div>
-        {change && (
+        {change && description && (
           <div className="text-xs text-muted-foreground flex items-center">
-            {trendIcon && <span className={cn("flex items-center mr-1", changeColor)}>{trendIcon}{change}</span>}
+            <span className={cn("flex items-center mr-1", changeColor)}>{trendIcon}{change}</span>
             {description}
           </div>
         )}
