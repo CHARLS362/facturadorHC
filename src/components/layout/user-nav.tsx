@@ -56,11 +56,11 @@ export function UserNav({ user }: UserNavProps) {
         variant="ghost"
         size="icon"
         onClick={toggleTheme}
-        aria-label={!mounted ? "Toggle theme" : (theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
+        aria-label={!mounted ? "Cambiar tema" : (theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro")}
         className="h-9 w-9 text-foreground hover:bg-accent hover:text-accent-foreground"
       >
         {!mounted ? (
-          <Sun className="h-5 w-5" /> 
+          <Sun className="h-5 w-5" />
         ) : theme === "light" ? (
           <Moon className="h-5 w-5" />
         ) : (
