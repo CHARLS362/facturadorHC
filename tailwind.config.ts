@@ -91,13 +91,10 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
-        'pulse-soft': {
-          '0%, 100%': { opacity: '0.8' , transform: 'scale(1)'},
-          '50%': { opacity: '0.5', transform: 'scale(1.03)' },
-        },
-        'spin-very-slow': {
-          '0%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' },
+        'gradient-pan': {
+          '0%': { 'background-position': '0% 50%' },
+          '50%': { 'background-position': '100% 50%' },
+          '100%': { 'background-position': '0% 50%' },
         }
       },
       animation: {
@@ -106,23 +103,11 @@ export default {
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'content-show': 'content-show 0.4s ease-out forwards',
-        'pulse-soft': 'pulse-soft 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'spin-very-slow': 'spin-very-slow 60s linear infinite',
+        'gradient-pan': 'gradient-pan 15s ease infinite',
       },
-      animationDelay: {
-        '2000': '2000ms',
-      }
     },
   },
   plugins: [
     require('tailwindcss-animate'),
-    function ({ addUtilities, theme }: { addUtilities: any, theme: any }) {
-      const newUtilities = {
-        '.animation-delay-2000': {
-          'animation-delay': '2s',
-        },
-      }
-      addUtilities(newUtilities, ['responsive', 'hover', 'dark'])
-    }
   ],
 } satisfies Config;

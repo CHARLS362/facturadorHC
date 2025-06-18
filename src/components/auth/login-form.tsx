@@ -13,7 +13,7 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormMessage, // Removed FormLabel as it's not directly used here
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,11 +21,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/contexts/auth-context";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import Image from "next/image"; // Added for logo inside card on small screens
-import { Label } from "@/components/ui/label"; // Added missing import
+import Image from "next/image"; 
+import { Label } from "@/components/ui/label";
 
 const loginSchema = z.object({
-  email: z.string().email({ message: "Por favor ingresa un email válido." }),
+  email: z.string().email({ message: "Por favor ingresa un correo electrónico válido." }),
   password: z.string().min(6, { message: "La contraseña debe tener al menos 6 caracteres." }),
   rememberMe: z.boolean().default(false).optional(),
 });
@@ -61,7 +61,7 @@ export function LoginForm() {
             <AlertTriangle className="h-5 w-5" /> Error de Autenticación
           </div>
         ),
-        description: "Email o contraseña incorrectos. Por favor intenta de nuevo.",
+        description: "Correo electrónico o contraseña incorrectos. Por favor intenta de nuevo.",
       });
     }
     setIsLoading(false);
@@ -80,12 +80,9 @@ export function LoginForm() {
               data-ai-hint="modern business logo"
             />
         </div>
-        <CardTitle className="font-headline text-2xl text-foreground">Sign In</CardTitle>
+        <CardTitle className="font-headline text-2xl text-foreground">Iniciar Sesión</CardTitle>
         <CardDescription className="text-muted-foreground">
-          ¿No tienes una cuenta?{" "}
-          <Link href="#" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors">
-            Regístrate
-          </Link>
+          Si no tienes una cuenta, contacta a soporte.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
@@ -96,16 +93,15 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  {/* <FormLabel className="sr-only">Email</FormLabel> */}
                   <FormControl>
                     <div className="relative">
                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                        <Input
                           type="email"
-                          placeholder="Email"
+                          placeholder="Correo Electrónico"
                           {...field}
                           className="w-full text-sm pl-10 pr-4 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300"
-                          aria-label="Email"
+                          aria-label="Correo Electrónico"
                         />
                     </div>
                   </FormControl>
@@ -118,7 +114,6 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  {/* <FormLabel className="sr-only">Contraseña</FormLabel> */}
                   <div className="relative">
                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <FormControl>
@@ -179,7 +174,7 @@ export function LoginForm() {
               ) : (
                 <div className="flex items-center justify-center">
                   <LogIn className="mr-2 h-5 w-5" />
-                  Sign In
+                  Iniciar Sesión
                 </div>
               )}
             </Button>

@@ -23,18 +23,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-sky-700">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-700 via-blue-800 to-indigo-900 bg-[length:200%_200%] animate-gradient-pan">
       
-      {/* Background Animated Shapes */}
-      <div className="absolute top-[-5%] left-[-10%] w-72 h-72 md:w-96 md:h-96 bg-sky-500/25 rounded-full filter blur-3xl animate-pulse-soft opacity-70 animation-delay-2000"></div>
-      <div className="absolute bottom-[-5%] right-[-10%] w-72 h-72 md:w-96 md:h-96 bg-sky-600/20 rounded-full filter blur-3xl animate-pulse-soft opacity-60 animate-spin-very-slow"></div>
-
       <div className="absolute top-4 right-4 z-20">
          <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            aria-label={!mounted ? "Toggle theme" : (theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
+            aria-label={!mounted ? "Cambiar tema" : (theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro")}
             className="h-10 w-10 text-white hover:bg-white/20 hover:text-white rounded-full"
           >
             {!mounted ? (
@@ -79,7 +75,7 @@ export default function LoginPage() {
       )}
       {currentYear === null && ( 
         <p className="absolute bottom-6 text-center text-sm text-sky-200/70 opacity-0">
-          © Loading year...
+          © Cargando año...
         </p>
       )}
     </div>
