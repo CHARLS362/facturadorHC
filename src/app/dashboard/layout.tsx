@@ -15,6 +15,7 @@ import { useTheme } from 'next-themes'; // For accessing theme variables
 
 // It's important to import the styles for react-pro-sidebar.
 // This path is typical for version 1.x.x.
+// Adjusted path below:
 import "react-pro-sidebar/dist/css/styles.css";
 
 
@@ -58,18 +59,14 @@ function DashboardLayoutContent({
     );
   }
   
-  // Define sidebar colors based on current theme and CSS variables
-  // These need to be dynamically fetched if your CSS variables change with theme
-  // For simplicity, we use fixed HSL strings but ideally, these would adapt to theme
-  
   const sidebarBackgroundColor = theme === 'dark' ? 'hsl(240 10% 5.5%)' : 'hsl(0 0% 96%)';
   const sidebarTextColor = theme === 'dark' ? 'hsl(0 0% 98%)' : 'hsl(0 0% 25.9%)';
   const sidebarHoverBackgroundColor = theme === 'dark' ? 'hsl(240 3.7% 15.9%)' : 'hsl(0 0% 90%)';
   const sidebarHoverTextColor = theme === 'dark' ? 'hsl(0 0% 98%)' : 'hsl(0 0% 25.9%)';
-  const sidebarActiveBackgroundColor = 'hsl(var(--primary))'; // Use existing primary
-  const sidebarActiveTextColor = 'hsl(var(--primary-foreground))'; // Use existing primary-foreground
+  const sidebarActiveBackgroundColor = 'hsl(var(--primary))'; 
+  const sidebarActiveTextColor = 'hsl(var(--primary-foreground))'; 
   const sidebarBorderColor = theme === 'dark' ? 'hsl(240 3.7% 20%)' : 'hsl(0 0% 85%)';
-  const logoTextColor = 'hsl(var(--primary))'; // For the "FacturaHC" text
+  const logoTextColor = 'hsl(var(--primary))'; 
 
 
   return (
@@ -77,17 +74,16 @@ function DashboardLayoutContent({
       <Sidebar
         width="256px"
         collapsedWidth="80px"
-        toggled={toggled} // Manages the "broken" state for mobile
-        onBackdropClick={() => toggleSidebar()} // Allows closing on mobile by clicking backdrop
-        breakPoint="md" // Sidebar becomes "broken" (overlay) below this
+        toggled={toggled} 
+        onBackdropClick={() => toggleSidebar()} 
+        breakPoint="md" 
         backgroundColor={sidebarBackgroundColor}
         className="shadow-md"
         rootStyles={{
           [`.${sidebarClasses.container}`]: {
-            // borderRight: `1px solid ${sidebarBorderColor}`, // react-pro-sidebar adds its own border
             color: sidebarTextColor,
-            height: '100vh', // Ensure full height
-            position: 'sticky', // Keep sidebar sticky
+            height: '100vh', 
+            position: 'sticky', 
             top: 0,
           },
         }}
@@ -107,13 +103,11 @@ function DashboardLayoutContent({
                 <h1 className="font-headline text-xl font-semibold truncate" style={{color: logoTextColor}}>FacturaHC</h1>
               </div>
             )}
-            {/* Desktop toggle inside sidebar header when expanded and not broken (mobile) */}
             {!broken && !collapsed && (
               <Button variant="ghost" size="icon" onClick={() => collapseSidebar()} style={{color: sidebarTextColor}} className="hover:bg-accent">
                 <PanelLeft className="h-5 w-5" />
               </Button>
             )}
-            {/* Show toggle for collapsed state if not broken (mobile), to expand */}
              {!broken && collapsed && (
               <Button variant="ghost" size="icon" onClick={() => collapseSidebar()} style={{color: sidebarTextColor}} className="hover:bg-accent">
                 <MenuIconLucide className="h-5 w-5" />
@@ -138,7 +132,7 @@ function DashboardLayoutContent({
                     color: active ? sidebarActiveTextColor : sidebarTextColor,
                 }),
                 label: ({ active }) => ({
-                    fontWeight: active ? '600' : 'normal', // Bolder text for active items
+                    fontWeight: active ? '600' : 'normal', 
                 }),
               }}
             >
@@ -146,7 +140,6 @@ function DashboardLayoutContent({
             </Menu>
           </div>
           <div className="p-4 border-t mt-auto" style={{borderColor: sidebarBorderColor}}>
-            {/* Sidebar Footer Content can go here */}
             {!collapsed && (
                 <p className="text-xs text-center" style={{color: sidebarTextColor}}>© FacturacionHC</p>
             )}
@@ -154,10 +147,9 @@ function DashboardLayoutContent({
         </div>
       </Sidebar>
 
-      <main className="flex-1 flex flex-col overflow-x-hidden"> {/* Added overflow-x-hidden */}
+      <main className="flex-1 flex flex-col overflow-x-hidden"> 
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b bg-background/80 backdrop-blur-sm px-6 shadow-sm" style={{borderColor: sidebarBorderColor}}>
           <div className="flex items-center">
-            {/* Unified toggle button: Shows MenuIcon on mobile (broken), PanelLeft on desktop */}
             <Button variant="ghost" size="icon" onClick={() => broken ? toggleSidebar() : collapseSidebar()} className="text-foreground hover:bg-accent">
               {broken || collapsed ? <MenuIconLucide className="h-5 w-5" /> : <PanelLeft className="h-5 w-5" />}
             </Button>
@@ -175,8 +167,6 @@ function DashboardLayoutContent({
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, user } = useAuth();
-  // Note: isLoading and isAuthenticated from useAuth are used inside DashboardLayoutContent
-  // to avoid hook order issues with ProSidebarProvider.
   
   return (
     <ProSidebarProvider>
