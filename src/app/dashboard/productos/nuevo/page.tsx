@@ -80,7 +80,7 @@ export default function NuevoProductoPage() {
           </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Producto</CardTitle>
           <CardDescription>Complete todos los campos requeridos para agregar el producto.</CardDescription>

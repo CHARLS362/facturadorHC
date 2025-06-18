@@ -248,7 +248,7 @@ export default function NuevaVentaPage() {
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <Card className="shadow-xl rounded-lg w-full max-w-6xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
               <CardDescription>Ingrese los datos del cliente. Puede consultar en SUNAT (simulado).</CardDescription>
@@ -345,7 +345,7 @@ export default function NuevaVentaPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl rounded-lg w-full max-w-6xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Detalles del Comprobante y Productos</CardTitle>
             </CardHeader>
@@ -480,7 +480,7 @@ export default function NuevaVentaPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-xl rounded-lg w-full max-w-6xl mx-auto border-border/50">
+          <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl flex items-center gap-2">
                 <Calculator className="h-6 w-6 text-primary" />

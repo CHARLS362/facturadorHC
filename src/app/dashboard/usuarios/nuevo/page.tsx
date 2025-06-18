@@ -74,7 +74,7 @@ export default function NuevoUsuarioPage() {
             </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Nuevo Usuario</CardTitle>
           <CardDescription>Complete los campos para registrar al nuevo usuario en el sistema.</CardDescription>

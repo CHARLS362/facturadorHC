@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { UserCircle, Save, KeyRound, Eye, EyeOff, UserCog, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 const profileSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo es requerido (mín. 3 caracteres)." }),
@@ -52,16 +52,33 @@ export default function PerfilPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: user?.name || "",
+      fullName: "", // Will be set by useEffect
       currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
     },
   });
+  
+  useEffect(() => {
+    if (mounted && user) {
+      form.reset({
+        fullName: user.name || "",
+        currentPassword: "",
+        newPassword: "",
+        confirmNewPassword: "",
+      });
+    }
+  }, [mounted, user, form]);
+
 
   async function onSubmit(data: ProfileFormValues) {
     setIsSubmitting(true);
@@ -99,6 +116,10 @@ export default function PerfilPage() {
     form.reset({ ...form.getValues(), currentPassword: "", newPassword: "", confirmNewPassword: "" });
   }
 
+  if (!mounted) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -106,7 +127,7 @@ export default function PerfilPage() {
         description="Actualiza tu información personal y contraseña."
         icon={UserCircle}
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center gap-2">
             <UserCog className="h-6 w-6 text-primary"/> Información del Usuario
