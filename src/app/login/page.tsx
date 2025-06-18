@@ -22,27 +22,6 @@ export default function LoginPage() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const renderThemeToggle = () => {
-    if (!mounted) {
-      return (
-        <Button variant="ghost" size="icon" className="h-9 w-9 opacity-0" aria-label="Toggle theme">
-          <Sun className="h-5 w-5" />
-        </Button>
-      );
-    }
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleTheme}
-        aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-        className="h-10 w-10 text-foreground hover:bg-accent hover:text-accent-foreground rounded-full"
-      >
-        {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-      </Button>
-    );
-  };
-
   const animatedIcons = [
     { Icon: FileText, className: "animate-float-diag-1", style: { top: '15%', left: '10%', animationDelay: '0s'} },
     { Icon: Share2, className: "animate-float-diag-2", style: { top: '25%', left: '80%', animationDelay: '1s'} },
@@ -54,7 +33,21 @@ export default function LoginPage() {
     <div className="relative min-h-screen overflow-hidden bg-gradient-anim-blue flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary">
       
       <div className="absolute top-4 right-4 z-20">
-        {renderThemeToggle()}
+         <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={!mounted ? "Toggle theme" : (theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
+            className="h-10 w-10 text-foreground hover:bg-accent hover:text-accent-foreground rounded-full"
+          >
+            {!mounted ? (
+              <Sun className="h-5 w-5" /> /* Default/placeholder icon */
+            ) : theme === "light" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
       </div>
 
       {/* Animated Background Elements */}
@@ -85,12 +78,12 @@ export default function LoginPage() {
           <p className="text-muted-foreground">Inicia sesión para continuar gestionando tu negocio.</p>
         </div>
         <LoginForm />
-        {mounted && currentYear !== null && (
+        {currentYear !== null && (
           <p className="mt-8 text-center text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '1s' }}>
             © {currentYear} FacturacionHC. Todos los derechos reservados.
           </p>
         )}
-         {!mounted && ( // Fallback for SSR to avoid empty space or layout shift
+         {currentYear === null && ( 
           <p className="mt-8 text-center text-sm text-muted-foreground opacity-0">
             © Loading year...
           </p>
