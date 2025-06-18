@@ -101,20 +101,29 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
-        'ocean-wave': {
-          '0%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
-          '25%': { transform: 'translateX(-2%) translateY(2%) scale(1.02,0.98)' },
-          '50%': { transform: 'translateX(0%) translateY(5%) scale(1.05,0.95)' },
-          '75%': { transform: 'translateX(2%) translateY(2%) scale(1.02,0.98)' },
-          '100%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
+        'gradient-anim-blue': {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
         },
-         'ocean-wave-slow': {
-          '0%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
-          '25%': { transform: 'translateX(3%) translateY(3%) scale(1.03,0.97)' },
-          '50%': { transform: 'translateX(0%) translateY(6%) scale(1.06,0.94)' },
-          '75%': { transform: 'translateX(-3%) translateY(3%) scale(1.03,0.97)' },
-          '100%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
-        }
+        'float-diag-1': {
+          '0%': { transform: 'translate(0, 0) rotate(0deg)' },
+          '25%': { transform: 'translate(5px, 5px) rotate(5deg)' },
+          '50%': { transform: 'translate(0, 10px) rotate(0deg)' },
+          '75%': { transform: 'translate(-5px, 5px) rotate(-5deg)' },
+          '100%': { transform: 'translate(0, 0) rotate(0deg)' },
+        },
+        'float-diag-2': {
+          '0%': { transform: 'translate(0, 0) rotate(0deg)' },
+          '25%': { transform: 'translate(-5px, 5px) rotate(-5deg)' },
+          '50%': { transform: 'translate(0, 10px) rotate(0deg)' },
+          '75%': { transform: 'translate(5px, 5px) rotate(5deg)' },
+          '100%': { transform: 'translate(0, 0) rotate(0deg)' },
+        },
+        'pulse-slow': {
+          '0%, 100%': { opacity: '0.7' , transform: 'scale(1)'},
+          '50%': { opacity: '0.4', transform: 'scale(1.05)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -122,9 +131,10 @@ export default {
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'content-show': 'content-show 0.4s ease-out forwards',
-        'ocean-wave-1': 'ocean-wave 18s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite',
-        'ocean-wave-2': 'ocean-wave-slow 25s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite alternate',
-        'ocean-wave-3': 'ocean-wave 15s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite -2s',
+        'gradient-anim-blue': 'gradient-anim-blue 15s ease infinite',
+        'float-diag-1': 'float-diag-1 12s ease-in-out infinite',
+        'float-diag-2': 'float-diag-2 15s ease-in-out infinite',
+        'pulse-slow': 'pulse-slow 5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       animationDelay: {
         '2000': '2000ms',
@@ -138,8 +148,16 @@ export default {
         '.animation-delay-2000': {
           'animation-delay': '2s',
         },
+        '.bg-gradient-anim-blue': {
+          background: 'linear-gradient(-45deg, theme("colors.blue.500"), theme("colors.sky.400"), theme("colors.cyan.400"), theme("colors.teal.500"))',
+          backgroundSize: '400% 400%',
+        },
+        '.dark .bg-gradient-anim-blue': {
+            background: 'linear-gradient(-45deg, theme("colors.blue.800"), theme("colors.sky.700"), theme("colors.cyan.700"), theme("colors.teal.800"))',
+            backgroundSize: '400% 400%',
+        },
       }
-      addUtilities(newUtilities, ['responsive', 'hover'])
+      addUtilities(newUtilities, ['responsive', 'hover', 'dark'])
     }
   ],
 } satisfies Config;

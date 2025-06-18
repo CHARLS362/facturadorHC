@@ -1,10 +1,11 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import Link from "next/link";
-import { Mail, Lock, LogIn, AlertTriangle } from "lucide-react";
+import { Mail, Lock, LogIn, AlertTriangle, Eye, EyeOff } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<LoginFormValues>({
@@ -107,13 +109,23 @@ export function LoginForm() {
                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <FormControl>
                       <Input 
-                        type="password" 
+                        type={showPassword ? "text" : "password"} 
                         placeholder="••••••••" 
                         {...field} 
-                        className="pl-10 focus:border-primary transition-all duration-300"
+                        className="pl-10 pr-10 focus:border-primary transition-all duration-300"
                         aria-label="Contraseña"
                       />
                     </FormControl>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
                   </div>
                   <FormMessage />
                 </FormItem>
