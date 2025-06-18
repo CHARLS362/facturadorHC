@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Settings, Save, Building, ImageUp, Image as ImageIcon, XCircle } from "lucide-react";
+import { Settings, Save, Building, ImageUp, Image as ImageIcon, XCircle, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
@@ -95,7 +95,15 @@ export default function ConfiguracionPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     toast({
-      title: "Configuración Guardada",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Configuración Guardada</span>
+        </div>
+      ),
       description: "La información de la empresa ha sido actualizada exitosamente.",
     });
   }

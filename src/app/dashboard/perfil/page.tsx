@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { UserCircle, Save, KeyRound, Eye, EyeOff, UserCog } from "lucide-react";
+import { UserCircle, Save, KeyRound, Eye, EyeOff, UserCog, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/auth-context";
 import React, { useState } from "react";
@@ -84,7 +84,15 @@ export default function PerfilPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     toast({
-      title: "Perfil Actualizado",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Perfil Actualizado</span>
+        </div>
+      ),
       description: "Tu información personal ha sido actualizada exitosamente.",
     });
     // Optionally, reset password fields after successful update

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Search, UsersRound, FileDown, Mail, Phone, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { PlusCircle, Search, UsersRound, FileDown, Mail, Phone, Edit, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   AlertDialog,
@@ -72,7 +72,15 @@ export default function ClientesPage() {
     if (!clientToDelete) return;
     setClients(prevClients => prevClients.filter(c => c.id !== clientToDelete.id));
     toast({
-      title: "Cliente Eliminado",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Cliente Eliminado</span>
+        </div>
+      ),
       description: `El cliente ${clientToDelete.name} ha sido eliminado.`,
     });
     setClientToDelete(null);

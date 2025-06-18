@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Search, Users, FileDown, Edit, Trash2, AlertTriangle } from "lucide-react";
+import { PlusCircle, Search, Users, FileDown, Edit, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   AlertDialog,
@@ -71,9 +71,16 @@ export default function UsuariosPage() {
     // Simulate API call for deletion
     setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
     toast({
-      title: "Usuario Eliminado",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Usuario Eliminado</span>
+        </div>
+      ),
       description: `El usuario ${userToDelete?.name} ha sido eliminado exitosamente.`,
-      variant: "default",
     });
     setUserToDelete(null);
     setIsDeleteDialogOpen(false);

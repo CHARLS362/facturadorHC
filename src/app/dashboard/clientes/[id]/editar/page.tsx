@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { UserCog2, Save, RotateCcw } from "lucide-react";
+import { UserCog2, Save, RotateCcw, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
@@ -92,7 +92,15 @@ export default function EditarClientePage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     toast({
-      title: "Cliente Actualizado",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Cliente Actualizado</span>
+        </div>
+      ),
       description: `El cliente ${data.name} ha sido actualizado exitosamente.`,
     });
     // router.push("/dashboard/clientes");

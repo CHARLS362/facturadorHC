@@ -11,7 +11,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PackagePlus, Save, RotateCcw } from "lucide-react";
+import { PackagePlus, Save, RotateCcw, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -54,7 +54,15 @@ export default function NuevoProductoPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     toast({
-      title: "Producto Creado",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Producto Creado</span>
+        </div>
+      ),
       description: `El producto ${data.name} ha sido creado exitosamente.`,
     });
     form.reset();
