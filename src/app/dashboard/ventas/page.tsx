@@ -13,16 +13,17 @@ import {
   ShoppingCart, 
   FileDown, 
   Eye, 
-  FileEdit,
   FileText, 
   Receipt,  
   FileCode2, 
   FileCheck2, 
   Printer,
   Send, 
-  Mail
+  Mail,
+  Ban // Icon for Anular
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from '@/hooks/use-toast';
 
 interface MockSale {
   id: string;
@@ -47,6 +48,7 @@ const initialMockSales: MockSale[] = [
 export default function VentasPage() {
   const [sales, setSales] = useState<MockSale[]>(initialMockSales);
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
   const filteredSales = useMemo(() => {
     if (!searchTerm) return sales;
@@ -75,6 +77,19 @@ export default function VentasPage() {
       return <Receipt className="h-5 w-5 text-green-600" />;
     }
     return null;
+  };
+
+  const handleAnularVenta = (saleId: string) => {
+    // Placeholder: In a real app, this would call an API to void the sale
+    // and then update the local state or re-fetch data.
+    console.log(`Anulando venta ${saleId}`);
+    toast({
+      variant: "success", // Or a specific "warning" or "info" variant if designed
+      title: "Venta Anulada (Simulado)",
+      description: `La venta ${saleId} ha sido marcada como anulada.`,
+    });
+    // Example of updating status locally, if needed, or re-fetching
+    // setSales(prevSales => prevSales.map(s => s.id === saleId ? {...s, status: "Anulado"} : s));
   };
 
   return (
@@ -124,7 +139,7 @@ export default function VentasPage() {
                   <TableHead>Total</TableHead>
                   <TableHead>Método Pago</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="text-right min-w-[640px]">Acciones</TableHead>
+                  <TableHead className="text-right min-w-[850px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -147,18 +162,25 @@ export default function VentasPage() {
                        </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors">
-                        <Eye className="mr-1.5 h-5 w-5" />
-                         <span>Ver</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-yellow-500 hover:text-yellow-600 transition-colors" asChild>
-                        <Link href={`/dashboard/ventas/${sale.id}/editar`}>
-                          <FileEdit className="mr-1.5 h-5 w-5" />
-                          <span>Editar</span>
+                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors" asChild>
+                        <Link href={`/dashboard/ventas/${sale.id}/detalles`}>
+                          <Eye className="mr-1.5 h-5 w-5" />
+                          <span>Ver</span>
                         </Link>
                       </Button>
+                       {sale.status.toLowerCase() !== 'anulado' && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-orange-500 hover:text-orange-600 transition-colors" 
+                            onClick={() => handleAnularVenta(sale.id)}
+                        >
+                            <Ban className="mr-1.5 h-5 w-5" />
+                            <span>Anular</span>
+                        </Button>
+                       )}
                       <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 transition-colors">
-                        <FileDown className="mr-1.5 h-5 w-5" />
+                        <FileText className="mr-1.5 h-5 w-5" />
                         <span>PDF</span>
                       </Button>
                       <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 transition-colors">
