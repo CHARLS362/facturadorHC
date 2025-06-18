@@ -7,35 +7,63 @@ import {
   LayoutDashboard,
   ShoppingCart,
   UserPlus2,
-  PackagePlus as PackagePlusIcon, // Renamed to avoid conflict if KpiCard uses PackagePlus directly
+  PackagePlus as PackagePlusIcon,
   BarChart3, 
   PieChartIcon, 
   LineChartIcon,
-  // Lucide icons like DollarSign, Users, etc., are now resolved within KpiCard
 } from "lucide-react";
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { KpiCard, type KpiCardProps as ImportedKpiCardProps } from "@/components/dashboard/kpi-card"; // Use imported KpiCardProps if needed, or define locally
+import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
 
 // Define a local type for kpiData items if KpiCardProps is not directly compatible or for clarity
-interface KpiData {
-  title: string;
-  value: string;
-  change?: string;
-  iconName: ImportedKpiCardProps['iconName']; // Use the iconName type from KpiCardProps
-  description?: string;
-  trend?: "up" | "down" | "neutral";
-  href?: string;
-  variant?: "default" | "destructive";
-}
+interface CustomKpiData extends KpiCardProps {}
 
 
-const kpiData: KpiData[] = [
-  { title: "Ventas Hoy", value: "S/ 1,250.75", change: "+15.2%", iconName: "DollarSign", description: "Comparado con ayer", trend: "up", href: "/dashboard/ventas" },
-  { title: "Nuevos Clientes", value: "12", change: "+5", iconName: "Users", description: "Este mes", trend: "up", href: "/dashboard/clientes" },
-  { title: "Stock Bajo", value: "8 productos", change: "-2", iconName: "PackageMinus", description: "Necesitan reabastecimiento", trend: "down", variant: "destructive", href: "/dashboard/productos" },
-  { title: "Productos Activos", value: "256", change: "+10", iconName: "PackagePlus", description: "Total en catálogo", trend: "up", href: "/dashboard/productos" },
+const kpiData: CustomKpiData[] = [
+  { 
+    title: "BUDGET", 
+    value: "$24k", 
+    change: "12%", 
+    iconName: "DollarSign", 
+    description: "Since last month", 
+    trend: "up", 
+    href: "/dashboard/ventas", // Placeholder link
+    iconBgClass: "bg-red-500 dark:bg-red-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "TOTAL CUSTOMERS", 
+    value: "1.6k", 
+    change: "16%", 
+    iconName: "Users", 
+    description: "Since last month", 
+    trend: "down", 
+    href: "/dashboard/clientes",
+    iconBgClass: "bg-green-500 dark:bg-green-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "TASK PROGRESS", 
+    value: "75.5%", 
+    iconName: "List", 
+    description: "Overall project completion", // Updated description
+    progressValue: 75.5, 
+    href: "/dashboard/proyectos", // Placeholder link
+    iconBgClass: "bg-orange-500 dark:bg-orange-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "TOTAL PROFIT", 
+    value: "$15k", 
+    iconName: "DollarSign", 
+    description: "This fiscal year",  // Updated description
+    // No change or trend shown in image for this one
+    href: "/dashboard/finanzas", // Placeholder link
+    iconBgClass: "bg-blue-500 dark:bg-blue-600",
+    iconColorClass: "text-white"
+  },
 ];
 
 export default function DashboardPage() {
@@ -58,7 +86,9 @@ export default function DashboardPage() {
             description={kpi.description} 
             trend={kpi.trend} 
             href={kpi.href}
-            variant={kpi.variant}
+            iconBgClass={kpi.iconBgClass}
+            iconColorClass={kpi.iconColorClass}
+            progressValue={kpi.progressValue}
           />
         ))}
       </div>
@@ -83,7 +113,7 @@ export default function DashboardPage() {
           </Button>
           <Button asChild size="lg" variant="outline" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out border-primary/50 hover:border-primary hover:bg-primary/5">
             <Link href="/dashboard/productos/nuevo">
-              <PackagePlusIcon className="mr-3 h-6 w-6" /> {/* Using renamed import */}
+              <PackagePlusIcon className="mr-3 h-6 w-6" />
               Añadir Nuevo Producto
             </Link>
           </Button>
