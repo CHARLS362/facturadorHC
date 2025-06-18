@@ -10,20 +10,47 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Save, RotateCcw, Eye, EyeOff, CheckCircle2 } from "lucide-react";
+import { UserPlus, Save, RotateCcw, Eye, EyeOff, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState } from "react";
+import { Checkbox } from "@/components/ui/checkbox";
+
+const permissionIds = [
+  'panelCentral', 'usuarios', 'productos', 'ventas', 
+  'clientes', 'escaner', 'plantillas', 'configuracion'
+] as const;
+
+type PermissionId = typeof permissionIds[number];
+
+const permissionsSchemaObject: Record<PermissionId, z.ZodOptional<z.ZodBoolean>> = 
+  {} as Record<PermissionId, z.ZodOptional<z.ZodBoolean>>;
+
+permissionIds.forEach(id => {
+  permissionsSchemaObject[id] = z.boolean().default(false).optional();
+});
 
 const usuarioSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo es requerido (mín. 3 caracteres)." }),
   email: z.string().email({ message: "Ingrese un email válido." }),
   password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }),
   role: z.enum(["Admin", "Vendedor", "Soporte"], { required_error: "Seleccione un rol para el usuario." }),
-  status: z.enum(["Activo", "Inactivo"], { required_error: "Seleccione un estado."}),
+  status: z.enum(["Activo", "Inactivo"], { required_error: "Seleccione un estado." }),
+  permissions: z.object(permissionsSchemaObject).optional(),
 });
 
 type UsuarioFormValues = z.infer<typeof usuarioSchema>;
+
+const permissionItems: { id: PermissionId; label: string }[] = [
+  { id: 'panelCentral', label: 'Panel Central' },
+  { id: 'usuarios', label: 'Gestión de Usuarios' },
+  { id: 'productos', label: 'Gestión de Productos' },
+  { id: 'ventas', label: 'Gestión de Ventas' },
+  { id: 'clientes', label: 'Gestión de Clientes' },
+  { id: 'escaner', label: 'Escáner QR/Barra' },
+  { id: 'plantillas', label: 'Plantillas de Documentos' },
+  { id: 'configuracion', label: 'Configuración General' },
+];
 
 export default function NuevoUsuarioPage() {
   const { toast } = useToast();
@@ -38,6 +65,7 @@ export default function NuevoUsuarioPage() {
       password: "",
       role: undefined,
       status: "Activo",
+      permissions: Object.fromEntries(permissionItems.map(p => [p.id, false])) as Record<PermissionId, boolean>,
     },
   });
 
@@ -74,7 +102,7 @@ export default function NuevoUsuarioPage() {
             </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Nuevo Usuario</CardTitle>
           <CardDescription>Complete los campos para registrar al nuevo usuario en el sistema.</CardDescription>
@@ -184,6 +212,37 @@ export default function NuevoUsuarioPage() {
                 />
               </div>
 
+              <div className="space-y-3 p-4 border rounded-md bg-muted/30">
+                <h3 className="text-md font-headline flex items-center gap-2 text-foreground mb-2">
+                  <ShieldCheck className="h-5 w-5 text-primary"/>
+                  Permisos de Acceso a Paneles
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                  {permissionItems.map((item) => (
+                    <FormField
+                      key={item.id}
+                      control={form.control}
+                      name={`permissions.${item.id}`}
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-3 shadow-sm bg-background hover:bg-accent/30 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              id={`permission-${item.id}`}
+                            />
+                          </FormControl>
+                          <FormLabel htmlFor={`permission-${item.id}`} className="font-normal text-sm cursor-pointer flex-1">
+                            {item.label}
+                          </FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                  ))}
+                </div>
+              </div>
+
+
               <div className="flex justify-end gap-3 pt-4">
                 <Button type="button" variant="outline" onClick={() => form.reset()} disabled={isSubmitting}>
                   <RotateCcw className="mr-2 h-4 w-4" /> Limpiar
@@ -204,3 +263,4 @@ export default function NuevoUsuarioPage() {
     </div>
   );
 }
+

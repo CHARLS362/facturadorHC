@@ -13,16 +13,26 @@ import {
   ShoppingCart, 
   FileDown, 
   Eye, 
-  FileEdit,
   FileText, 
   Receipt,  
   FileCode2, 
   FileCheck2, 
   Printer,
   Send, 
-  Mail
+  Mail,
+  Ban, 
+  ChevronDown,
+  CheckCircle2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { WhatsappConfirmationDialog } from '@/components/dashboard/whatsapp-confirmation-dialog'; // Added import
 
 interface MockSale {
   id: string;
@@ -38,15 +48,19 @@ interface MockSale {
 
 
 const initialMockSales: MockSale[] = [
-  { id: "VENTA001", date: "2024-07-20", customer: "Carlos Mendoza", total: "S/ 150.00", status: "Pagado", paymentMethod: "Tarjeta", documentType: "Factura", clientEmail: "carlos.mendoza@example.com", clientPhone: "987654321" },
-  { id: "VENTA002", date: "2024-07-19", customer: "Luisa Fernandez", total: "S/ 85.50", status: "Pendiente", paymentMethod: "Efectivo", documentType: "Boleta", clientEmail: "luisa.fernandez@example.com", clientPhone: "912345678" },
-  { id: "VENTA003", date: "2024-07-19", customer: "Ana Torres", total: "S/ 220.00", status: "Pagado", paymentMethod: "Transferencia", documentType: "Factura", clientEmail: "ana.torres@example.com", clientPhone: "999888777" },
-  { id: "VENTA004", date: "2024-07-18", customer: "Jorge Vargas", total: "S/ 45.00", status: "Anulado", paymentMethod: "Yape", documentType: "Boleta", clientEmail: "jorge.vargas@example.com", clientPhone: "977666555" },
+  { id: "VENTA001", date: "2024-07-20", customer: "Carlos Mendoza", total: "S/ 150.00", status: "Pagado", paymentMethod: "Tarjeta", documentType: "Factura", clientEmail: "carlos.mendoza@example.com", clientPhone: "51987654321" },
+  { id: "VENTA002", date: "2024-07-19", customer: "Luisa Fernandez", total: "S/ 85.50", status: "Pendiente", paymentMethod: "Efectivo", documentType: "Boleta", clientEmail: "luisa.fernandez@example.com", clientPhone: "51912345678" },
+  { id: "VENTA003", date: "2024-07-19", customer: "Ana Torres", total: "S/ 220.00", status: "Pagado", paymentMethod: "Transferencia", documentType: "Factura", clientEmail: "ana.torres@example.com", clientPhone: "51999888777" },
+  { id: "VENTA004", date: "2024-07-18", customer: "Jorge Vargas", total: "S/ 45.00", status: "Anulado", paymentMethod: "Yape", documentType: "Boleta", clientEmail: "jorge.vargas@example.com", clientPhone: "51977666555" },
 ];
 
 export default function VentasPage() {
   const [sales, setSales] = useState<MockSale[]>(initialMockSales);
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
+  const [isWhatsappDialogOpen, setIsWhatsappDialogOpen] = useState(false);
+  const [selectedSaleForWhatsapp, setSelectedSaleForWhatsapp] = useState<MockSale | null>(null);
+
 
   const filteredSales = useMemo(() => {
     if (!searchTerm) return sales;
@@ -76,6 +90,57 @@ export default function VentasPage() {
     }
     return null;
   };
+
+  const handleAnularVenta = (saleId: string) => {
+    console.log(`Anulando venta ${saleId}`);
+    // Simulate updating the sale status locally
+    setSales(prevSales => 
+      prevSales.map(s => s.id === saleId ? {...s, status: "Anulado"} : s)
+    );
+    toast({
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <Ban className="h-5 w-5 text-white" /> 
+          <span>Venta Anulada</span>
+        </div>
+      ),
+      description: `La venta ${saleId} ha sido marcada como anulada.`,
+    });
+  };
+
+  const handleOpenWhatsappDialog = (sale: MockSale) => {
+    setSelectedSaleForWhatsapp(sale);
+    setIsWhatsappDialogOpen(true);
+  };
+
+  const handleConfirmAndSendWhatsapp = (phoneNumber: string, updateClient: boolean, saleId: string, customerName: string) => {
+    const message = `Hola ${customerName}, adjunto los detalles de tu ${selectedSaleForWhatsapp?.documentType.toLowerCase()} con ID: ${saleId}. Gracias por tu compra.`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    
+    if (updateClient) {
+      // Simulate updating client record
+      console.log(`Simulating update of phone number for ${customerName} (Sale ID: ${saleId}) to ${phoneNumber}`);
+      
+      // Update phone number in local sales state for immediate UI feedback (optional)
+      setSales(prevSales => 
+        prevSales.map(s => s.id === saleId ? {...s, clientPhone: phoneNumber} : s)
+      );
+
+      toast({
+        variant: "success",
+        title: (
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+            <span>Cliente Actualizado</span>
+          </div>
+        ),
+        description: `El número de teléfono de ${customerName} ha sido actualizado a ${phoneNumber}.`,
+      });
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -124,7 +189,7 @@ export default function VentasPage() {
                   <TableHead>Total</TableHead>
                   <TableHead>Método Pago</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="text-right min-w-[640px]">Acciones</TableHead>
+                  <TableHead className="text-right min-w-[230px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -147,44 +212,62 @@ export default function VentasPage() {
                        </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors">
-                        <Eye className="mr-1.5 h-5 w-5" />
-                         <span>Ver</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-yellow-500 hover:text-yellow-600 transition-colors" asChild>
-                        <Link href={`/dashboard/ventas/${sale.id}/editar`}>
-                          <FileEdit className="mr-1.5 h-5 w-5" />
-                          <span>Editar</span>
+                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors" asChild>
+                        <Link href={`/dashboard/ventas/${sale.id}/detalles`}>
+                          <Eye className="mr-1.5 h-4 w-4" /> {/* Adjusted icon size */}
+                          <span>Ver</span>
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 transition-colors">
-                        <FileDown className="mr-1.5 h-5 w-5" />
-                        <span>PDF</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 transition-colors">
-                        <FileCode2 className="mr-1.5 h-5 w-5" />
-                        <span>XML</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-green-500 hover:text-green-600 transition-colors">
-                        <FileCheck2 className="mr-1.5 h-5 w-5" />
-                        <span>CDR</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors">
-                        <Printer className="mr-1.5 h-5 w-5" />
-                        <span>Imprimir</span>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm" className="text-green-600 hover:text-green-700 transition-colors">
-                        <a href={`https://wa.me/${sale.clientPhone}?text=Detalles%20de%20la%20venta%20${sale.id}`} target="_blank" rel="noopener noreferrer">
-                          <Send className="mr-1.5 h-5 w-5" />
-                          <span>WhatsApp</span>
-                        </a>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm" className="text-orange-500 hover:text-orange-600 transition-colors">
-                        <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
-                          <Mail className="mr-1.5 h-5 w-5" />
-                          <span>Email</span>
-                        </a>
-                      </Button>
+                       {sale.status.toLowerCase() !== 'anulado' && (
+                        <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="text-orange-500 hover:text-orange-600 transition-colors" 
+                            onClick={() => handleAnularVenta(sale.id)}
+                        >
+                            <Ban className="mr-1.5 h-4 w-4" /> {/* Adjusted icon size */}
+                            <span>Anular</span>
+                        </Button>
+                       )}
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            Más
+                            <ChevronDown className="ml-1.5 h-4 w-4" /> {/* Adjusted icon size */}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                            <FileText className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
+                            <span>Exportar PDF</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-blue-500 focus:text-blue-500 focus:bg-blue-500/10">
+                            <FileCode2 className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
+                            <span>Exportar XML</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-green-500 focus:text-green-500 focus:bg-green-500/10">
+                            <FileCheck2 className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
+                            <span>Ver CDR</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-gray-600 dark:text-gray-400 focus:text-gray-700 dark:focus:text-gray-300 focus:bg-gray-500/10">
+                            <Printer className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
+                            <span>Imprimir</span>
+                          </DropdownMenuItem>
+                           <DropdownMenuItem 
+                             className="text-green-600 focus:text-green-600 focus:bg-green-500/10"
+                             onSelect={() => handleOpenWhatsappDialog(sale)} // Changed to onSelect to prevent auto-closing on link click
+                           >
+                              <Send className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
+                              <span>Enviar WhatsApp</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild className="text-orange-500 focus:text-orange-500 focus:bg-orange-500/10">
+                            <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
+                              <Mail className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
+                              <span>Enviar Email</span>
+                            </a>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -196,7 +279,13 @@ export default function VentasPage() {
           )}
         </CardContent>
       </Card>
+
+      <WhatsappConfirmationDialog
+        isOpen={isWhatsappDialogOpen}
+        onOpenChange={setIsWhatsappDialogOpen}
+        saleData={selectedSaleForWhatsapp}
+        onConfirm={handleConfirmAndSendWhatsapp}
+      />
     </div>
   );
 }
-
