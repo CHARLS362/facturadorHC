@@ -7,13 +7,16 @@ import { Separator } from "@/components/ui/separator";
 import React, { useState, useEffect } from "react";
 
 export function InvoicePreview() {
-  const [currentDateString, setCurrentDateString] = useState<string | null>(null);
-  const [dueDateString, setDueDateString] = useState<string | null>(null);
+  const [currentDateString, setCurrentDateString] = useState<string>("Calculando...");
+  const [dueDateString, setDueDateString] = useState<string>("Calculando...");
 
   useEffect(() => {
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
-    setDueDateString(new Date(today.setDate(today.getDate() + 30)).toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
+    
+    const dueDate = new Date(today); // Create a new Date object for due date calculation
+    dueDate.setDate(today.getDate() + 30);
+    setDueDateString(dueDate.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
   }, []);
 
   return (
@@ -39,8 +42,8 @@ export function InvoicePreview() {
           <h1 className="text-3xl font-headline font-bold text-primary mb-1">FACTURA</h1>
           <p className="text-lg">F001-00012345</p>
           <Separator className="my-2 bg-border/70" />
-          <p><span className="font-semibold">Fecha de Emisión:</span> {currentDateString || "Calculando..."}</p>
-          <p><span className="font-semibold">Fecha de Vencimiento:</span> {dueDateString || "Calculando..."}</p>
+          <p><span className="font-semibold">Fecha de Emisión:</span> {currentDateString}</p>
+          <p><span className="font-semibold">Fecha de Vencimiento:</span> {dueDateString}</p>
         </div>
       </header>
 

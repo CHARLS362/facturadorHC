@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import React, { useState, useEffect } from "react";
 
 export function TicketPreview() {
-  const [currentDateTimeString, setCurrentDateTimeString] = useState<string | null>(null);
+  const [currentDateTimeString, setCurrentDateTimeString] = useState<string>("Calculando...");
 
   useEffect(() => {
     setCurrentDateTimeString(new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }));
@@ -50,7 +50,7 @@ export function TicketPreview() {
       <Separator className="my-3 border-dashed border-border/70" />
 
       <section className="mb-3">
-        <p><span className="font-semibold">Fecha/Hora:</span> {currentDateTimeString || "Calculando..."}</p>
+        <p><span className="font-semibold">Fecha/Hora:</span> {currentDateTimeString}</p>
         <p><span className="font-semibold">Cajero:</span> María L.</p>
         <p><span className="font-semibold">Cliente:</span> Varios (Código 0000)</p>
       </section>

@@ -85,9 +85,14 @@ export default function LoginPage() {
           <p className="text-muted-foreground">Inicia sesión para continuar gestionando tu negocio.</p>
         </div>
         <LoginForm />
-        {mounted && currentYear && (
+        {mounted && currentYear !== null && (
           <p className="mt-8 text-center text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '1s' }}>
             © {currentYear} FacturacionHC. Todos los derechos reservados.
+          </p>
+        )}
+         {!mounted && ( // Fallback for SSR to avoid empty space or layout shift
+          <p className="mt-8 text-center text-sm text-muted-foreground opacity-0">
+            © Loading year...
           </p>
         )}
       </main>
