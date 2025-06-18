@@ -12,7 +12,7 @@ import {
   UsersRound, 
   ScanLine, 
   FileText,
-  Settings,
+  Settings, // Added Settings icon
   type LucideIcon
 } from 'lucide-react';
 import { useProSidebar } from 'react-pro-sidebar';
@@ -31,7 +31,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/clientes', label: 'Clientes', icon: UsersRound },
   { href: '/dashboard/escaner', label: 'Escáner QR/Barra', icon: ScanLine },
   { href: '/dashboard/plantillas', label: 'Plantillas Factura', icon: FileText },
-  // { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
+  { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings }, // Added new nav item
 ];
 
 export function SidebarNav() {
@@ -46,9 +46,6 @@ export function SidebarNav() {
           icon={<item.icon className="h-5 w-5 transition-transform duration-200 ease-in-out group-hover/menu-button:rotate-[5deg] group-hover/menu-button:scale-110" />}
           component={<Link href={item.href} />}
           active={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-          // title attribute can be used for tooltips by react-pro-sidebar if configured
-          // For custom tooltips on collapsed state, one might need more advanced setup
-          // or rely on default browser title attribute if `title` prop is set on `ProMenuItem`
         >
           {!collapsed && item.label}
         </ProMenuItem>
