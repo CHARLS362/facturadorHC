@@ -97,19 +97,19 @@ export default function DashboardPage() {
           <CardDescription>Accede rápidamente a las funciones más comunes.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Button asChild size="lg" className="group font-headline text-base hover:scale-[1.03] transition-transform duration-200 ease-out bg-primary hover:bg-primary/90 hover:shadow-xl">
+          <Button asChild size="lg" className="group font-headline text-base hover:scale-[1.03] transition-all duration-200 ease-out bg-primary hover:bg-primary/90 hover:shadow-xl">
             <Link href="/dashboard/ventas/nueva">
               <ShoppingCart className="mr-3 h-6 w-6 group-hover:animate-icon-wiggle-once" />
               Registrar Nueva Venta
             </Link>
           </Button>
-          <Button asChild size="lg" variant="secondary" className="group font-headline text-base hover:scale-[1.03] transition-transform duration-200 ease-out hover:shadow-xl">
+          <Button asChild size="lg" variant="secondary" className="group font-headline text-base hover:scale-[1.03] transition-all duration-200 ease-out hover:shadow-xl">
             <Link href="/dashboard/clientes/nuevo">
               <UserPlus2 className="mr-3 h-6 w-6 group-hover:animate-icon-wiggle-once" />
               Añadir Nuevo Cliente
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="group font-headline text-base hover:scale-[1.03] transition-transform duration-200 ease-out border-primary/50 hover:border-primary hover:bg-primary/5 hover:shadow-xl">
+          <Button asChild size="lg" variant="outline" className="group font-headline text-base hover:scale-[1.03] transition-all duration-200 ease-out border-primary/50 hover:border-primary hover:bg-primary/5 hover:shadow-xl">
             <Link href="/dashboard/productos/nuevo">
               <PackagePlusIcon className="mr-3 h-6 w-6 group-hover:animate-icon-wiggle-once" />
               Añadir Nuevo Producto
