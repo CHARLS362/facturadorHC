@@ -13,8 +13,7 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
-  FormMessage,
+  FormMessage, // Removed FormLabel as it's not directly used here
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,6 +22,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image"; // Added for logo inside card on small screens
+import { Label } from "@/components/ui/label"; // Added missing import
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un email válido." }),
@@ -71,10 +71,10 @@ export function LoginForm() {
     <Card className="w-full max-w-md lg:max-w-sm shadow-2xl animate-fade-in bg-card rounded-2xl p-8 lg:p-10" style={{ animationDelay: '0.4s' }}>
       <CardHeader className="p-0 mb-7 text-center">
         <div className="lg:hidden mx-auto mb-6">
-             <Image 
-              src="https://placehold.co/150x40.png?text=FacturaHC" 
-              alt="FacturacionHC Logo" 
-              width={150} 
+             <Image
+              src="https://placehold.co/150x40.png?text=FacturaHC"
+              alt="FacturacionHC Logo"
+              width={150}
               height={40}
               className="block"
               data-ai-hint="modern business logo"
@@ -96,15 +96,18 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="sr-only">Email</FormLabel>
+                  {/* <FormLabel className="sr-only">Email</FormLabel> */}
                   <FormControl>
-                    <Input 
-                      type="email" 
-                      placeholder="Email" 
-                      {...field} 
-                      className="w-full text-sm px-4 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300"
-                      aria-label="Email"
-                    />
+                    <div className="relative">
+                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                       <Input
+                          type="email"
+                          placeholder="Email"
+                          {...field}
+                          className="w-full text-sm pl-10 pr-4 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300"
+                          aria-label="Email"
+                        />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -115,14 +118,15 @@ export function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="sr-only">Contraseña</FormLabel>
+                  {/* <FormLabel className="sr-only">Contraseña</FormLabel> */}
                   <div className="relative">
+                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <FormControl>
-                      <Input 
-                        type={showPassword ? "text" : "password"} 
-                        placeholder="Contraseña" 
-                        {...field} 
-                        className="w-full text-sm px-4 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300 pr-10"
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Contraseña"
+                        {...field}
+                        className="w-full text-sm pl-10 pr-10 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300"
                         aria-label="Contraseña"
                       />
                     </FormControl>
@@ -165,15 +169,18 @@ export function LoginForm() {
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
-            <Button 
-              type="submit" 
-              className="w-full font-headline bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-lg tracking-wide transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2" 
+            <Button
+              type="submit"
+              className="w-full font-headline bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-lg tracking-wide transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2"
               disabled={isLoading}
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></div>
               ) : (
-                "Sign In"
+                <div className="flex items-center justify-center">
+                  <LogIn className="mr-2 h-5 w-5" />
+                  Sign In
+                </div>
               )}
             </Button>
           </form>
