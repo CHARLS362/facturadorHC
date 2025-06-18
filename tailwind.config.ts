@@ -56,16 +56,6 @@ export default {
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
         },
-        sidebar: {
-          DEFAULT: 'hsl(var(--sidebar-background))',
-          foreground: 'hsl(var(--sidebar-foreground))',
-          primary: 'hsl(var(--sidebar-primary))',
-          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-          accent: 'hsl(var(--sidebar-accent))',
-          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-          border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))',
-        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -101,19 +91,10 @@ export default {
           '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
           '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
         },
-        'ocean-wave': {
-          '0%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
-          '25%': { transform: 'translateX(-2%) translateY(2%) scale(1.02,0.98)' },
-          '50%': { transform: 'translateX(0%) translateY(5%) scale(1.05,0.95)' },
-          '75%': { transform: 'translateX(2%) translateY(2%) scale(1.02,0.98)' },
-          '100%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
-        },
-         'ocean-wave-slow': {
-          '0%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
-          '25%': { transform: 'translateX(3%) translateY(3%) scale(1.03,0.97)' },
-          '50%': { transform: 'translateX(0%) translateY(6%) scale(1.06,0.94)' },
-          '75%': { transform: 'translateX(-3%) translateY(3%) scale(1.03,0.97)' },
-          '100%': { transform: 'translateX(0) translateY(0) scale(1,1)' },
+        'gradient-pan': {
+          '0%': { 'background-position': '0% 50%' },
+          '50%': { 'background-position': '100% 50%' },
+          '100%': { 'background-position': '0% 50%' },
         }
       },
       animation: {
@@ -122,24 +103,11 @@ export default {
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'content-show': 'content-show 0.4s ease-out forwards',
-        'ocean-wave-1': 'ocean-wave 18s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite',
-        'ocean-wave-2': 'ocean-wave-slow 25s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite alternate',
-        'ocean-wave-3': 'ocean-wave 15s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite -2s',
+        'gradient-pan': 'gradient-pan 15s ease infinite',
       },
-      animationDelay: {
-        '2000': '2000ms',
-      }
     },
   },
   plugins: [
     require('tailwindcss-animate'),
-    function ({ addUtilities, theme }: { addUtilities: any, theme: any }) {
-      const newUtilities = {
-        '.animation-delay-2000': {
-          'animation-delay': '2s',
-        },
-      }
-      addUtilities(newUtilities, ['responsive', 'hover'])
-    }
   ],
 } satisfies Config;

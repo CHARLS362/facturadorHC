@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserPlus, Save, RotateCcw, Eye, EyeOff } from "lucide-react";
+import { UserPlus, Save, RotateCcw, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -48,9 +48,16 @@ export default function NuevoUsuarioPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsSubmitting(false);
     toast({
-      title: "Usuario Creado",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Usuario Creado</span>
+        </div>
+      ),
       description: `El usuario ${data.fullName} ha sido creado exitosamente.`,
-      variant: "default",
     });
     form.reset(); 
   }
@@ -67,7 +74,7 @@ export default function NuevoUsuarioPage() {
             </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full max-w-4xl mx-auto border-border/50">
+      <Card className="shadow-xl rounded-lg w-full border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Nuevo Usuario</CardTitle>
           <CardDescription>Complete los campos para registrar al nuevo usuario en el sistema.</CardDescription>

@@ -1,7 +1,9 @@
+
 "use client";
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { MenuItem as ProMenuItem } from 'react-pro-sidebar';
 import { 
   LayoutDashboard, 
   Users, 
@@ -10,15 +12,10 @@ import {
   UsersRound, 
   ScanLine, 
   FileText,
-  Settings,
+  Settings, // Added Settings icon
   type LucideIcon
 } from 'lucide-react';
-import { 
-  SidebarMenu, 
-  SidebarMenuItem, 
-  SidebarMenuButton 
-} from '@/components/ui/sidebar';
-import { cn } from '../../lib/utils';
+import { useProSidebar } from 'react-pro-sidebar';
 
 interface NavItem {
   href: string;
@@ -34,32 +31,25 @@ const navItems: NavItem[] = [
   { href: '/dashboard/clientes', label: 'Clientes', icon: UsersRound },
   { href: '/dashboard/escaner', label: 'Escáner QR/Barra', icon: ScanLine },
   { href: '/dashboard/plantillas', label: 'Plantillas Factura', icon: FileText },
-  // { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings },
+  { href: '/dashboard/configuracion', label: 'Configuración', icon: Settings }, // Added new nav item
 ];
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { collapsed } = useProSidebar();
 
   return (
-    <SidebarMenu>
+    <>
       {navItems.map((item) => (
-        <SidebarMenuItem key={item.href}>
-          <SidebarMenuButton
-            asChild
-            isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
-            className={cn(
-              "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              (pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))) && "bg-sidebar-primary text-sidebar-primary-foreground hover:bg-sidebar-primary/90 hover:text-sidebar-primary-foreground"
-            )}
-            tooltip={item.label}
-          >
-            <Link href={item.href}>
-              <item.icon className="h-5 w-5" />
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+        <ProMenuItem
+          key={item.href}
+          icon={<item.icon className="h-5 w-5 transition-transform duration-200 ease-in-out group-hover/menu-button:rotate-[5deg] group-hover/menu-button:scale-110" />}
+          component={<Link href={item.href} />}
+          active={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+        >
+          {!collapsed && item.label}
+        </ProMenuItem>
       ))}
-    </SidebarMenu>
+    </>
   );
 }

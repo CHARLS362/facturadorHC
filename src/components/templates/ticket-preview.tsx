@@ -1,8 +1,16 @@
+
+"use client";
+
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
+import React, { useState, useEffect } from "react";
 
 export function TicketPreview() {
-  const currentDate = new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' });
+  const [currentDateTimeString, setCurrentDateTimeString] = useState<string>("Calculando...");
+
+  useEffect(() => {
+    setCurrentDateTimeString(new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }));
+  }, []);
 
   const items = [
     { name: "Café Americano", quantity: 2, price: 7.00 },
@@ -42,7 +50,7 @@ export function TicketPreview() {
       <Separator className="my-3 border-dashed border-border/70" />
 
       <section className="mb-3">
-        <p><span className="font-semibold">Fecha/Hora:</span> {currentDate}</p>
+        <p><span className="font-semibold">Fecha/Hora:</span> {currentDateTimeString}</p>
         <p><span className="font-semibold">Cajero:</span> María L.</p>
         <p><span className="font-semibold">Cliente:</span> Varios (Código 0000)</p>
       </section>

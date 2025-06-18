@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ShoppingCart, Save, RotateCcw, SearchCheck, AlertTriangle, Calculator, PlusCircle, Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { ShoppingCart, Save, RotateCcw, SearchCheck, AlertTriangle, Calculator, PlusCircle, Trash2, Check, ChevronsUpDown, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useEffect, useState, useMemo } from "react";
@@ -157,7 +157,15 @@ export default function NuevaVentaPage() {
     setIsClientDataFetched(true);
     setIsConsultingSunat(false);
     toast({
-      title: "Consulta Exitosa (Simulada)",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Consulta Exitosa (Simulada)</span>
+        </div>
+      ),
       description: "Datos del cliente recuperados.",
     });
   };
@@ -206,9 +214,16 @@ export default function NuevaVentaPage() {
   function onSubmit(data: VentaFormValues) {
     console.log(data); // Data includes saleItems array
     toast({
-      title: "Venta Registrada",
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Venta Registrada</span>
+        </div>
+      ),
       description: `La venta para ${data.clientFullName} ha sido registrada exitosamente.`,
-      variant: "default", 
     });
     form.reset(); 
     setIsClientDataFetched(false);
@@ -568,4 +583,3 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
-

@@ -1,16 +1,67 @@
+
 import { PageHeader } from "@/components/shared/page-header";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, Users, PackageMinus, PackagePlus, BarChart3, PieChartIcon, LineChartIcon, LayoutDashboard } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { 
+  LayoutDashboard,
+  ShoppingCart,
+  UserPlus2,
+  PackagePlus as PackagePlusIcon,
+  BarChart3, 
+  PieChartIcon, 
+  LineChartIcon,
+} from "lucide-react";
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { KpiCard, KpiCardProps } from "@/components/dashboard/kpi-card";
+import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
 
-const kpiData: KpiCardProps[] = [
-  { title: "Ventas Hoy", value: "S/ 1,250.75", change: "+15.2%", icon: DollarSign, description: "Comparado con ayer", trend: "up" },
-  { title: "Nuevos Clientes", value: "12", change: "+5", icon: Users, description: "Este mes", trend: "up" },
-  { title: "Stock Bajo", value: "8 productos", change: "-2", icon: PackageMinus, description: "Necesitan reabastecimiento", trend: "down", variant: "destructive" },
-  { title: "Productos Activos", value: "256", change: "+10", icon: PackagePlus, description: "Total en catálogo", trend: "up" },
+interface CustomKpiData extends KpiCardProps {}
+
+const kpiData: CustomKpiData[] = [
+  { 
+    title: "VENTAS DEL DÍA", 
+    value: "S/ 1,250.50", 
+    change: "+5%", 
+    iconName: "DollarSign", 
+    description: "comparado a ayer", 
+    trend: "up", 
+    href: "/dashboard/ventas",
+    iconBgClass: "bg-green-500 dark:bg-green-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "NUEVOS CLIENTES (MES)", 
+    value: "12", 
+    change: "+3", 
+    iconName: "UserPlus", 
+    description: "este mes", 
+    trend: "up", 
+    href: "/dashboard/clientes",
+    iconBgClass: "bg-blue-500 dark:bg-blue-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "FACTURAS EMITIDAS (MES)", 
+    value: "320 / 500", 
+    iconName: "FileText", 
+    description: "Meta mensual: 500", 
+    progressValue: 64, // (320/500)*100
+    href: "/dashboard/ventas",
+    iconBgClass: "bg-orange-500 dark:bg-orange-600",
+    iconColorClass: "text-white"
+  },
+  { 
+    title: "TOTAL FACTURADO (MES)", 
+    value: "S/ 25,800.00", 
+    iconName: "TrendingUp", 
+    description: "en el mes actual",
+    trend: "neutral", // Or 'up'/'down' if comparing to previous month
+    href: "/dashboard/ventas",
+    iconBgClass: "bg-primary", // Using theme primary
+    iconColorClass: "text-primary-foreground"
+  },
 ];
 
 export default function DashboardPage() {
@@ -24,9 +75,48 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {kpiData.map((kpi, index) => (
-          <KpiCard key={index} {...kpi} />
+          <KpiCard 
+            key={index} 
+            title={kpi.title} 
+            value={kpi.value} 
+            change={kpi.change} 
+            iconName={kpi.iconName} 
+            description={kpi.description} 
+            trend={kpi.trend} 
+            href={kpi.href}
+            iconBgClass={kpi.iconBgClass}
+            iconColorClass={kpi.iconColorClass}
+            progressValue={kpi.progressValue}
+          />
         ))}
       </div>
+
+      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+        <CardHeader>
+          <CardTitle className="font-headline text-xl">Acciones Rápidas</CardTitle>
+          <CardDescription>Accede rápidamente a las funciones más comunes.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Button asChild size="lg" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out bg-primary hover:bg-primary/90">
+            <Link href="/dashboard/ventas/nueva">
+              <ShoppingCart className="mr-3 h-6 w-6" />
+              Registrar Nueva Venta
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="secondary" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out">
+            <Link href="/dashboard/clientes/nuevo">
+              <UserPlus2 className="mr-3 h-6 w-6" />
+              Añadir Nuevo Cliente
+            </Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out border-primary/50 hover:border-primary hover:bg-primary/5">
+            <Link href="/dashboard/productos/nuevo">
+              <PackagePlusIcon className="mr-3 h-6 w-6" />
+              Añadir Nuevo Producto
+            </Link>
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
         <Card className="lg:col-span-4 shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">

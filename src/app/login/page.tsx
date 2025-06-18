@@ -11,73 +11,72 @@ import { useEffect, useState } from 'react';
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [displayYear, setDisplayYear] = useState<string>("Cargando año...");
+  const [yearOpacity, setYearOpacity] = useState<number>(0);
 
   useEffect(() => {
     setMounted(true);
+    const year = new Date().getFullYear();
+    setDisplayYear(`© ${year} FacturacionHC. Todos los derechos reservados.`);
+    setYearOpacity(1);
   }, []);
 
   const toggleTheme = () => {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const renderThemeToggle = () => {
-    if (!mounted) {
-      return (
-        <Button variant="ghost" size="icon" className="h-9 w-9 opacity-0" aria-label="Toggle theme">
-          <Sun className="h-5 w-5" />
-        </Button>
-      );
-    }
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleTheme}
-        aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
-        className="h-10 w-10 text-foreground hover:bg-accent hover:text-accent-foreground rounded-full"
-      >
-        {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-      </Button>
-    );
-  };
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-sky-200 via-sky-100 to-background dark:from-slate-900 dark:via-sky-950 dark:to-background flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-700 via-blue-800 to-indigo-900 bg-[length:200%_200%] animate-gradient-pan">
       
       <div className="absolute top-4 right-4 z-20">
-        {renderThemeToggle()}
-      </div>
-      
-      {/* Animated Wave Elements */}
-      <div className="absolute bottom-0 left-0 w-full h-[200px] sm:h-[250px] md:h-[300px] z-0 opacity-40">
-        <div className="absolute bottom-0 left-0 w-full h-full bg-primary/30 rounded-t-[100%] animate-ocean-wave-1"></div>
-      </div>
-      <div className="absolute bottom-0 left-0 w-full h-[150px] sm:h-[200px] md:h-[250px] z-1 opacity-50">
-        <div className="absolute bottom-0 left-0 w-full h-full bg-accent/40 rounded-t-[100%] animate-ocean-wave-2" style={{animationDelay: '1s'}}></div>
-      </div>
-      <div className="absolute bottom-0 left-0 w-full h-[100px] sm:h-[150px] md:h-[200px] z-2 opacity-60">
-         <div className="absolute bottom-0 left-0 w-full h-full bg-primary/50 rounded-t-[100%] animate-ocean-wave-3" style={{animationDelay: '0.5s'}}></div>
+         <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={!mounted ? "Cambiar tema" : (theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro")}
+            className="h-10 w-10 text-white hover:bg-white/20 hover:text-white rounded-full"
+          >
+            {!mounted ? (
+              <Sun className="h-5 w-5" />
+            ) : theme === "light" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
       </div>
 
-
-      <main className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <Image 
-            src="https://placehold.co/150x50.png?text=FacturaHC" 
-            alt="FacturacionHC Logo" 
-            width={180} 
-            height={60}
-            className="mx-auto mb-2"
-            data-ai-hint="modern business logo"
-          />
-          <h1 className="text-3xl font-headline font-semibold text-foreground">Bienvenido de Nuevo</h1>
-          <p className="text-muted-foreground">Inicia sesión para continuar gestionando tu negocio.</p>
+      <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-4xl">
+        {/* Welcome Text Section (for larger screens) */}
+        <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">
+          <div className="mx-auto lg:mx-0 mb-6">
+            <Image 
+              src="https://placehold.co/180x50.png?text=FacturaHC" 
+              alt="FacturacionHC Logo" 
+              width={180} 
+              height={50}
+              className="block"
+              data-ai-hint="modern business logo"
+            />
+          </div>
+          <h1 className="my-3 font-headline font-semibold text-4xl text-white">Bienvenido de Nuevo</h1>
+          <p className="pr-3 text-sm text-sky-100/80 opacity-80">
+            Gestiona tu facturación de forma eficiente y moderna. Accede a todas tus herramientas con un solo clic.
+          </p>
         </div>
-        <LoginForm />
-        <p className="mt-8 text-center text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '1s' }}>
-          © {new Date().getFullYear()} FacturacionHC. Todos los derechos reservados.
-        </p>
+
+        {/* Login Form Section */}
+        <div className="flex justify-center self-center w-full lg:w-auto">
+          <LoginForm />
+        </div>
       </main>
+
+      <p 
+        className="absolute bottom-6 text-center text-sm text-sky-200/70 animate-fade-in transition-opacity duration-500" 
+        style={{ animationDelay: '1s', opacity: yearOpacity }}
+      >
+        {displayYear}
+      </p>
     </div>
   );
 }

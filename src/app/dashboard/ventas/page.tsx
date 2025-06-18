@@ -124,7 +124,7 @@ export default function VentasPage() {
                   <TableHead>Total</TableHead>
                   <TableHead>Método Pago</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="text-right min-w-[300px]">Acciones</TableHead>
+                  <TableHead className="text-right min-w-[640px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -147,42 +147,42 @@ export default function VentasPage() {
                        </Badge>
                     </TableCell>
                     <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="icon" title="Ver Detalle" className="text-primary hover:text-primary/80 transition-colors">
-                        <Eye className="h-4 w-4" />
-                         <span className="sr-only">Ver Detalle</span>
+                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors">
+                        <Eye className="mr-1.5 h-5 w-5" />
+                         <span>Ver</span>
                       </Button>
-                      <Button variant="ghost" size="icon" title="Editar" className="text-yellow-500 hover:text-yellow-600 transition-colors" asChild>
+                      <Button variant="ghost" size="sm" className="text-yellow-500 hover:text-yellow-600 transition-colors" asChild>
                         <Link href={`/dashboard/ventas/${sale.id}/editar`}>
-                          <FileEdit className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
+                          <FileEdit className="mr-1.5 h-5 w-5" />
+                          <span>Editar</span>
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" title="Descargar PDF" className="text-red-500 hover:text-red-600 transition-colors">
-                        <FileDown className="h-4 w-4" />
-                        <span className="sr-only">Descargar PDF</span>
+                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 transition-colors">
+                        <FileDown className="mr-1.5 h-5 w-5" />
+                        <span>PDF</span>
                       </Button>
-                      <Button variant="ghost" size="icon" title="Descargar XML" className="text-blue-500 hover:text-blue-600 transition-colors">
-                        <FileCode2 className="h-4 w-4" />
-                        <span className="sr-only">Descargar XML</span>
+                      <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 transition-colors">
+                        <FileCode2 className="mr-1.5 h-5 w-5" />
+                        <span>XML</span>
                       </Button>
-                      <Button variant="ghost" size="icon" title="Descargar CDR" className="text-green-500 hover:text-green-600 transition-colors">
-                        <FileCheck2 className="h-4 w-4" />
-                        <span className="sr-only">Descargar CDR</span>
+                      <Button variant="ghost" size="sm" className="text-green-500 hover:text-green-600 transition-colors">
+                        <FileCheck2 className="mr-1.5 h-5 w-5" />
+                        <span>CDR</span>
                       </Button>
-                      <Button variant="ghost" size="icon" title="Imprimir" className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors">
-                        <Printer className="h-4 w-4" />
-                        <span className="sr-only">Imprimir</span>
+                      <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors">
+                        <Printer className="mr-1.5 h-5 w-5" />
+                        <span>Imprimir</span>
                       </Button>
-                      <Button asChild variant="ghost" size="icon" title="Enviar por WhatsApp" className="text-green-600 hover:text-green-700 transition-colors">
+                      <Button asChild variant="ghost" size="sm" className="text-green-600 hover:text-green-700 transition-colors">
                         <a href={`https://wa.me/${sale.clientPhone}?text=Detalles%20de%20la%20venta%20${sale.id}`} target="_blank" rel="noopener noreferrer">
-                          <Send className="h-4 w-4" />
-                          <span className="sr-only">Enviar por WhatsApp</span>
+                          <Send className="mr-1.5 h-5 w-5" />
+                          <span>WhatsApp</span>
                         </a>
                       </Button>
-                      <Button asChild variant="ghost" size="icon" title="Enviar por Email" className="text-orange-500 hover:text-orange-600 transition-colors">
+                      <Button asChild variant="ghost" size="sm" className="text-orange-500 hover:text-orange-600 transition-colors">
                         <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
-                          <Mail className="h-4 w-4" />
-                          <span className="sr-only">Enviar por Email</span>
+                          <Mail className="mr-1.5 h-5 w-5" />
+                          <span>Email</span>
                         </a>
                       </Button>
                     </TableCell>
@@ -199,3 +199,4 @@ export default function VentasPage() {
     </div>
   );
 }
+
