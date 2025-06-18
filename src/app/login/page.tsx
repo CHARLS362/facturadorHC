@@ -11,11 +11,14 @@ import { useEffect, useState } from 'react';
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [currentYear, setCurrentYear] = useState<number | null>(null);
+  const [displayYear, setDisplayYear] = useState<string>("Cargando año...");
+  const [yearOpacity, setYearOpacity] = useState<number>(0);
 
   useEffect(() => {
     setMounted(true);
-    setCurrentYear(new Date().getFullYear());
+    const year = new Date().getFullYear();
+    setDisplayYear(`© ${year} FacturacionHC. Todos los derechos reservados.`);
+    setYearOpacity(1);
   }, []);
 
   const toggleTheme = () => {
@@ -68,16 +71,12 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {currentYear !== null && (
-        <p className="absolute bottom-6 text-center text-sm text-sky-200/70 animate-fade-in" style={{ animationDelay: '1s' }}>
-          © {currentYear} FacturacionHC. Todos los derechos reservados.
-        </p>
-      )}
-      {currentYear === null && ( 
-        <p className="absolute bottom-6 text-center text-sm text-sky-200/70 opacity-0">
-          © Cargando año...
-        </p>
-      )}
+      <p 
+        className="absolute bottom-6 text-center text-sm text-sky-200/70 animate-fade-in transition-opacity duration-500" 
+        style={{ animationDelay: '1s', opacity: yearOpacity }}
+      >
+        {displayYear}
+      </p>
     </div>
   );
 }
