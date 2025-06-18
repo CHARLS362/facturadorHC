@@ -20,10 +20,17 @@ import {
   Printer,
   Send, 
   Mail,
-  Ban // Icon for Anular
+  Ban, // Icon for Anular
+  ChevronDown
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface MockSale {
   id: string;
@@ -139,7 +146,7 @@ export default function VentasPage() {
                   <TableHead>Total</TableHead>
                   <TableHead>Método Pago</TableHead>
                   <TableHead>Estado</TableHead>
-                  <TableHead className="text-right min-w-[850px]">Acciones</TableHead>
+                  <TableHead className="text-right min-w-[300px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -179,34 +186,44 @@ export default function VentasPage() {
                             <span>Anular</span>
                         </Button>
                        )}
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 transition-colors">
-                        <FileText className="mr-1.5 h-5 w-5" />
-                        <span>PDF</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-blue-500 hover:text-blue-600 transition-colors">
-                        <FileCode2 className="mr-1.5 h-5 w-5" />
-                        <span>XML</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-green-500 hover:text-green-600 transition-colors">
-                        <FileCheck2 className="mr-1.5 h-5 w-5" />
-                        <span>CDR</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 transition-colors">
-                        <Printer className="mr-1.5 h-5 w-5" />
-                        <span>Imprimir</span>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm" className="text-green-600 hover:text-green-700 transition-colors">
-                        <a href={`https://wa.me/${sale.clientPhone}?text=Detalles%20de%20la%20venta%20${sale.id}`} target="_blank" rel="noopener noreferrer">
-                          <Send className="mr-1.5 h-5 w-5" />
-                          <span>WhatsApp</span>
-                        </a>
-                      </Button>
-                      <Button asChild variant="ghost" size="sm" className="text-orange-500 hover:text-orange-600 transition-colors">
-                        <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
-                          <Mail className="mr-1.5 h-5 w-5" />
-                          <span>Email</span>
-                        </a>
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            Más
+                            <ChevronDown className="ml-1.5 h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                            <FileText className="mr-2 h-5 w-5" />
+                            <span>Exportar PDF</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-blue-500 focus:text-blue-500 focus:bg-blue-500/10">
+                            <FileCode2 className="mr-2 h-5 w-5" />
+                            <span>Exportar XML</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-green-500 focus:text-green-500 focus:bg-green-500/10">
+                            <FileCheck2 className="mr-2 h-5 w-5" />
+                            <span>Ver CDR</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="text-gray-600 dark:text-gray-400 focus:text-gray-700 dark:focus:text-gray-300 focus:bg-gray-500/10">
+                            <Printer className="mr-2 h-5 w-5" />
+                            <span>Imprimir</span>
+                          </DropdownMenuItem>
+                           <DropdownMenuItem asChild className="text-green-600 focus:text-green-600 focus:bg-green-500/10">
+                            <a href={`https://wa.me/${sale.clientPhone}?text=Detalles%20de%20la%20venta%20${sale.id}`} target="_blank" rel="noopener noreferrer">
+                              <Send className="mr-2 h-5 w-5" />
+                              <span>Enviar WhatsApp</span>
+                            </a>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild className="text-orange-500 focus:text-orange-500 focus:bg-orange-500/10">
+                            <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
+                              <Mail className="mr-2 h-5 w-5" />
+                              <span>Enviar Email</span>
+                            </a>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
