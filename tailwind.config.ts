@@ -95,7 +95,14 @@ export default {
           '0%': { 'background-position': '0% 50%' },
           '50%': { 'background-position': '100% 50%' },
           '100%': { 'background-position': '0% 50%' },
-        }
+        },
+        'icon-wiggle-once': {
+          '0%': { transform: 'rotate(0deg) scale(1)' },
+          '30%': { transform: 'rotate(-10deg) scale(1.15)' },
+          '60%': { transform: 'rotate(8deg) scale(1.15)' },
+          '80%': { transform: 'rotate(-5deg) scale(1.1)' },
+          '100%': { transform: 'rotate(0deg) scale(1)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -104,6 +111,7 @@ export default {
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
         'content-show': 'content-show 0.4s ease-out forwards',
         'gradient-pan': 'gradient-pan 15s ease infinite',
+        'icon-wiggle-once': 'icon-wiggle-once 0.5s ease-out',
       },
     },
   },
