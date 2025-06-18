@@ -70,7 +70,7 @@ export function UserNav({ user }: UserNavProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10 border-2 border-primary/50">
+            <Avatar>
               <AvatarImage src={`https://avatar.vercel.sh/${user?.email || 'default'}.png`} alt={user?.name || "Usuario"} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
