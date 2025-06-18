@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -54,7 +55,7 @@ export function SidebarNav() {
             tooltip={item.label}
           >
             <Link href={item.href}>
-              <item.icon className="h-5 w-5" />
+              <item.icon className="transition-transform duration-200 ease-in-out group-hover/menu-button:rotate-[5deg] group-hover/menu-button:scale-110" />
               <span className="font-medium">{item.label}</span>
             </Link>
           </SidebarMenuButton>
