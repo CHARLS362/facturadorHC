@@ -52,16 +52,16 @@ export default function PerfilPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [clientMounted, setClientMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    setClientMounted(true);
   }, []);
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      fullName: "", // Will be set by useEffect
+      fullName: "", 
       currentPassword: "",
       newPassword: "",
       confirmNewPassword: "",
@@ -69,7 +69,7 @@ export default function PerfilPage() {
   });
   
   useEffect(() => {
-    if (mounted && user) {
+    if (clientMounted && user) {
       form.reset({
         fullName: user.name || "",
         currentPassword: "",
@@ -77,7 +77,7 @@ export default function PerfilPage() {
         confirmNewPassword: "",
       });
     }
-  }, [mounted, user, form]);
+  }, [clientMounted, user, form]);
 
 
   async function onSubmit(data: ProfileFormValues) {
@@ -114,10 +114,6 @@ export default function PerfilPage() {
     });
     // Optionally, reset password fields after successful update
     form.reset({ ...form.getValues(), currentPassword: "", newPassword: "", confirmNewPassword: "" });
-  }
-
-  if (!mounted) {
-    return null; // Or a loading spinner
   }
 
   return (
@@ -269,3 +265,4 @@ export default function PerfilPage() {
     </div>
   );
 }
+
