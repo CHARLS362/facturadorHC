@@ -3,7 +3,7 @@
 
 import { LoginForm } from '@/components/auth/login-form';
 import Image from 'next/image';
-import { Sun, Moon, FileText, Share2, Network, Activity } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
@@ -22,26 +22,23 @@ export default function LoginPage() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  const animatedIcons = [
-    { Icon: FileText, className: "animate-float-diag-1", style: { top: '15%', left: '10%', animationDelay: '0s'} },
-    { Icon: Share2, className: "animate-float-diag-2", style: { top: '25%', left: '80%', animationDelay: '1s'} },
-    { Icon: Network, className: "animate-float-diag-1", style: { top: '70%', left: '15%', animationDelay: '2s'} },
-    { Icon: Activity, className: "animate-float-diag-2", style: { top: '80%', left: '75%', animationDelay: '0.5s'} },
-  ];
-
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-anim-blue flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-sky-700">
       
+      {/* Background Animated Shapes */}
+      <div className="absolute top-[-5%] left-[-10%] w-72 h-72 md:w-96 md:h-96 bg-sky-500/25 rounded-full filter blur-3xl animate-pulse-soft opacity-70 animation-delay-2000"></div>
+      <div className="absolute bottom-[-5%] right-[-10%] w-72 h-72 md:w-96 md:h-96 bg-sky-600/20 rounded-full filter blur-3xl animate-pulse-soft opacity-60 animate-spin-very-slow"></div>
+
       <div className="absolute top-4 right-4 z-20">
          <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
             aria-label={!mounted ? "Toggle theme" : (theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
-            className="h-10 w-10 text-foreground hover:bg-accent hover:text-accent-foreground rounded-full"
+            className="h-10 w-10 text-white hover:bg-white/20 hover:text-white rounded-full"
           >
             {!mounted ? (
-              <Sun className="h-5 w-5" /> /* Default/placeholder icon */
+              <Sun className="h-5 w-5" />
             ) : theme === "light" ? (
               <Moon className="h-5 w-5" />
             ) : (
@@ -50,45 +47,41 @@ export default function LoginPage() {
           </Button>
       </div>
 
-      {/* Animated Background Elements */}
-      {mounted && animatedIcons.map(({ Icon, className, style }, index) => (
-        <Icon
-          key={index}
-          className={`absolute w-12 h-12 md:w-16 md:h-16 text-primary/20 dark:text-primary/10 opacity-70 ${className}`}
-          style={style}
-          strokeWidth={1.5}
-        />
-      ))}
-      
-      <div className="absolute top-1/4 left-1/4 w-40 h-40 md:w-56 md:h-56 bg-blue-300/20 dark:bg-blue-700/20 rounded-full filter blur-2xl animate-pulse-slow opacity-50"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-32 h-32 md:w-48 md:h-48 bg-sky-300/20 dark:bg-sky-700/20 rounded-full filter blur-2xl animate-pulse-slow opacity-50 animation-delay-2000"></div>
-
-
-      <main className="relative z-10 w-full max-w-md">
-        <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-          <Image 
-            src="https://placehold.co/150x50.png?text=FacturaHC" 
-            alt="FacturacionHC Logo" 
-            width={180} 
-            height={60}
-            className="mx-auto mb-2"
-            data-ai-hint="modern business logo"
-          />
-          <h1 className="text-3xl font-headline font-semibold text-foreground">Bienvenido de Nuevo</h1>
-          <p className="text-muted-foreground">Inicia sesión para continuar gestionando tu negocio.</p>
+      <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-4xl">
+        {/* Welcome Text Section (for larger screens) */}
+        <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">
+          <div className="mx-auto lg:mx-0 mb-6">
+            <Image 
+              src="https://placehold.co/180x50.png?text=FacturaHC" 
+              alt="FacturacionHC Logo" 
+              width={180} 
+              height={50}
+              className="block"
+              data-ai-hint="modern business logo"
+            />
+          </div>
+          <h1 className="my-3 font-headline font-semibold text-4xl text-white">Bienvenido de Nuevo</h1>
+          <p className="pr-3 text-sm text-sky-100/80 opacity-80">
+            Gestiona tu facturación de forma eficiente y moderna. Accede a todas tus herramientas con un solo clic.
+          </p>
         </div>
-        <LoginForm />
-        {currentYear !== null && (
-          <p className="mt-8 text-center text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '1s' }}>
-            © {currentYear} FacturacionHC. Todos los derechos reservados.
-          </p>
-        )}
-         {currentYear === null && ( 
-          <p className="mt-8 text-center text-sm text-muted-foreground opacity-0">
-            © Loading year...
-          </p>
-        )}
+
+        {/* Login Form Section */}
+        <div className="flex justify-center self-center w-full lg:w-auto">
+          <LoginForm />
+        </div>
       </main>
+
+      {currentYear !== null && (
+        <p className="absolute bottom-6 text-center text-sm text-sky-200/70 animate-fade-in" style={{ animationDelay: '1s' }}>
+          © {currentYear} FacturacionHC. Todos los derechos reservados.
+        </p>
+      )}
+      {currentYear === null && ( 
+        <p className="absolute bottom-6 text-center text-sm text-sky-200/70 opacity-0">
+          © Loading year...
+        </p>
+      )}
     </div>
   );
 }

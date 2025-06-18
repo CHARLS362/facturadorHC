@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useAuth } from "@/contexts/auth-context";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image"; // Added for logo inside card on small screens
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un email válido." }),
@@ -48,10 +49,8 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Mock authentication logic
     if (data.email === "test@example.com" && data.password === "password") {
       login(data.email, data.rememberMe || false);
     } else {
@@ -69,32 +68,44 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full shadow-xl animate-fade-in bg-card/80 backdrop-blur-sm border-border/50" style={{ animationDelay: '0.4s' }}>
-      <CardHeader>
-        <CardTitle className="font-headline text-2xl">Iniciar Sesión</CardTitle>
-        <CardDescription>Accede a tu panel de FacturacionHC.</CardDescription>
+    <Card className="w-full max-w-md lg:max-w-sm shadow-2xl animate-fade-in bg-card rounded-2xl p-8 lg:p-10" style={{ animationDelay: '0.4s' }}>
+      <CardHeader className="p-0 mb-7 text-center">
+        <div className="lg:hidden mx-auto mb-6">
+             <Image 
+              src="https://placehold.co/150x40.png?text=FacturaHC" 
+              alt="FacturacionHC Logo" 
+              width={150} 
+              height={40}
+              className="block"
+              data-ai-hint="modern business logo"
+            />
+        </div>
+        <CardTitle className="font-headline text-2xl text-foreground">Sign In</CardTitle>
+        <CardDescription className="text-muted-foreground">
+          ¿No tienes una cuenta?{" "}
+          <Link href="#" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors">
+            Regístrate
+          </Link>
+        </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-0">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-                  <FormLabel className="text-foreground/80">Email</FormLabel>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                    <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="tu@email.com" 
-                        {...field} 
-                        className="pl-10 focus:border-primary transition-all duration-300"
-                        aria-label="Email"
-                      />
-                    </FormControl>
-                  </div>
+                <FormItem>
+                  <FormLabel className="sr-only">Email</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="email" 
+                      placeholder="Email" 
+                      {...field} 
+                      className="w-full text-sm px-4 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300"
+                      aria-label="Email"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -103,16 +114,15 @@ export function LoginForm() {
               control={form.control}
               name="password"
               render={({ field }) => (
-                <FormItem className="animate-fade-in" style={{ animationDelay: '0.6s' }}>
-                  <FormLabel className="text-foreground/80">Contraseña</FormLabel>
+                <FormItem>
+                  <FormLabel className="sr-only">Contraseña</FormLabel>
                   <div className="relative">
-                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <FormControl>
                       <Input 
                         type={showPassword ? "text" : "password"} 
-                        placeholder="••••••••" 
+                        placeholder="Contraseña" 
                         {...field} 
-                        className="pl-10 pr-10 focus:border-primary transition-all duration-300"
+                        className="w-full text-sm px-4 py-3 bg-muted/70 dark:bg-muted/30 border border-border rounded-lg focus:bg-card focus:border-primary transition-all duration-300 pr-10"
                         aria-label="Contraseña"
                       />
                     </FormControl>
@@ -120,7 +130,7 @@ export function LoginForm() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground hover:text-primary"
+                        className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-10 text-muted-foreground hover:text-primary"
                         onClick={() => setShowPassword(!showPassword)}
                         aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                       >
@@ -131,44 +141,39 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <div className="flex items-center justify-between animate-fade-in" style={{ animationDelay: '0.7s' }}>
+            <div className="flex items-center justify-between">
               <FormField
                 control={form.control}
                 name="rememberMe"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-label="Recordarme"
+                        id="rememberMeLogin"
                       />
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="text-sm text-foreground/80 cursor-pointer">
+                    <Label htmlFor="rememberMeLogin" className="text-sm text-muted-foreground cursor-pointer font-normal">
                         Recordarme
-                      </FormLabel>
-                    </div>
+                    </Label>
                   </FormItem>
                 )}
               />
-              <Link href="/forgot-password" className="text-sm text-primary hover:underline font-medium transition-colors">
+              <Link href="/forgot-password" className="text-sm text-primary hover:text-primary/80 font-medium transition-colors">
                 ¿Olvidaste tu contraseña?
               </Link>
             </div>
             <Button 
               type="submit" 
-              className="w-full font-headline bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2 animate-fade-in" 
+              className="w-full font-headline bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-lg tracking-wide transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-primary focus:ring-offset-2" 
               disabled={isLoading}
-              style={{ animationDelay: '0.8s' }}
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-foreground"></div>
               ) : (
-                <>
-                  <LogIn className="mr-2 h-5 w-5" />
-                  Iniciar Sesión
-                </>
+                "Sign In"
               )}
             </Button>
           </form>
