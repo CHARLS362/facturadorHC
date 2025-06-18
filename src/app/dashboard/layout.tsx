@@ -16,7 +16,8 @@ import { useTheme } from 'next-themes'; // For accessing theme variables
 // It's important to import the styles for react-pro-sidebar.
 // This path is typical for version 1.x.x.
 // Adjusted path below:
-import "react-pro-sidebar/dist/css/styles.css";
+// import "react-pro-sidebar/dist/css/styles.css"; 
+// ^^^ CSS is now in globals.css as a workaround for module resolution issues
 
 
 function DashboardLayoutContent({ 
