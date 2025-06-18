@@ -44,27 +44,43 @@ export function LoginForm() {
     },
   });
 
-  async function onSubmit(data: LoginFormValues) {
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
+async function onSubmit(data: LoginFormValues) {
+  setIsLoading(true);
 
-    // Mock authentication logic
-    if (data.email === "test@example.com" && data.password === "password") {
-      login(data.email, data.rememberMe || false);
-    } else {
-      toast({
-        variant: "destructive",
-        title: (
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" /> Error de Autenticación
-          </div>
-        ),
-        description: "Email o contraseña incorrectos. Por favor intenta de nuevo.",
-      });
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        correo: data.email,
+        password: data.password,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || 'Error desconocido');
     }
+
+    login(data.email, data.rememberMe || false);
+
+
+  } catch (error: any) {
+    toast({
+      variant: 'destructive',
+      title: (
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5" /> Error de Autenticación
+        </div>
+      ),
+      description: error.message || 'No se pudo iniciar sesión',
+    });
+  } finally {
     setIsLoading(false);
   }
+}
+
 
   return (
     <Card className="w-full shadow-xl animate-fade-in bg-card/80 backdrop-blur-sm border-border/50" style={{ animationDelay: '0.4s' }}>

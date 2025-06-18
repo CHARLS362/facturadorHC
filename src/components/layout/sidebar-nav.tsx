@@ -18,7 +18,7 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton 
 } from '@/components/ui/sidebar';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 interface NavItem {
   href: string;
