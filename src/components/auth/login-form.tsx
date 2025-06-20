@@ -55,8 +55,8 @@ async function onSubmit(data: LoginFormValues) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        correo: data.email,
-        password: data.password,
+        Email: data.email,
+        Password: data.password,
       }),
     });
 

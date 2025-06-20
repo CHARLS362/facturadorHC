@@ -6,15 +6,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Método no permitido' });
   }
 
-  const { correo, password } = req.body;
+  const { Email, Password } = req.body;
 
   try {
     const pool = await getConnection();
     const result = await pool
       .request()
-      .input('correo', correo)
-      .input('password', password)
-      .query('SELECT * FROM facturacion.dbo.usuarios WHERE correo = @correo AND password = @password');
+      .input('Email', Email)
+      .input('Password', Password)
+      .query('SELECT * FROM FacturacionHC.dbo.Usuario WHERE Email = @Email AND Password = @Password');
 
     if (result.recordset.length === 0) {
       return res.status(401).json({ error: 'Credenciales inválidas' });

@@ -4,7 +4,7 @@ const dbConfig: SqlConfig = {
   user: process.env.DB_USER || 'admin',
   password: process.env.DB_PASSWORD || '12345',
   server: process.env.DB_SERVER || 'localhost',
-  database: process.env.DB_NAME || 'facturacion',
+  database: process.env.DB_NAME || 'FacturacionHC',
   port: 1433,
   options: {
     encrypt: false,
