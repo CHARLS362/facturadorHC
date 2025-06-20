@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
@@ -7,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 interface AuthContextType {
   isAuthenticated: boolean;
   user: { email?: string; name?: string } | null;
-  login: (email: string, rememberMe: boolean) => void;
+  login: (email: string, rememberMe: boolean, name?: string) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -48,8 +49,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthenticated, isLoading, pathname, router]);
 
-  const login = useCallback((email: string, rememberMe: boolean) => {
-    const userData = { email, name: email.split('@')[0] }; // Simple name generation
+  const login = useCallback((email: string, rememberMe: boolean, name?: string) => {
+    const userData = { email, name: name || email.split('@')[0] }; // Use real name or fallback
     setIsAuthenticated(true);
     setUser(userData);
     if (rememberMe) {

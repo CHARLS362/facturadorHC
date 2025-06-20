@@ -60,13 +60,22 @@ async function onSubmit(data: LoginFormValues) {
       }),
     });
 
-    const result = await res.json();
-
     if (!res.ok) {
-      throw new Error(result.error || 'Error desconocido');
+      // Server returned an error status (4xx or 5xx)
+      // Check if the response is JSON before parsing
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Ocurrió un error desconocido.');
+      } else {
+        // The response is not JSON, likely an HTML error page.
+        throw new Error('El servidor devolvió una respuesta inesperada. Por favor, contacte a soporte.');
+      }
     }
 
-    login(data.email, data.rememberMe || false);
+    // If response is ok, we expect JSON
+    const result = await res.json();
+    login(result.usuario.Email, data.rememberMe || false, result.usuario.Nombre);
 
 
   } catch (error: any) {
