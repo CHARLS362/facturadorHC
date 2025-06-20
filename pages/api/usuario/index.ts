@@ -31,7 +31,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'POST') {
     try {
-      const { Nombre, Email, Password, Rol, Estado } = req.body;
+      
+      const { Nombre, Email, Password, Rol, Estado} = req.body;
 
       if (!Nombre || !Email || !Password || !Rol || Estado === undefined) {
         return res.status(400).json({ error: 'Faltan campos requeridos' });
@@ -48,7 +49,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Rol no válido' });
       }
 
-      await pool
+      // Insertar usuario y obtener IdUsuario
+      const insertResult = await pool
         .request()
         .input('Nombre', sql.VarChar, Nombre)
         .input('Email', sql.VarChar, Email)
@@ -57,8 +59,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .input('Estado', sql.Bit, Estado === 'Activo' ? 1 : 0)
         .query(`
           INSERT INTO FacturacionHC.dbo.Usuario (Nombre, Email, Password, IdRol, Estado, FechaRegistro)
+          OUTPUT INSERTED.IdUsuario
           VALUES (@Nombre, @Email, @Password, @IdRol, @Estado, GETDATE())
         `);
+
+      const idUsuario = insertResult.recordset[0].IdUsuario;
 
       return res.status(201).json({ mensaje: 'Usuario creado exitosamente' });
     } catch (error) {
@@ -66,6 +71,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Error al crear el usuario' });
     }
   }
+
 
   return res.status(405).json({ error: 'Método no permitido' });
 }

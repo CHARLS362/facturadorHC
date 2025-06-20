@@ -69,12 +69,22 @@ export default function NuevoUsuarioPage() {
     },
   });
 
-  async function onSubmit(data: UsuarioFormValues) {
-    setIsSubmitting(true);
-    console.log(data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
+async function onSubmit(data: UsuarioFormValues) {
+  setIsSubmitting(true);
+  try {
+    const res = await fetch('/api/usuario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        Nombre: data.fullName,
+        Email: data.email,
+        Password: data.password,
+        Rol: data.role,
+        Estado: data.status === "Activo" ? 1 : 0,
+      }),
+    });
+
+    if (!res.ok) throw new Error('Error al crear usuario');
     toast({
       variant: "success",
       title: (
@@ -87,8 +97,19 @@ export default function NuevoUsuarioPage() {
       ),
       description: `El usuario ${data.fullName} ha sido creado exitosamente.`,
     });
-    form.reset(); 
+    form.reset();
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "No se pudo crear el usuario.",
+    });
+  } finally {
+    setIsSubmitting(false);
   }
+  console.log("Data enviada:", data);
+
+}
 
   return (
     <div className="space-y-8">
