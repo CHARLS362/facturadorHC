@@ -55,49 +55,60 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   }
 
-if (req.method === 'PUT') {
-  const { Nombre, Email, Rol, Estado } = req.body;
+  if (req.method === 'PUT') {
+    const { Nombre, Email, Rol, Estado, Password } = req.body;
 
-  // Convierte Rol a IdRol
-  const rolMapeo: Record<string, number> = {
-    "Admin": 1,
-    "Vendedor": 2,
-    "Soporte": 3,
-  };
+    // Convierte Rol a IdRol
+    const rolMapeo: Record<string, number> = {
+      "Admin": 1,
+      "Vendedor": 2,
+      "Soporte": 3,
+    };
 
-  
-  const estadoMapeo: Record<string, number> = {
-    "Activo": 1,
-    "Inactivo": 0,
-  };
+    
+    const estadoMapeo: Record<string, number> = {
+      "Activo": 1,
+      "Inactivo": 0,
+    };
 
-  const IdRol = rolMapeo[Rol];
-  const EstadoNum = estadoMapeo[Estado];
+    const IdRol = rolMapeo[Rol];
+    const EstadoNum = estadoMapeo[Estado];
 
-  if (IdRol === undefined || EstadoNum === undefined) {
-    return res.status(400).json({ error: 'Datos de Rol o Estado inválidos' });
-  }
+    if (IdRol === undefined || EstadoNum === undefined) {
+      return res.status(400).json({ error: 'Datos de Rol o Estado inválidos' });
+    }
 
-  try {
-    await pool
-      .request()
-      .input('Id', sql.Int, parseInt(id))
-      .input('Nombre', sql.VarChar, Nombre)
-      .input('Email', sql.VarChar, Email)
-      .input('IdRol', sql.Int, IdRol)
-      .input('Estado', sql.Int, EstadoNum)
-      .query(`
+    try {
+      const request = pool
+        .request()
+        .input('Id', sql.Int, parseInt(id))
+        .input('Nombre', sql.VarChar, Nombre)
+        .input('Email', sql.VarChar, Email)
+        .input('IdRol', sql.Int, IdRol)
+        .input('Estado', sql.Int, EstadoNum);
+
+      let updateQuery = `
         UPDATE FacturacionHC.dbo.Usuario
         SET Nombre = @Nombre,
             Email = @Email,
             IdRol = @IdRol,
             Estado = @Estado
-        WHERE IdUsuario = @Id
-      `);
+      `;
+      // Solo actualizar la contraseña si viene en el body y no está vacía
+      if (Password && Password.trim() !== "") {
+        request.input('Password', sql.VarChar, Password); // Aquí deberías hashear la contraseña
+        updateQuery += `,
+            Password = @Password
+        `;
+      }
 
-    return res.status(200).json({ mensaje: 'Usuario actualizado correctamente' });
-  } catch (error) {
-    return res.status(500).json({ error: 'Error al actualizar usuario' });
+      updateQuery += ` WHERE IdUsuario = @Id`;
+
+      await request.query(updateQuery);
+
+      return res.status(200).json({ mensaje: 'Usuario actualizado correctamente' });
+    } catch (error) {
+      return res.status(500).json({ error: 'Error al actualizar usuario' });
+    }
   }
-}
 }
