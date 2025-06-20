@@ -12,10 +12,24 @@ import {
   PieChartIcon, 
   LineChartIcon,
 } from "lucide-react";
-import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
-import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
-import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const SalesOverviewChart = dynamic(() => import("@/components/dashboard/sales-overview-chart").then(mod => mod.SalesOverviewChart), {
+  ssr: false, // Charts often rely on browser APIs, safer to render on client
+  loading: () => <Skeleton className="h-[300px] w-full" />,
+});
+
+const ProductPopularityChart = dynamic(() => import("@/components/dashboard/product-popularity-chart").then(mod => mod.ProductPopularityChart), {
+  ssr: false, // Charts often rely on browser APIs
+  loading: () => <Skeleton className="h-[300px] w-full" />,
+});
+
+const RecentActivity = dynamic(() => import("@/components/dashboard/recent-activity").then(mod => mod.RecentActivity), {
+  loading: () => <Skeleton className="h-[400px] w-full" />,
+});
+
 
 interface CustomKpiData extends KpiCardProps {}
 
