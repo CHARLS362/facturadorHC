@@ -103,6 +103,10 @@ export default {
           '80%': { transform: 'rotate(-5deg) scale(1.1)' },
           '100%': { transform: 'rotate(0deg) scale(1)' },
         },
+        'caret-blink': {
+          '0%,70%,100%': { opacity: '1' },
+          '20%,50%': { opacity: '0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -112,6 +116,7 @@ export default {
         'content-show': 'content-show 0.4s ease-out forwards',
         'gradient-pan': 'gradient-pan 15s ease infinite',
         'icon-wiggle-once': 'icon-wiggle-once 0.5s ease-out',
+        'caret-blink': 'caret-blink 1.25s ease-out infinite',
       },
     },
   },
