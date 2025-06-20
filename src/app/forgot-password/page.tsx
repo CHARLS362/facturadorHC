@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -94,8 +95,8 @@ export default function ForgotPasswordPage() {
         return (
           <>
             <CardHeader className="p-0 mb-7 text-center">
-              <CardTitle className="font-headline text-2xl text-white">Recuperar Contraseña</CardTitle>
-              <CardDescription className="text-sky-200/80">
+              <CardTitle className="font-headline text-2xl text-foreground">Recuperar Contraseña</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Ingresa tu correo para recibir un código de verificación.
               </CardDescription>
             </CardHeader>
@@ -107,16 +108,16 @@ export default function ForgotPasswordPage() {
                   <FormItem>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-200/80" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           type="email"
                           placeholder="tu.correo@ejemplo.com"
                           {...field}
-                          className="w-full text-sm pl-10 pr-4 py-3 bg-white/10 text-white placeholder:text-sky-200/60 border border-white/20 rounded-lg focus:bg-white/20 focus:border-white/50 transition-all duration-300"
+                          className="w-full text-sm pl-10 pr-4 py-3"
                         />
                       </div>
                     </FormControl>
-                    <FormMessage className="text-yellow-300" />
+                    <FormMessage />
                   </FormItem>
                 )}
               />
@@ -134,9 +135,9 @@ export default function ForgotPasswordPage() {
         return (
           <>
             <CardHeader className="p-0 mb-7 text-center">
-              <CardTitle className="font-headline text-2xl text-white">Verificar Código</CardTitle>
-              <CardDescription className="text-sky-200/80">
-                Ingresa el código de 4 dígitos enviado a <span className="font-bold text-white">{userEmail}</span>.
+              <CardTitle className="font-headline text-2xl text-foreground">Verificar Código</CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Ingresa el código de 4 dígitos enviado a <span className="font-bold text-foreground">{userEmail}</span>.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -157,7 +158,7 @@ export default function ForgotPasswordPage() {
                                 </InputOTP>
                                 </div>
                             </FormControl>
-                            <FormMessage className="text-center text-yellow-300" />
+                            <FormMessage className="text-center" />
                         </FormItem>
                     )}
                 />
@@ -175,8 +176,8 @@ export default function ForgotPasswordPage() {
         return (
           <>
             <CardHeader className="p-0 mb-7 text-center">
-              <CardTitle className="font-headline text-2xl text-white">Nueva Contraseña</CardTitle>
-              <CardDescription className="text-sky-200/80">
+              <CardTitle className="font-headline text-2xl text-foreground">Nueva Contraseña</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Establece una nueva contraseña para tu cuenta.
               </CardDescription>
             </CardHeader>
@@ -187,20 +188,20 @@ export default function ForgotPasswordPage() {
                     render={({ field }) => (
                         <FormItem>
                          <div className="relative">
-                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-200/80" />
+                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <FormControl>
                                 <Input
                                     type={showPassword ? "text" : "password"}
                                     placeholder="Nueva contraseña"
                                     {...field}
-                                    className="w-full text-sm pl-10 pr-10 py-3 bg-white/10 text-white placeholder:text-sky-200/60 border border-white/20 rounded-lg focus:bg-white/20 focus:border-white/50 transition-all duration-300"
+                                    className="w-full text-sm pl-10 pr-10 py-3"
                                 />
                             </FormControl>
-                            <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-10 text-sky-200/80 hover:text-white" onClick={() => setShowPassword(!showPassword)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-10 text-muted-foreground hover:text-foreground" onClick={() => setShowPassword(!showPassword)}>
                                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                          </div>
-                         <FormMessage className="text-yellow-300" />
+                         <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -210,20 +211,20 @@ export default function ForgotPasswordPage() {
                     render={({ field }) => (
                         <FormItem>
                          <div className="relative">
-                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-sky-200/80" />
+                            <ShieldCheck className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <FormControl>
                                 <Input
                                     type={showConfirmPassword ? "text" : "password"}
                                     placeholder="Confirmar nueva contraseña"
                                     {...field}
-                                    className="w-full text-sm pl-10 pr-10 py-3 bg-white/10 text-white placeholder:text-sky-200/60 border border-white/20 rounded-lg focus:bg-white/20 focus:border-white/50 transition-all duration-300"
+                                    className="w-full text-sm pl-10 pr-10 py-3"
                                 />
                             </FormControl>
-                            <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-10 text-sky-200/80 hover:text-white" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            <Button type="button" variant="ghost" size="icon" className="absolute inset-y-0 right-0 flex items-center justify-center h-full w-10 text-muted-foreground hover:text-foreground" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                                 {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </Button>
                          </div>
-                         <FormMessage className="text-yellow-300" />
+                         <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -241,8 +242,8 @@ export default function ForgotPasswordPage() {
         return (
              <div className="text-center">
                 <CheckCircle2 className="mx-auto h-16 w-16 text-green-400 mb-4" />
-                <h2 className="text-2xl font-bold text-white">¡Éxito!</h2>
-                <p className="text-sky-200/80 mt-2">Tu contraseña ha sido actualizada correctamente.</p>
+                <h2 className="text-2xl font-bold text-foreground">¡Éxito!</h2>
+                <p className="text-muted-foreground mt-2">Tu contraseña ha sido actualizada correctamente.</p>
                 <Button asChild className="mt-6 w-full font-headline bg-primary hover:bg-primary/90 text-primary-foreground p-3 rounded-lg tracking-wide transition-all duration-300 transform hover:scale-105">
                     <Link href="/login">Volver al Inicio de Sesión</Link>
                 </Button>
@@ -256,7 +257,7 @@ export default function ForgotPasswordPage() {
       <main className="relative z-10 w-full max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <Card className="w-full bg-black/20 backdrop-blur-lg border border-white/10 shadow-2xl animate-fade-in rounded-2xl p-8 lg:p-10">
+            <Card className="w-full bg-card shadow-xl animate-fade-in rounded-2xl p-8 lg:p-10">
               {renderStepContent()}
             </Card>
           </form>
