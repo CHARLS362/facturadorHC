@@ -46,6 +46,7 @@ export function SidebarNav() {
           icon={<item.icon className="h-5 w-5 transition-transform duration-200 ease-in-out group-hover/menu-button:rotate-[5deg] group-hover/menu-button:scale-110" />}
           component={<Link href={item.href} />}
           active={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+          className="group/menu-button"
         >
           {!collapsed && item.label}
         </ProMenuItem>
