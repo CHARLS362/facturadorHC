@@ -68,16 +68,18 @@ export default function PerfilPage() {
     },
   });
   
+  const { reset } = form;
+
   useEffect(() => {
     if (clientMounted && user) {
-      form.reset({
+      reset({
         fullName: user.name || "",
         currentPassword: "",
         newPassword: "",
         confirmNewPassword: "",
       });
     }
-  }, [clientMounted, user, form]);
+  }, [clientMounted, user, reset]);
 
 
   async function onSubmit(data: ProfileFormValues) {
@@ -265,4 +267,3 @@ export default function PerfilPage() {
     </div>
   );
 }
-
