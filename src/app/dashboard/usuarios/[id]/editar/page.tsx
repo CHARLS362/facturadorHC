@@ -16,13 +16,6 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from 'next/navigation'; // For accessing route params
 
-// Mock data - in a real app, this would come from an API
-const mockUsers = [
-  { id: "USR001", fullName: "Ana García", email: "ana.garcia@example.com", role: "Admin", status: "Activo" },
-  { id: "USR002", fullName: "Carlos López", email: "carlos.lopez@example.com", role: "Vendedor", status: "Activo" },
-];
-
-
 const usuarioSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo es requerido (mín. 3 caracteres)." }),
   email: z.string().email({ message: "Ingrese un email válido." }),
@@ -52,32 +45,56 @@ export default function EditarUsuarioPage() {
       status: "Activo",
     },
   });
+  
 
-  useEffect(() => {
-    // Simulate fetching user data
-    if (userId) {
-      const userToEdit = mockUsers.find(u => u.id === userId);
-      if (userToEdit) {
-        form.reset({
-          fullName: userToEdit.fullName,
-          email: userToEdit.email,
-          password: "", // Password field should be empty or handled differently for edits
-          role: userToEdit.role as "Admin" | "Vendedor" | "Soporte",
-          status: userToEdit.status as "Activo" | "Inactivo",
-        });
-      } else {
-        toast({ title: "Error", description: "Usuario no encontrado.", variant: "destructive" });
-        router.push("/dashboard/usuarios");
-      }
+
+useEffect(() => {
+  const fetchUsuario = async () => {
+    try {
+      const res = await fetch(`/api/usuario/${userId}`);
+      if (!res.ok) throw new Error("Usuario no encontrado");
+      const data = await res.json();
+
+      form.reset({
+        fullName: data.Nombre,
+        email: data.Email,
+        password: "",
+        role: data.Rol,
+        status: data.Estado,
+      });
+    } catch (error) {
+      toast({ title: "Error", description: "Usuario no encontrado.", variant: "destructive" });
+      router.push("/dashboard/usuarios");
     }
-  }, [userId, form, router, toast]);
+  };
 
-  async function onSubmit(data: UsuarioFormValues) {
-    setIsSubmitting(true);
-    console.log("Updating user:", userId, data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
+  if (userId) fetchUsuario();
+}, [userId, form, router, toast]);
+
+
+async function onSubmit(data: UsuarioFormValues) {
+  setIsSubmitting(true);
+  try {
+    const body = {
+      Nombre: data.fullName,
+      Email: data.email,
+      Rol: data.role,
+      Estado: data.status,
+    };
+
+    // Solo incluir password si fue escrita
+    if (data.password && data.password.trim() !== "") {
+      body["Password"] = data.password;
+    }
+
+    const res = await fetch(`/api/usuario/${userId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!res.ok) throw new Error("Error al actualizar");
+
     toast({
       variant: "success",
       title: (
@@ -85,14 +102,23 @@ export default function EditarUsuarioPage() {
           <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
             <CheckCircle2 className="h-5 w-5 text-white" />
           </div>
-          <span>Usuario Actualizado</span>
+          <span>Usuario actualizado</span>
         </div>
       ),
-      description: `El usuario ${data.fullName} ha sido actualizado exitosamente.`,
+      description: `El usuario ${data.fullName} ha sido actualizado correctamente.`,
     });
-    // Optionally, redirect after update
-    // router.push("/dashboard/usuarios"); 
+
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Error al actualizar",
+      description: "Hubo un problema al actualizar el usuario.",
+    });
+  } finally {
+    setIsSubmitting(false);
   }
+}
+
 
   return (
     <div className="space-y-8">

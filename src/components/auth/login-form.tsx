@@ -47,25 +47,43 @@ export function LoginForm() {
     },
   });
 
-  async function onSubmit(data: LoginFormValues) {
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
+async function onSubmit(data: LoginFormValues) {
+  setIsLoading(true);
 
-    if (data.email === "test@example.com" && data.password === "password") {
-      login(data.email, data.rememberMe || false);
-    } else {
-      toast({
-        variant: "destructive",
-        title: (
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" /> Error de Autenticación
-          </div>
-        ),
-        description: "Correo electrónico o contraseña incorrectos. Por favor intenta de nuevo.",
-      });
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        Email: data.email,
+        Password: data.password,
+      }),
+    });
+
+    const result = await res.json();
+
+    if (!res.ok) {
+      throw new Error(result.error || 'Error desconocido');
     }
+
+    login(data.email, data.rememberMe || false);
+
+
+  } catch (error: any) {
+    toast({
+      variant: 'destructive',
+      title: (
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-5 w-5" /> Error de Autenticación
+        </div>
+      ),
+      description: error.message || 'No se pudo iniciar sesión',
+    });
+  } finally {
     setIsLoading(false);
   }
+}
+
 
   return (
     <Card className="w-full max-w-md lg:max-w-sm shadow-2xl animate-fade-in bg-card rounded-2xl p-8 lg:p-10" style={{ animationDelay: '0.4s' }}>

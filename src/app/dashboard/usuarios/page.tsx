@@ -1,4 +1,3 @@
-
 "use client";
 import Link from 'next/link';
 import React, { useState, useMemo } from 'react';
@@ -20,6 +19,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect } from 'react';
 
 interface MockUser {
   id: string;
@@ -29,13 +29,6 @@ interface MockUser {
   joinedDate: string;
   status: string;
 }
-
-const initialMockUsers: MockUser[] = [
-  { id: "USR001", name: "Ana García", email: "ana.garcia@example.com", role: "Admin", joinedDate: "2023-01-15", status: "Activo" },
-  { id: "USR002", name: "Carlos López", email: "carlos.lopez@example.com", role: "Vendedor", joinedDate: "2023-02-20", status: "Activo" },
-  { id: "USR003", name: "Laura Martínez", email: "laura.martinez@example.com", role: "Vendedor", joinedDate: "2023-03-10", status: "Inactivo" },
-  { id: "USR004", name: "Pedro Rodríguez", email: "pedro.rodriguez@example.com", role: "Soporte", joinedDate: "2023-04-05", status: "Activo" },
-];
 
 const getInitials = (name?: string): string => {
   if (!name || name.trim() === "") return "??";
@@ -51,11 +44,35 @@ const getInitials = (name?: string): string => {
 };
 
 export default function UsuariosPage() {
-  const [users, setUsers] = useState<MockUser[]>(initialMockUsers);
+  const [users, setUsers] = useState<MockUser[]>([]);
   const [userToDelete, setUserToDelete] = useState<MockUser | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+  const fetchUsuarios = async () => {
+    try {
+      const res = await fetch('/api/usuario');
+      const data = await res.json();
+
+    const usuariosTransformados: MockUser[] = data.map((usuario: any) => ({
+      id: usuario.IdUsuario, 
+      name: usuario.Nombre,
+      email: usuario.Email,
+      role: usuario.Rol,
+      joinedDate: new Date(usuario.FechaIngreso).toISOString().split('T')[0], 
+      status: usuario.Estado,
+    }));
+
+      setUsers(usuariosTransformados);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+    }
+  };
+
+  fetchUsuarios();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
@@ -66,10 +83,22 @@ export default function UsuariosPage() {
     );
   }, [users, searchTerm]);
 
-  const handleDeleteUser = () => {
-    if (!userToDelete) return;
-    // Simulate API call for deletion
+  //Eliminar usuario
+  const handleDeleteUser = async () => {
+  if (!userToDelete) return;
+
+  try {
+    const res = await fetch(`/api/usuario/${userToDelete.id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) {
+      throw new Error('Error al eliminar el usuario');
+    }
+
+    // Actualizar el estado local
     setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
+
     toast({
       variant: "success",
       title: (
@@ -77,13 +106,21 @@ export default function UsuariosPage() {
           <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
             <CheckCircle2 className="h-5 w-5 text-white" />
           </div>
-          <span>Usuario Eliminado</span>
+          <span>Usuario eliminado</span>
         </div>
       ),
-      description: `El usuario ${userToDelete?.name} ha sido eliminado exitosamente.`,
+      description: `El usuario ${userToDelete.name} ha sido eliminado correctamente.`,
     });
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "No se pudo eliminar el usuario.",
+    });
+  } finally {
     setUserToDelete(null);
     setIsDeleteDialogOpen(false);
+  }
   };
 
   const openDeleteDialog = (user: MockUser) => {
