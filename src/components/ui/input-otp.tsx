@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -41,7 +42,7 @@ const InputOTPSlot = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:rounded-l-md first:border-l last:rounded-r-md md:h-12 md:w-12 md:text-base",
+        "relative flex h-10 w-10 items-center justify-center border border-input text-sm transition-all rounded-md md:h-12 md:w-12 md:text-base",
         isActive && "z-10 ring-2 ring-ring ring-offset-background",
         className
       )}

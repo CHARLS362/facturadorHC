@@ -22,7 +22,7 @@ const emailSchema = z.object({
 });
 
 const otpSchema = z.object({
-  otp: z.string().min(6, { message: "El código debe tener 6 dígitos." }),
+  otp: z.string().min(4, { message: "El código debe tener 4 dígitos." }),
 });
 
 const passwordSchema = z.object({
@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Simulate success/failure
-    if (data.otp === "123456") { // Mock success OTP
+    if (data.otp === "1234") { // Mock success OTP
         setStep("resetPassword");
         toast({ 
             variant: "success",
@@ -169,7 +169,7 @@ export default function ForgotPasswordPage() {
             <CardHeader className="p-0 mb-7 text-center">
               <CardTitle className="font-headline text-2xl text-foreground">Verificar Código</CardTitle>
               <CardDescription className="text-muted-foreground">
-                Ingresa el código de 6 dígitos enviado a <span className="font-bold text-primary">{email}</span>.
+                Ingresa el código de 4 dígitos enviado a <span className="font-bold text-primary">{email}</span>.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -181,14 +181,12 @@ export default function ForgotPasswordPage() {
                         render={({ field }) => (
                             <FormItem className="flex flex-col items-center">
                             <FormControl>
-                                <InputOTP maxLength={6} {...field}>
+                                <InputOTP maxLength={4} {...field}>
                                 <InputOTPGroup>
                                     <InputOTPSlot index={0} />
                                     <InputOTPSlot index={1} />
                                     <InputOTPSlot index={2} />
                                     <InputOTPSlot index={3} />
-                                    <InputOTPSlot index={4} />
-                                    <InputOTPSlot index={5} />
                                 </InputOTPGroup>
                                 </InputOTP>
                             </FormControl>
