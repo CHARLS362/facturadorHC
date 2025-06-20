@@ -28,12 +28,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning className={`${poppins.variable} ${ptSans.variable}`}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className={`${poppins.variable} ${ptSans.variable} font-body antialiased`}>
+      <body className={`font-body antialiased`}>
         <ThemeProvider
             attribute="class"
             defaultTheme="system"
