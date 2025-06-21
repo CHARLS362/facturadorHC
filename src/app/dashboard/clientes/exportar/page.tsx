@@ -6,38 +6,30 @@ import { useRouter } from 'next/navigation';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, FileDown } from "lucide-react";
-import { UserExportPreview, type MockUser } from '@/components/dashboard/user-export-preview';
+import { ClientExportPreview, type MockClient } from '@/components/dashboard/client-export-preview';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function ExportarUsuariosPage() {
-  const [users, setUsers] = useState<MockUser[]>([]);
+// Using mock data from the clients list page
+const initialMockClients: MockClient[] = [
+  { id: "CLI001", name: "Empresa XYZ S.A.C.", contactName: "Juan Pérez", email: "juan.perez@empresa.xyz", phone: "987654321", type: "Empresa", registrationDate: "2023-05-10" },
+  { id: "CLI002", name: "Ana Morales", contactName: "Ana Morales", email: "ana.morales@personal.com", phone: "912345678", type: "Persona", registrationDate: "2023-06-22" },
+  { id: "CLI003", name: "Servicios Globales EIRL", contactName: "Luisa Castro", email: "luisa.castro@serviciosglobales.com", phone: "999888777", type: "Empresa", registrationDate: "2024-01-05" },
+];
+
+export default function ExportarClientesPage() {
+  const [clients, setClients] = useState<MockClient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUsuarios = async () => {
+    const fetchClients = async () => {
       setIsLoading(true);
-      try {
-        const res = await fetch('/api/usuario');
-        if (!res.ok) throw new Error("Error al cargar los usuarios");
-        const data = await res.json();
-        const usuariosTransformados: MockUser[] = data.map((usuario: any) => ({
-          id: usuario.IdUsuario,
-          name: usuario.Nombre,
-          email: usuario.Email,
-          role: usuario.Rol,
-          joinedDate: new Date(usuario.FechaIngreso).toLocaleDateString('es-PE'),
-          status: usuario.Estado,
-        }));
-        setUsers(usuariosTransformados);
-      } catch (error) {
-        console.error('Error al obtener usuarios:', error);
-        // Handle error with a toast or message
-      } finally {
-        setIsLoading(false);
-      }
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setClients(initialMockClients);
+      setIsLoading(false);
     };
-    fetchUsuarios();
+    fetchClients();
   }, []);
 
   return (
@@ -45,7 +37,7 @@ export default function ExportarUsuariosPage() {
       <div className="print-hide">
         <PageHeader
           title="Previsualización de Exportación"
-          description="Revisa el reporte de usuarios antes de imprimir o descargar."
+          description="Revisa el reporte de clientes antes de imprimir o descargar."
           icon={FileDown}
           actions={
             <div className="flex gap-2">
@@ -77,7 +69,7 @@ export default function ExportarUsuariosPage() {
             <Skeleton className="h-8 w-full mb-2" />
         </div>
       ) : (
-        <UserExportPreview users={users} />
+        <ClientExportPreview clients={clients} />
       )}
     </div>
   );

@@ -100,9 +100,11 @@ export default function ClientesPage() {
         icon={UsersRound}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
-              <FileDown className="mr-2 h-4 w-4" />
-              Exportar Clientes
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/clientes/exportar">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exportar Clientes
+              </Link>
             </Button>
             <Button asChild>
               <Link href="/dashboard/clientes/nuevo">

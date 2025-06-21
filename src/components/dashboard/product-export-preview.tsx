@@ -6,20 +6,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
-export interface MockUser {
+export interface MockProduct {
   id: string;
   name: string;
-  email: string;
-  role: string;
-  joinedDate: string;
+  category: string;
+  price: string;
+  stock: number;
   status: string;
 }
 
-interface UserExportPreviewProps {
-  users: MockUser[];
+interface ProductExportPreviewProps {
+  products: MockProduct[];
 }
 
-export function UserExportPreview({ users }: UserExportPreviewProps) {
+export function ProductExportPreview({ products }: ProductExportPreviewProps) {
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
               data-ai-hint="modern business logo"
             />
             <div>
-              <CardTitle className="text-2xl font-headline">Reporte de Usuarios</CardTitle>
+              <CardTitle className="text-2xl font-headline">Reporte de Productos</CardTitle>
               <CardDescription>Generado el: {currentDate}</CardDescription>
             </div>
           </div>
@@ -62,23 +62,27 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
             <TableRow>
               <TableHead>ID</TableHead>
               <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Fecha de Ingreso</TableHead>
+              <TableHead>Categoría</TableHead>
+              <TableHead>Precio</TableHead>
+              <TableHead>Stock</TableHead>
               <TableHead>Estado</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-mono text-xs">{user.id}</TableCell>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.joinedDate}</TableCell>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="font-mono text-xs">{product.id}</TableCell>
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>{product.category}</TableCell>
+                <TableCell>{product.price}</TableCell>
+                <TableCell>{product.stock}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                    {user.status}
+                  <span className={`px-2 py-1 text-xs rounded-full ${
+                      product.status === "En Stock" ? "bg-green-100 text-green-800" : 
+                      product.status === "Stock Bajo" ? "bg-yellow-100 text-yellow-800" : 
+                      "bg-red-100 text-red-800"
+                    }`}>
+                    {product.status}
                   </span>
                 </TableCell>
               </TableRow>
@@ -87,7 +91,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
         </Table>
       </CardContent>
       <CardFooter className="px-2 py-4 md:p-6 text-sm text-muted-foreground">
-        <p>Total de Usuarios: {users.length}</p>
+        <p>Total de Productos: {products.length}</p>
       </CardFooter>
     </Card>
   );

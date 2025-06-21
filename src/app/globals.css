@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -607,40 +608,7 @@ body {
 /* React Pro Sidebar Styles v1.1.0 - END */
 
 @media print {
-  @page {
-    size: A4 landscape; /* Better for wide tables */
-    margin: 1.5cm;
-  }
-
-  body {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Hide elements that shouldn't be printed */
-  .pro-sidebar,
-  main > header,
   .print-hide {
     display: none !important;
-  }
-  
-  /* Ensure the main content takes up the full page */
-  body > div {
-    display: block !important;
-  }
-
-  main {
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-  }
-  
-  /* Reset card styles for printing */
-  #printable-area, .printable-area {
-     box-shadow: none !important;
-     border: none !important;
-     padding: 0 !important;
-     margin: 0 !important;
-     max-width: 100% !important;
   }
 }

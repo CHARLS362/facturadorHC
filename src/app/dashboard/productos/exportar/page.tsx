@@ -6,38 +6,32 @@ import { useRouter } from 'next/navigation';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, FileDown } from "lucide-react";
-import { UserExportPreview, type MockUser } from '@/components/dashboard/user-export-preview';
+import { ProductExportPreview, type MockProduct } from '@/components/dashboard/product-export-preview';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function ExportarUsuariosPage() {
-  const [users, setUsers] = useState<MockUser[]>([]);
+// Using mock data from the products list page
+const initialMockProducts: MockProduct[] = [
+  { id: "PROD001", name: "Camisa de Algodón Premium", category: "Ropa", price: "S/ 79.90", stock: 120, status: "En Stock" },
+  { id: "PROD002", name: "Pantalón Cargo Resistente", category: "Ropa", price: "S/ 119.90", stock: 75, status: "En Stock" },
+  { id: "PROD003", name: "Zapatillas Urbanas Clásicas", category: "Calzado", price: "S/ 249.90", stock: 0, status: "Agotado" },
+  { id: "PROD004", name: "Mochila Antirrobo Impermeable", category: "Accesorios", price: "S/ 189.50", stock: 45, status: "Stock Bajo" },
+];
+
+export default function ExportarProductosPage() {
+  const [products, setProducts] = useState<MockProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUsuarios = async () => {
+    const fetchProducts = async () => {
       setIsLoading(true);
-      try {
-        const res = await fetch('/api/usuario');
-        if (!res.ok) throw new Error("Error al cargar los usuarios");
-        const data = await res.json();
-        const usuariosTransformados: MockUser[] = data.map((usuario: any) => ({
-          id: usuario.IdUsuario,
-          name: usuario.Nombre,
-          email: usuario.Email,
-          role: usuario.Rol,
-          joinedDate: new Date(usuario.FechaIngreso).toLocaleDateString('es-PE'),
-          status: usuario.Estado,
-        }));
-        setUsers(usuariosTransformados);
-      } catch (error) {
-        console.error('Error al obtener usuarios:', error);
-        // Handle error with a toast or message
-      } finally {
-        setIsLoading(false);
-      }
+      // Simulate API call
+      // In a real app, you would fetch from `/api/productos`
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setProducts(initialMockProducts);
+      setIsLoading(false);
     };
-    fetchUsuarios();
+    fetchProducts();
   }, []);
 
   return (
@@ -45,7 +39,7 @@ export default function ExportarUsuariosPage() {
       <div className="print-hide">
         <PageHeader
           title="Previsualización de Exportación"
-          description="Revisa el reporte de usuarios antes de imprimir o descargar."
+          description="Revisa el reporte de productos antes de imprimir o descargar."
           icon={FileDown}
           actions={
             <div className="flex gap-2">
@@ -77,7 +71,7 @@ export default function ExportarUsuariosPage() {
             <Skeleton className="h-8 w-full mb-2" />
         </div>
       ) : (
-        <UserExportPreview users={users} />
+        <ProductExportPreview products={products} />
       )}
     </div>
   );

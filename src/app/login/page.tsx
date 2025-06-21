@@ -11,12 +11,9 @@ import { useEffect, useState } from 'react';
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
-  const [displayYear, setDisplayYear] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    const year = new Date().getFullYear();
-    setDisplayYear(`© ${year} FacturacionHC. Todos los derechos reservados.`);
   }, []);
 
   const toggleTheme = () => {
@@ -69,12 +66,12 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {displayYear && (
+      {mounted && (
         <p 
           className="absolute bottom-6 text-center text-sm text-sky-200/70 animate-fade-in" 
           style={{ animationDelay: '1s' }}
         >
-          {displayYear}
+          © {new Date().getFullYear()} FacturacionHC. Todos los derechos reservados.
         </p>
       )}
     </div>

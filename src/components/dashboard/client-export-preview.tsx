@@ -6,20 +6,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 
-export interface MockUser {
+export interface MockClient {
   id: string;
   name: string;
+  contactName: string;
   email: string;
-  role: string;
-  joinedDate: string;
-  status: string;
+  phone: string;
+  type: "Empresa" | "Persona";
+  registrationDate: string;
 }
 
-interface UserExportPreviewProps {
-  users: MockUser[];
+interface ClientExportPreviewProps {
+  clients: MockClient[];
 }
 
-export function UserExportPreview({ users }: UserExportPreviewProps) {
+export function ClientExportPreview({ clients }: ClientExportPreviewProps) {
   const [currentDate, setCurrentDate] = useState("");
 
   useEffect(() => {
@@ -46,7 +47,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
               data-ai-hint="modern business logo"
             />
             <div>
-              <CardTitle className="text-2xl font-headline">Reporte de Usuarios</CardTitle>
+              <CardTitle className="text-2xl font-headline">Reporte de Clientes</CardTitle>
               <CardDescription>Generado el: {currentDate}</CardDescription>
             </div>
           </div>
@@ -61,33 +62,31 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
           <TableHeader>
             <TableRow>
               <TableHead>ID</TableHead>
-              <TableHead>Nombre</TableHead>
+              <TableHead>Nombre / Razón Social</TableHead>
+              <TableHead>Contacto</TableHead>
               <TableHead>Email</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Fecha de Ingreso</TableHead>
-              <TableHead>Estado</TableHead>
+              <TableHead>Teléfono</TableHead>
+              <TableHead>Tipo</TableHead>
+              <TableHead>Fecha Registro</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-mono text-xs">{user.id}</TableCell>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.joinedDate}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                    {user.status}
-                  </span>
-                </TableCell>
+            {clients.map((client) => (
+              <TableRow key={client.id}>
+                <TableCell className="font-mono text-xs">{client.id}</TableCell>
+                <TableCell className="font-medium">{client.name}</TableCell>
+                <TableCell>{client.contactName}</TableCell>
+                <TableCell>{client.email}</TableCell>
+                <TableCell>{client.phone}</TableCell>
+                <TableCell>{client.type}</TableCell>
+                <TableCell>{client.registrationDate}</TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </CardContent>
       <CardFooter className="px-2 py-4 md:p-6 text-sm text-muted-foreground">
-        <p>Total de Usuarios: {users.length}</p>
+        <p>Total de Clientes: {clients.length}</p>
       </CardFooter>
     </Card>
   );
