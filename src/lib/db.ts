@@ -1,14 +1,14 @@
 import sql, { config as SqlConfig, ConnectionPool } from 'mssql';
 
 const dbConfig: SqlConfig = {
-  user: process.env.DB_USER || 'admin',
-  password: process.env.DB_PASSWORD || '12345',
-  server: process.env.DB_SERVER || 'localhost',
-  database: process.env.DB_NAME || 'FacturacionHC',
+  user: 'db_abac2e_facturacionhc_admin',
+  password: 'facturacion23',
+  server: 'SQL1004.site4now.net',
+  database: 'db_abac2e_facturacionhc', 
   port: 1433,
   options: {
-    encrypt: false,
-    trustServerCertificate: true,
+    encrypt: true,
+    trustServerCertificate: true, 
   },
 };
 
