@@ -1,3 +1,4 @@
+
 "use client";
 import Link from 'next/link';
 import React, { useState, useMemo } from 'react';
@@ -137,9 +138,11 @@ export default function UsuariosPage() {
         icon={Users}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
-              <FileDown className="mr-2 h-4 w-4" />
-              Exportar
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/usuarios/exportar">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exportar
+              </Link>
             </Button>
             <Button asChild>
               <Link href="/dashboard/usuarios/nuevo">
