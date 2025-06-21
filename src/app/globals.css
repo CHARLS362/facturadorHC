@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -605,3 +606,9 @@ body {
   cursor: pointer;
 }
 /* React Pro Sidebar Styles v1.1.0 - END */
+
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+}
