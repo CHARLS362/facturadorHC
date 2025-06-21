@@ -150,9 +150,11 @@ export default function VentasPage() {
         icon={ShoppingCart}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
-              <FileDown className="mr-2 h-4 w-4" />
-              Exportar Ventas
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/ventas/exportar">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exportar Ventas
+              </Link>
             </Button>
             <Button asChild>
               <Link href="/dashboard/ventas/nueva">

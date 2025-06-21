@@ -116,9 +116,11 @@ export default function ProductosPage() {
         icon={Package}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline">
-              <FileDown className="mr-2 h-4 w-4" />
-              Exportar
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/productos/exportar">
+                <FileDown className="mr-2 h-4 w-4" />
+                Exportar
+              </Link>
             </Button>
             <Button asChild>
               <Link href="/dashboard/productos/nuevo">
