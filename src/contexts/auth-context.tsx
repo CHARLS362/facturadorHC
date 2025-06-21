@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
@@ -15,63 +16,29 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // Hardcode user to be authenticated for development
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [user, setUser] = useState<{ email?: string; name?: string } | null>({ email: 'test@example.com', name: 'Usuario de Prueba' });
+  const [isLoading, setIsLoading] = useState(false); // Set to false as we are not loading from storage
   const router = useRouter();
   const pathname = usePathname();
 
+  // This effect will now ensure that if the user somehow lands on /login, they are sent to /dashboard
   useEffect(() => {
-    try {
-      const storedAuth = localStorage.getItem('facturacionhc_auth');
-      if (storedAuth) {
-        const authData = JSON.parse(storedAuth);
-        if (authData.isAuthenticated && authData.user) {
-          setIsAuthenticated(true);
-          setUser(authData.user);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to parse auth data from localStorage", error);
-      localStorage.removeItem('facturacionhc_auth');
+    if (pathname === '/login') {
+      router.replace('/dashboard');
     }
-    setIsLoading(false);
-  }, []);
+  }, [pathname, router]);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated && pathname === '/login') {
-        router.push('/dashboard');
-      } else if (!isAuthenticated && pathname.startsWith('/dashboard')) {
-        router.push('/login');
-      }
-    }
-  }, [isAuthenticated, isLoading, pathname, router]);
-
-  const login = useCallback((email: string, rememberMe: boolean) => {
-    const userData = { email, name: email.split('@')[0] }; // Simple name generation
-    setIsAuthenticated(true);
-    setUser(userData);
-    if (rememberMe) {
-      try {
-        localStorage.setItem('facturacionhc_auth', JSON.stringify({ isAuthenticated: true, user: userData }));
-      } catch (error) {
-        console.error("Failed to save auth data to localStorage", error);
-      }
-    }
-    router.push('/dashboard');
+  // Login is no longer needed for auth, but we keep it to satisfy the type.
+  const login = useCallback(() => {
+    router.replace('/dashboard');
   }, [router]);
 
+  // Logout does nothing, to prevent signing out during development.
   const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    setUser(null);
-    try {
-      localStorage.removeItem('facturacionhc_auth');
-    } catch (error) {
-      console.error("Failed to remove auth data from localStorage", error);
-    }
-    router.push('/login');
-  }, [router]);
+    console.log("Logout disabled in test mode.");
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout, isLoading }}>
