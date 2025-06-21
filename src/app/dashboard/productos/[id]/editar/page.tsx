@@ -17,11 +17,6 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from 'next/navigation';
 
-// Mock product data - in a real app, this would come from an API
-const mockProducts = [
-  { id: "PROD001", name: "Camisa de Algodón Premium", sku: "CAM-ALG-PREM", category: "Ropa", price: 79.90, stock: 120, status: "En Stock", description: "Camisa de algodón suave y de alta calidad.", imageUrl: "https://placehold.co/400x400.png?text=Camisa" },
-  { id: "PROD002", name: "Pantalón Cargo Resistente", sku: "PANT-CAR-RES", category: "Ropa", price: 119.90, stock: 75, status: "En Stock", description: "Pantalón cargo con múltiples bolsillos, ideal para el trabajo.", imageUrl: "" },
-];
 
 const productSchema = z.object({
   name: z.string().min(3, { message: "El nombre del producto es requerido (mín. 3 caracteres)." }),
@@ -42,7 +37,6 @@ export default function EditarProductoPage() {
   const router = useRouter();
   const params = useParams();
   const productId = params.id as string;
-
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -56,30 +50,59 @@ export default function EditarProductoPage() {
       imageUrl: "",
     },
   });
+useEffect(() => {
+  if (productId) {
+    fetch(`/api/producto/${productId}`)
+      .then(res => res.json())
+      .then(productToEdit => {
+  if (productToEdit && !productToEdit.error) {
+    form.reset({
+    name: productToEdit.Nombre ?? "",
+    sku: productToEdit.Codigo ?? "",
+    category: productToEdit.CategoriaNombre ?? undefined,
+    price: productToEdit.Precio ?? 0,
+    stock: productToEdit.Stock ?? 0,
+    status: productToEdit.Estado ?? "En Stock",
+    description: productToEdit.Descripcion ?? "",
+    imageUrl: productToEdit.ImagenUrl ?? "",
+  });
+  } else {
+    toast({ title: "Error", description: "Producto no encontrado.", variant: "destructive" });
+    router.push("/dashboard/productos");
+  }
+});
+  }
+}, [productId, form, router, toast]);
 
-  useEffect(() => {
-    if (productId) {
-      // Simulate fetching product data
-      const productToEdit = mockProducts.find(p => p.id === productId);
-      if (productToEdit) {
-        form.reset({
-          ...productToEdit,
-          category: productToEdit.category as ProductFormValues["category"], // Ensure correct type
-          status: productToEdit.status as ProductFormValues["status"], // Ensure correct type
-        });
-      } else {
-        toast({ title: "Error", description: "Producto no encontrado.", variant: "destructive" });
-        router.push("/dashboard/productos");
-      }
+async function onSubmit(data: ProductFormValues) {
+  setIsSubmitting(true);
+  try {
+    const payload = {
+      Nombre: data.name,
+      Codigo: data.sku,
+      CategoriaNombre: data.category,
+      Precio: data.price,
+      Stock: data.stock,
+      Estado: data.status,
+      Descripcion: data.description,
+      ImagenUrl: data.imageUrl,
+      IdUnidadMedida: 1,
+      Tipo: "Producto",
+      StockMinimo: 5,
+    };
+
+    
+    const res = await fetch(`/api/producto/${productId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Error al actualizar producto");
     }
-  }, [productId, form, router, toast]);
 
-  async function onSubmit(data: ProductFormValues) {
-    setIsSubmitting(true);
-    console.log("Updating product:", productId, data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
     toast({
       variant: "success",
       title: (
@@ -92,8 +115,17 @@ export default function EditarProductoPage() {
       ),
       description: `El producto ${data.name} ha sido actualizado exitosamente.`,
     });
-    // router.push("/dashboard/productos"); // Optional: redirect
+    router.push("/dashboard/productos");
+  } catch (error: any) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: error.message,
+    });
+  } finally {
+    setIsSubmitting(false);
   }
+}
 
   return (
     <div className="space-y-8">

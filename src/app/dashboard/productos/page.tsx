@@ -34,9 +34,9 @@ export default function ProductosPage() {
       if (!res.ok) throw new Error('Error al obtener productos');
       const data = await res.json();
       const formattedProducts = data.map((prod: any) => ({
-        id: prod.Codigo || prod.IdProducto,
+        id: prod.IdProducto,
         name: prod.Nombre,
-        category: prod.Categoria || 'Sin categoría',
+        category: prod.CategoriaNombre || 'Sin categoría',
         price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
         stock: prod.Stock,
         status:
@@ -61,7 +61,7 @@ export default function ProductosPage() {
     return products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.id.toLowerCase().includes(searchTerm.toLowerCase())
+      String(product.id).toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [products, searchTerm]);
 
@@ -162,7 +162,7 @@ export default function ProductosPage() {
                 <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
                   <TableCell>
                     <Image 
-                      src={product.imageUrl || `https://placehold.co/64x64.png?text=${product.id.substring(0,3)}`}
+                      src={product.imageUrl || `https://placehold.co/64x64.png?text=${String(product.id).substring(0,3)}`}
                       alt={product.name} 
                       width={48} 
                       height={48} 
