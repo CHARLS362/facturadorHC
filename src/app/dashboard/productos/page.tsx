@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect} from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,30 +21,40 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
-
-interface MockProduct {
-  id: string;
-  name: string;
-  category: string;
-  price: string;
-  stock: number;
-  status: string;
-  imageUrl?: string; // Optional: for product image
-}
-
-const initialMockProducts: MockProduct[] = [
-  { id: "PROD001", name: "Camisa de Algodón Premium", category: "Ropa", price: "S/ 79.90", stock: 120, status: "En Stock", imageUrl: `https://placehold.co/64x64.png?text=C01` },
-  { id: "PROD002", name: "Pantalón Cargo Resistente", category: "Ropa", price: "S/ 119.90", stock: 75, status: "En Stock", imageUrl: `https://placehold.co/64x64.png?text=P01` },
-  { id: "PROD003", name: "Zapatillas Urbanas Clásicas", category: "Calzado", price: "S/ 249.90", stock: 0, status: "Agotado", imageUrl: `https://placehold.co/64x64.png?text=Z01` },
-  { id: "PROD004", name: "Mochila Antirrobo Impermeable", category: "Accesorios", price: "S/ 189.50", stock: 45, status: "Stock Bajo", imageUrl: `https://placehold.co/64x64.png?text=M01` },
-];
-
 export default function ProductosPage() {
-  const [products, setProducts] = useState<MockProduct[]>(initialMockProducts);
+  const [products, setProducts] = useState<MockProduct[]>([]);
   const [productToDelete, setProductToDelete] = useState<MockProduct | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/producto');
+      if (!res.ok) throw new Error('Error al obtener productos');
+      const data = await res.json();
+      const formattedProducts = data.map((prod: any) => ({
+        id: prod.Codigo || prod.IdProducto,
+        name: prod.Nombre,
+        category: prod.Categoria || 'Sin categoría',
+        price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
+        stock: prod.Stock,
+        status:
+          prod.Stock === 0
+            ? 'Agotado'
+            : prod.Stock <= prod.StockMinimo
+            ? 'Stock Bajo'
+            : 'En Stock',
+        imageUrl: prod.ImagenUrl || null,
+      }));
+      setProducts(formattedProducts);
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+    }
+  };
+
+  fetchProducts();
+}, []);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
@@ -55,9 +65,17 @@ export default function ProductosPage() {
     );
   }, [products, searchTerm]);
 
-  const handleDeleteProduct = () => {
-    if (!productToDelete) return;
-    setProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id));
+ const handleDeleteProduct = async () => {
+  if (!productToDelete) return;
+
+  try {
+    const res = await fetch(`/api/producto/${productToDelete.id}`, {
+      method: 'DELETE',
+    });
+
+    if (!res.ok) throw new Error('Error al eliminar producto');
+
+    setProducts(prev => prev.filter(p => p.id !== productToDelete.id));
     toast({
       variant: "success",
       title: (
@@ -70,9 +88,19 @@ export default function ProductosPage() {
       ),
       description: `El producto ${productToDelete.name} ha sido eliminado.`,
     });
+  } catch (error) {
+    console.error(error);
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "No se pudo eliminar el producto.",
+    });
+  } finally {
     setProductToDelete(null);
     setIsDeleteDialogOpen(false);
-  };
+  }
+};
+
 
   const openDeleteDialog = (product: MockProduct) => {
     setProductToDelete(product);

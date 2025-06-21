@@ -123,6 +123,7 @@ export default function UsuariosPage() {
   }
   };
 
+  
   const openDeleteDialog = (user: MockUser) => {
     setUserToDelete(user);
     setIsDeleteDialogOpen(true);
