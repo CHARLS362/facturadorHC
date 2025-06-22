@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,17 +11,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { UserCog2, Save, RotateCcw, CheckCircle2 } from "lucide-react";
+import { UserCog2, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from 'next/navigation';
-
-// Mock data - in a real app, this would come from an API
-const mockClients = [
-  { id: "CLI001", type: "Empresa", name: "Empresa XYZ S.A.C.", rucDni: "20123456789", contactName: "Juan Pérez", email: "juan.perez@empresa.xyz", phone: "987654321", address: "Av. Principal 123, Lima" },
-  { id: "CLI002", type: "Persona", name: "Ana Morales", rucDni: "12345678", contactName: "Ana Morales", email: "ana.morales@personal.com", phone: "912345678", address: "Calle Falsa 123, Miraflores" },
-];
+import { Skeleton } from "@/components/ui/skeleton";
+import { CheckCircle2 } from "lucide-react";
 
 const clientSchema = z.object({
   type: z.enum(["Empresa", "Persona"], { required_error: "Seleccione el tipo de cliente." }),
@@ -49,6 +46,7 @@ type ClientFormValues = z.infer<typeof clientSchema>;
 export default function EditarClientePage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
   const clientId = params.id as string;
@@ -70,12 +68,16 @@ export default function EditarClientePage() {
 
   useEffect(() => {
     if (clientId) {
+      setIsLoading(true);
       fetch(`/api/cliente/${clientId}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error("Cliente no encontrado");
+          return res.json();
+        })
         .then(client => {
           if (client && client.IdCliente) {
             form.reset({
-              type: client.tipoCliente?.descripcion === "Persona Jurídica" ? "Empresa" : "Persona",
+              type: client.TipoCliente === "Persona Jurídica" ? "Empresa" : "Persona",
               name: client.Nombre,
               rucDni: client.NumeroDocumento,
               contactName: client.Contacto,
@@ -84,21 +86,20 @@ export default function EditarClientePage() {
               address: client.Direccion,
             });
           } else {
-            toast({ title: "Error", description: "Cliente no encontrado.", variant: "destructive" });
-            router.push("/dashboard/clientes");
+            throw new Error("Cliente no encontrado");
           }
         })
         .catch(() => {
           toast({ title: "Error", description: "Cliente no encontrado.", variant: "destructive" });
           router.push("/dashboard/clientes");
-        });
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [clientId, form, router, toast]);
 
   async function onSubmit(data: ClientFormValues) {
     setIsSubmitting(true);
 
-    // Mapea los datos del formulario a los campos esperados por la API
     const payload = {
       nombre: data.name,
       nombreComercial: data.type === "Empresa" ? data.name : null,
@@ -120,8 +121,6 @@ export default function EditarClientePage() {
       });
       const result = await res.json();
 
-      setIsSubmitting(false);
-
       if (res.ok) {
         toast({
           variant: "success",
@@ -137,57 +136,46 @@ export default function EditarClientePage() {
         });
         router.push("/dashboard/clientes");
       } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: result.error || "No se pudo actualizar el cliente.",
-        });
+        throw new Error(result.error || "No se pudo actualizar el cliente.");
       }
-    } catch (error) {
-      setIsSubmitting(false);
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Error al actualizar el cliente.",
+        description: error.message || "Error al actualizar el cliente.",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   }
-
-  const handleDeleteClient = async () => {
-    try {
-      const res = await fetch(`/api/cliente/${clientId}`, {
-        method: "DELETE",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        toast({
-          variant: "success",
-          title: (
-            <div className="flex items-center gap-2">
-              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-                <CheckCircle2 className="h-5 w-5 text-white" />
-              </div>
-              <span>Cliente Eliminado</span>
+  
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Editar Cliente"
+          description="Cargando la información del cliente..."
+          icon={UserCog2}
+        />
+        <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
+          <CardHeader>
+            <CardTitle><Skeleton className="h-8 w-64" /></CardTitle>
+            <CardDescription><Skeleton className="h-4 w-48" /></CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-20" /><Skeleton className="h-10 w-full" /></div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+              <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
             </div>
-          ),
-          description: `El cliente ha sido eliminado.`,
-        });
-        router.push("/dashboard/clientes");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "No se puede eliminar",
-          description: data.error || "No se pudo eliminar el cliente.",
-        });
-      }
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Error al eliminar el cliente.",
-      });
-    }
-  };
+            <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-20 w-full" /></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -346,3 +334,5 @@ export default function EditarClientePage() {
     </div>
   );
 }
+
+    

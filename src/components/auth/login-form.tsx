@@ -47,43 +47,11 @@ export function LoginForm() {
     },
   });
 
-async function onSubmit(data: LoginFormValues) {
-  setIsLoading(true);
-
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Email: data.email,
-        Password: data.password,
-      }),
-    });
-
-    const result = await res.json();
-
-    if (!res.ok) {
-      throw new Error(result.error || 'Error desconocido');
-    }
-
-    login(result.usuario, data.rememberMe || false);
-
-
-  } catch (error: any) {
-    toast({
-      variant: 'destructive',
-      title: (
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5" /> Error de Autenticación
-        </div>
-      ),
-      description: error.message || 'No se pudo iniciar sesión',
-    });
-  } finally {
+  async function onSubmit(data: LoginFormValues) {
+    setIsLoading(true);
+    login(data, data.rememberMe || false);
     setIsLoading(false);
   }
-}
-
 
   return (
     <Card className="w-full max-w-md lg:max-w-sm shadow-2xl animate-fade-in bg-card rounded-2xl p-8 lg:p-10" style={{ animationDelay: '0.4s' }}>
@@ -202,3 +170,5 @@ async function onSubmit(data: LoginFormValues) {
     </Card>
   );
 }
+
+    

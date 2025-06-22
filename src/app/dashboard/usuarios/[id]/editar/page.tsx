@@ -10,16 +10,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCog, Save, RotateCcw, Eye, EyeOff, CheckCircle2 } from "lucide-react"; // Changed icon to UserCog
+import { UserCog, Save, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from 'next/navigation'; // For accessing route params
+import { useParams, useRouter } from 'next/navigation';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const usuarioSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo es requerido (mín. 3 caracteres)." }),
   email: z.string().email({ message: "Ingrese un email válido." }),
-  // Password can be optional on edit, or have different validation
   password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }).optional().or(z.literal('')),
   role: z.enum(["Admin", "Vendedor", "Soporte"], { required_error: "Seleccione un rol para el usuario." }),
   status: z.enum(["Activo", "Inactivo"], { required_error: "Seleccione un estado."}),
@@ -31,9 +31,10 @@ export default function EditarUsuarioPage() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
-  const userId = params.id as string; // Get user ID from URL
+  const userId = params.id as string;
 
   const form = useForm<UsuarioFormValues>({
     resolver: zodResolver(usuarioSchema),
@@ -45,80 +46,105 @@ export default function EditarUsuarioPage() {
       status: "Activo",
     },
   });
-  
 
+  useEffect(() => {
+    const fetchUsuario = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/usuario/${userId}`);
+        if (!res.ok) throw new Error("Usuario no encontrado");
+        const data = await res.json();
 
-useEffect(() => {
-  const fetchUsuario = async () => {
-    try {
-      const res = await fetch(`/api/usuario/${userId}`);
-      if (!res.ok) throw new Error("Usuario no encontrado");
-      const data = await res.json();
-
-      form.reset({
-        fullName: data.Nombre,
-        email: data.Email,
-        password: "",
-        role: data.Rol,
-        status: data.Estado,
-      });
-    } catch (error) {
-      toast({ title: "Error", description: "Usuario no encontrado.", variant: "destructive" });
-      router.push("/dashboard/usuarios");
-    }
-  };
-
-  if (userId) fetchUsuario();
-}, [userId, form, router, toast]);
-
-
-async function onSubmit(data: UsuarioFormValues) {
-  setIsSubmitting(true);
-  try {
-    const body = {
-      Nombre: data.fullName,
-      Email: data.email,
-      Rol: data.role,
-      Estado: data.status,
+        form.reset({
+          fullName: data.Nombre,
+          email: data.Email,
+          password: "",
+          role: data.Rol,
+          status: data.Estado,
+        });
+      } catch (error) {
+        toast({ title: "Error", description: "Usuario no encontrado.", variant: "destructive" });
+        router.push("/dashboard/usuarios");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    // Solo incluir password si fue escrita
-    if (data.password && data.password.trim() !== "") {
-      body["Password"] = data.password;
-    }
+    if (userId) fetchUsuario();
+  }, [userId, form, router, toast]);
 
-    const res = await fetch(`/api/usuario/${userId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+  async function onSubmit(data: UsuarioFormValues) {
+    setIsSubmitting(true);
+    try {
+      const body: any = {
+        Nombre: data.fullName,
+        Email: data.email,
+        Rol: data.role,
+        Estado: data.status,
+      };
 
-    if (!res.ok) throw new Error("Error al actualizar");
+      if (data.password && data.password.trim() !== "") {
+        body.Password = data.password;
+      }
 
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
+      const res = await fetch(`/api/usuario/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Error al actualizar");
+
+      toast({
+        variant: "success",
+        title: (
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            </div>
+            <span>Usuario actualizado</span>
           </div>
-          <span>Usuario actualizado</span>
-        </div>
-      ),
-      description: `El usuario ${data.fullName} ha sido actualizado correctamente.`,
-    });
-
-  } catch (error) {
-    toast({
-      variant: "destructive",
-      title: "Error al actualizar",
-      description: "Hubo un problema al actualizar el usuario.",
-    });
-  } finally {
-    setIsSubmitting(false);
+        ),
+        description: `El usuario ${data.fullName} ha sido actualizado correctamente.`,
+      });
+      router.push("/dashboard/usuarios");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar",
+        description: "Hubo un problema al actualizar el usuario.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-}
 
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Editar Usuario"
+          description="Cargando la información del usuario..."
+          icon={UserCog}
+        />
+        <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
+          <CardHeader>
+            <CardTitle><Skeleton className="h-8 w-64" /></CardTitle>
+            <CardDescription><Skeleton className="h-4 w-48" /></CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+              <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -262,3 +288,5 @@ async function onSubmit(data: UsuarioFormValues) {
     </div>
   );
 }
+
+    

@@ -13,7 +13,7 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   user: User | null;
-  login: (userData: any, rememberMe: boolean) => void;
+  login: (loginData: any, rememberMe: boolean) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -26,7 +26,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // On component mount, check for stored user session
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem('user');
@@ -37,21 +36,43 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("Failed to parse user from localStorage", error);
-      // Clear potentially corrupted storage
       localStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  const login = useCallback((userData: any, rememberMe: boolean) => {
-    if (rememberMe) {
-      localStorage.setItem('user', JSON.stringify(userData));
+  const login = useCallback(async (loginData: any, rememberMe: boolean) => {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Email: loginData.email,
+          Password: loginData.password,
+        }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Error de autenticación');
+      }
+      
+      const userData = result.usuario;
+
+      if (rememberMe) {
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+      
+      setUser({ email: userData.Email, name: userData.Nombre });
+      setIsAuthenticated(true);
+      router.replace('/dashboard');
+
+    } catch (error: any) {
+      // The component calling login should handle toast notifications
+      console.error("Login failed:", error.message);
+      throw error; // Re-throw error to be caught by the calling component
     }
-    // Set user state from userData. The API returns { Nombre, Email, ... }
-    setUser({ email: userData.Email, name: userData.Nombre });
-    setIsAuthenticated(true);
-    router.replace('/dashboard');
   }, [router]);
 
   const logout = useCallback(() => {
@@ -75,3 +96,5 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
+
+    

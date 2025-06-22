@@ -55,7 +55,7 @@ body {
     --accent-foreground: 0 0% 98%; /* Off-white */
     --destructive: 9 85% 63%; /* #EF5350 */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%; /* Match muted for subtle borders */
+    --border: 240 3.7% 20%; /* Slightly lighter border for dark mode */
     --input: 240 3.7% 15.9%; /* Match muted for inputs */
     --ring: 16 100% 63.3%; /* Primary color for rings */
 
@@ -94,7 +94,31 @@ body {
   @apply bg-primary;
 }
 
-/* React Pro Sidebar Styles v1.1.0 - BEGIN */
+/* React Pro Sidebar Styles v1.1.0 - Custom Theming */
+.ps-sidebar-container {
+    @apply bg-card text-card-foreground;
+}
+
+.ps-menu-button {
+    @apply hover:bg-secondary/80;
+}
+
+.ps-menu-button.ps-active {
+    @apply bg-primary text-primary-foreground;
+}
+.ps-menu-button.ps-active:hover {
+    @apply bg-primary/90 text-primary-foreground;
+}
+
+.ps-submenu-content {
+    @apply bg-secondary/40;
+}
+
+.ps-menu-button.ps-disabled {
+    @apply text-muted-foreground;
+}
+
+/* React Pro Sidebar - Original Structure (keep for functionality) */
 .pro-sidebar-layout {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -612,3 +636,5 @@ body {
     display: none !important;
   }
 }
+
+    
