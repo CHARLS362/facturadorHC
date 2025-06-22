@@ -21,6 +21,12 @@ const nextConfig: NextConfig = {
         hostname: 'avatar.vercel.sh',
         port: '',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.qrserver.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
