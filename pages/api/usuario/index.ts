@@ -18,8 +18,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             WHEN u.Estado = 1 THEN 'Activo' 
             ELSE 'Inactivo' 
           END AS Estado
-        FROM FacturacionHC.dbo.Usuario u
-        LEFT JOIN FacturacionHC.dbo.Rol r ON u.IdRol = r.IdRol
+        FROM Usuario u
+        LEFT JOIN Rol r ON u.IdRol = r.IdRol
       `);
 
       return res.status(200).json(result.recordset);
@@ -42,7 +42,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const rolResult = await pool
         .request()
         .input('NombreRol', sql.VarChar, Rol)
-        .query('SELECT IdRol FROM FacturacionHC.dbo.Rol WHERE Nombre = @NombreRol');
+        .query('SELECT IdRol FROM Rol WHERE Nombre = @NombreRol');
 
       const idRol = rolResult.recordset[0]?.IdRol;
       if (!idRol) {
@@ -58,7 +58,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .input('IdRol', sql.Int, idRol)
         .input('Estado', sql.Bit, Estado === 'Activo' ? 1 : 0)
         .query(`
-          INSERT INTO FacturacionHC.dbo.Usuario (Nombre, Email, Password, IdRol, Estado, FechaRegistro)
+          INSERT INTO Usuario (Nombre, Email, Password, IdRol, Estado, FechaRegistro)
           OUTPUT INSERTED.IdUsuario
           VALUES (@Nombre, @Email, @Password, @IdRol, @Estado, GETDATE())
         `);
@@ -71,7 +71,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({ error: 'Error al crear el usuario' });
     }
   }
-
-
   return res.status(405).json({ error: 'Método no permitido' });
 }

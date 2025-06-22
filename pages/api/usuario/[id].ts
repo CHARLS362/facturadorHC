@@ -27,8 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               WHEN u.Estado = 1 THEN 'Activo' 
               ELSE 'Inactivo' 
             END AS Estado
-          FROM FacturacionHC.dbo.Usuario u
-          LEFT JOIN FacturacionHC.dbo.Rol r ON u.IdRol = r.IdRol
+          FROM Usuario u
+          LEFT JOIN Rol r ON u.IdRol = r.IdRol
           WHERE u.IdUsuario = @Id
         `);
 
@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await pool
         .request()
         .input('Id', sql.Int, parseInt(id))
-        .query('DELETE FROM FacturacionHC.dbo.Usuario WHERE IdUsuario = @Id');
+        .query('DELETE FROM Usuario WHERE IdUsuario = @Id');
 
       return res.status(200).json({ mensaje: 'Usuario eliminado exitosamente' });
     } catch (error) {
@@ -88,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         .input('Estado', sql.Int, EstadoNum);
 
       let updateQuery = `
-        UPDATE FacturacionHC.dbo.Usuario
+        UPDATE Usuario
         SET Nombre = @Nombre,
             Email = @Email,
             IdRol = @IdRol,

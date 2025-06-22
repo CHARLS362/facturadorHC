@@ -25,9 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           p.Estado,
           p.ImagenUrl,
           p.FechaRegistro
-        FROM FacturacionHC.dbo.Producto p
-        LEFT JOIN FacturacionHC.dbo.Categoria c ON p.IdCategoria = c.IdCategoria
-        LEFT JOIN FacturacionHC.dbo.UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
+        FROM Producto p
+        LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
+        LEFT JOIN UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
       `);
     return res.status(200).json(result.recordset);
   } catch (error) {
@@ -65,7 +65,7 @@ if (req.method === 'POST') {
     const categoriaRes = await pool
       .request()
       .input('NombreCategoria', sql.VarChar, CategoriaNombre)
-      .query('SELECT IdCategoria FROM FacturacionHC.dbo.Categoria WHERE Descripcion = @NombreCategoria');
+      .query('SELECT IdCategoria FROM Categoria WHERE Descripcion = @NombreCategoria');
 
     const IdCategoria = categoriaRes.recordset[0]?.IdCategoria;
 
@@ -86,7 +86,7 @@ if (req.method === 'POST') {
       .input('Estado', sql.VarChar, Estado)
       .input('ImagenUrl', sql.VarChar, ImagenUrl || null)
       .query(`
-        INSERT INTO FacturacionHC.dbo.Producto (
+        INSERT INTO Producto (
           IdCategoria, IdUnidadMedida, Codigo, Nombre, Descripcion,
           Precio, Stock, StockMinimo, Tipo, Estado, ImagenUrl, FechaRegistro
         ) VALUES (

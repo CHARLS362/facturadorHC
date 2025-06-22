@@ -29,9 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             p.Estado,
             p.ImagenUrl,
             p.FechaRegistro
-          FROM FacturacionHC.dbo.Producto p
-          LEFT JOIN FacturacionHC.dbo.Categoria c ON p.IdCategoria = c.IdCategoria
-          LEFT JOIN FacturacionHC.dbo.UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
+          FROM Producto p
+          LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
+          LEFT JOIN UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
           WHERE p.IdProducto = @IdProducto
         `);
 
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const pool = await getConnection();
       await pool.request()
         .input('IdProducto', sql.Int, parseInt(id as string))
-        .query('DELETE FROM FacturacionHC.dbo.Producto WHERE IdProducto = @IdProducto');
+        .query('DELETE FROM Producto WHERE IdProducto = @IdProducto');
       return res.status(200).json({ mensaje: 'Producto eliminado correctamente' });
     } catch (error) {
       console.error('Error al eliminar producto:', error);
@@ -79,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const pool = await getConnection();
     const catResult = await pool.request()
       .input('Descripcion', sql.VarChar, CategoriaNombre)
-      .query('SELECT IdCategoria FROM FacturacionHC.dbo.Categoria WHERE Descripcion = @Descripcion');
+      .query('SELECT IdCategoria FROM Categoria WHERE Descripcion = @Descripcion');
     if (catResult.recordset.length === 0) {
       return res.status(400).json({ error: 'Categoría no encontrada' });
     }
@@ -99,7 +99,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .input('Estado', sql.VarChar, Estado)
       .input('ImagenUrl', sql.VarChar, ImagenUrl || null)
       .query(`
-        UPDATE FacturacionHC.dbo.Producto SET
+        UPDATE Producto SET
           IdCategoria = @IdCategoria,
           IdUnidadMedida = @IdUnidadMedida,
           Codigo = @Codigo,
