@@ -39,27 +39,26 @@ body {
   }
 
   .dark {
-    --background: 240 4% 12%; /* Dark Gray */
+    --background: 0 0% 8%; /* Dark Gray for main background */
     --foreground: 0 0% 98%; /* Off-white */
     
-    /* Cards and Sidebar will now be almost black */
-    --card: 240 10% 3.9%; /* Almost Black */
+    /* Cards and Sidebar will now be black */
+    --card: 0 0% 3.9%; /* Near Black for sidebar/cards */
     --card-foreground: 0 0% 98%;
     
     /* Popovers will match the card background */
-    --popover: 240 10% 3.9%;
+    --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 16 100% 63.3%; /* Orange */
     --primary-foreground: 0 0% 98%;
     
-    /* Secondary elements will also match the card background for consistency */
-    --secondary: 240 10% 3.9%;
+    /* Secondary and muted elements will be a lighter gray for contrast inside cards */
+    --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
 
-    /* Muted elements will match the card background */
-    --muted: 240 10% 3.9%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
 
     --accent: 174 60% 40%; /* Teal */
     --accent-foreground: 0 0% 98%;
@@ -67,9 +66,9 @@ body {
     --destructive: 9 85% 63%; /* Red */
     --destructive-foreground: 0 0% 98%;
     
-    /* Borders and inputs will be slightly lighter than cards for visibility */
-    --border: 240 4% 20%; /* Lighter Gray for borders */
-    --input: 240 4% 20%; /* Lighter Gray for inputs */
+    /* Borders and inputs will be a visible gray */
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
     --ring: 16 100% 63.3%; /* Primary color for rings */
 
     --chart-1: 16 100% 63.3%;
@@ -649,5 +648,3 @@ body {
     display: none !important;
   }
 }
-
-    
