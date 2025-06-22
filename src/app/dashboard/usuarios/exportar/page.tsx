@@ -5,9 +5,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, FileDown } from "lucide-react";
+import { ArrowLeft, Printer, FileDown, Download } from "lucide-react";
 import { UserExportPreview, type MockUser } from '@/components/dashboard/user-export-preview';
 import { Skeleton } from '@/components/ui/skeleton';
+import html2pdf from 'html2pdf.js';
 
 export default function ExportarUsuariosPage() {
   const [users, setUsers] = useState<MockUser[]>([]);
@@ -40,6 +41,18 @@ export default function ExportarUsuariosPage() {
     fetchUsuarios();
   }, []);
 
+  const handleDownloadPdf = () => {
+    const element = document.getElementById('printable-area');
+    const opt = {
+      margin:       0.5,
+      filename:     'reporte-usuarios.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().from(element).set(opt).save();
+  };
+
   return (
     <div className="space-y-8">
       <div className="print-hide">
@@ -53,9 +66,13 @@ export default function ExportarUsuariosPage() {
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Volver
               </Button>
+              <Button variant="outline" onClick={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" />
+                Descargar PDF
+              </Button>
               <Button onClick={() => window.print()}>
                 <Printer className="mr-2 h-4 w-4" />
-                Descargar / Imprimir
+                Imprimir
               </Button>
             </div>
           }
