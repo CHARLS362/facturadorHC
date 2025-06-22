@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useEffect, useState, useMemo } from "react";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "../../../../lib/utils";
+import { cn } from "@/lib/utils";
 
 const IGV_RATE = 0.18; // 18% IGV for Peru
 
