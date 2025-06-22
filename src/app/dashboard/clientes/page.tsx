@@ -219,7 +219,7 @@ export default function ClientesPage() {
                         </a>
                       </TableCell>
                       <TableCell>{client.tipoCliente?.descripcion || client.TipoCliente || client.type}</TableCell>
-                      <TableCell>{new Date(client.registeredAt || client.FechaRegistro).toLocaleDateString()}</TableCell>
+                      <TableCell suppressHydrationWarning>{new Date(client.registeredAt || client.FechaRegistro).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
                         <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
                           <Link href={`/dashboard/clientes/${client.id}/editar`}>

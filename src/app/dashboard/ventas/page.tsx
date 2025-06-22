@@ -260,7 +260,7 @@ export default function VentasPage() {
                   filteredSales.map((sale) => (
                     <TableRow key={sale.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-medium">{sale.id}</TableCell>
-                      <TableCell>{sale.date}</TableCell>
+                      <TableCell suppressHydrationWarning>{sale.date}</TableCell>
                       <TableCell>{sale.customer}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2" title={sale.documentType}>

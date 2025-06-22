@@ -1,3 +1,4 @@
+
 "use client";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -10,11 +11,11 @@ import React, { useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Mock Data - In a real app, fetch this based on ventaId
 interface VentaDetalle {
   id: string;
-  fecha: string;
+  fecha: string; // Store raw date string from API
   cliente: {
     nombre: string;
     documento: string;
@@ -40,110 +41,76 @@ interface VentaDetalle {
   notas?: string;
 }
 
-const mockVentas: VentaDetalle[] = [
-  {
-    id: "VENTA001",
-    fecha: "2024-07-20 10:30 AM",
-    cliente: {
-      nombre: "Carlos Mendoza Solano",
-      documento: "20123456789",
-      tipoDocumento: "RUC",
-      direccion: "Av. Los Girasoles 123, San Borja, Lima",
-      email: "carlos.mendoza@example.com",
-      telefono: "987654321"
-    },
-    tipoComprobante: "Factura",
-    serieCorrelativo: "F001-000123",
-    items: [
-      { id: "PROD001", nombre: "Camisa de Algodón Premium", cantidad: 1, precioUnitario: 79.90, total: 79.90 },
-      { id: "PROD002", nombre: "Pantalón Cargo Resistente", cantidad: 1, precioUnitario: 70.10, total: 70.10 },
-    ],
-    subtotal: 150.00,
-    igv: 27.00,
-    totalGeneral: 177.00,
-    metodoPago: "Tarjeta Visa **** 1234",
-    estado: "Pagado",
-    notas: "Entrega preferente por la tarde.",
-  },
-   {
-    id: "VENTA002",
-    fecha: "2024-07-19 02:15 PM",
-    cliente: {
-      nombre: "Luisa Fernandez Diaz",
-      documento: "12345678",
-      tipoDocumento: "DNI",
-      email: "luisa.fernandez@example.com",
-      telefono: "912345678"
-    },
-    tipoComprobante: "Boleta",
-    serieCorrelativo: "B001-000456",
-    items: [
-      { id: "PROD003", nombre: "Zapatillas Urbanas", cantidad: 1, precioUnitario: 85.50, total: 85.50 },
-    ],
-    subtotal: 85.50,
-    igv: 15.39,
-    totalGeneral: 100.89,
-    metodoPago: "Efectivo",
-    estado: "Pendiente",
-  }
-];
-
-
 export default function DetallesVentaPage() {
   const router = useRouter();
   const params = useParams();
   const ventaId = params.id as string;
   const [venta, setVenta] = useState<VentaDetalle | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [formattedDate, setFormattedDate] = useState<string>("");
 
   useEffect(() => {
-  setIsLoading(true);
-  fetch(`/api/venta/${ventaId}`)
-    .then(res => res.json())
-    .then(data => {
-      setVenta({
-        id: `VENTA${data.IdVenta.toString().padStart(3, '0')}`,
-        fecha: new Date(data.FechaVenta).toLocaleString(),
-        cliente: {
-          nombre: data.NombreCliente,
-          documento: data.DocumentoCliente,
-          tipoDocumento: data.NombreTipoDocumentoCliente,
-          direccion: data.DireccionCliente,
-          email: data.EmailCliente,
-          telefono: data.TelefonoCliente,
-        },
-        tipoComprobante: data.TipoDocumento,
-        serieCorrelativo: data.IdComprobante ? `C${data.IdComprobante.toString().padStart(3, '0')}` : "",
-        // Aquí asignas los items reales:
-        items: (data.items || []).map((item: any) => ({
-          id: `PROD${item.IdProducto.toString().padStart(3, '0')}`,
-          nombre: item.NombreProducto,
-          cantidad: item.Cantidad,
-          precioUnitario: item.PrecioUnitario,
-          total: item.Total,
-        })),
-        subtotal: Number(data.Total) / 1.18,
-        igv: Number(data.Total) - (Number(data.Total) / 1.18),
-        totalGeneral: Number(data.Total),
-        metodoPago: data.NombreFormaPago,
-        estado: data.Estado,
-        notas: "", // agrega si tu API lo devuelve
-      });
-      setIsLoading(false);
-    })
-    .catch(() => {
-      setVenta(null);
-      setIsLoading(false);
-    });
+    if (ventaId) {
+      setIsLoading(true);
+      fetch(`/api/venta/${ventaId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            throw new Error(data.error);
+          }
+          setVenta({
+            id: `VENTA${data.IdVenta.toString().padStart(3, '0')}`,
+            fecha: data.FechaVenta, // Store raw ISO string
+            cliente: {
+              nombre: data.NombreCliente,
+              documento: data.DocumentoCliente,
+              tipoDocumento: data.NombreTipoDocumentoCliente,
+              direccion: data.DireccionCliente,
+              email: data.EmailCliente,
+              telefono: data.TelefonoCliente,
+            },
+            tipoComprobante: data.TipoDocumento,
+            serieCorrelativo: data.IdComprobante ? `C${data.IdComprobante.toString().padStart(3, '0')}` : "",
+            items: (data.items || []).map((item: any) => ({
+              id: `PROD${item.IdProducto.toString().padStart(3, '0')}`,
+              nombre: item.NombreProducto,
+              cantidad: item.Cantidad,
+              precioUnitario: item.PrecioUnitario,
+              total: item.Total,
+            })),
+            subtotal: Number(data.Total) / 1.18,
+            igv: Number(data.Total) - (Number(data.Total) / 1.18),
+            totalGeneral: Number(data.Total),
+            metodoPago: data.NombreFormaPago,
+            estado: data.Estado,
+            notas: "",
+          });
+          setFormattedDate(new Date(data.FechaVenta).toLocaleString('es-PE'));
+        })
+        .catch(() => {
+          setVenta(null);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
   }, [ventaId]);
 
   if (isLoading) {
     return (
       <div className="space-y-8">
         <PageHeader title="Cargando Detalles de Venta..." icon={ShoppingBag} />
-        <Card className="shadow-xl rounded-lg w-full max-w-4xl mx-auto border-border/50">
-          <CardHeader><CardTitle>Cargando...</CardTitle></CardHeader>
-          <CardContent><p>Por favor espere...</p></CardContent>
+        <Card className="shadow-xl rounded-lg w-full max-w-4xl mx-auto border-border/50 p-6 space-y-4">
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-32" />
+            </div>
+            <Skeleton className="h-8 w-24 rounded-full" />
+          </div>
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-32 w-full" />
         </Card>
       </div>
     );
@@ -211,7 +178,7 @@ export default function DetallesVentaPage() {
             </div>
             <div>
               <h3 className="font-semibold text-md mb-1 text-primary">Detalles del Comprobante</h3>
-              <p>Fecha de Emisión: {venta.fecha}</p>
+              <p>Fecha de Emisión: {formattedDate}</p>
               <p>Método de Pago: {venta.metodoPago}</p>
               {venta.notas && <p>Notas: {venta.notas}</p>}
             </div>

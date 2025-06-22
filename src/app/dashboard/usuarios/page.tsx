@@ -222,7 +222,7 @@ export default function UsuariosPage() {
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>{user.role}</TableCell>
-                      <TableCell>{user.joinedDate}</TableCell>
+                      <TableCell suppressHydrationWarning>{user.joinedDate}</TableCell>
                       <TableCell>
                         <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"}`}>
                           {user.status}
