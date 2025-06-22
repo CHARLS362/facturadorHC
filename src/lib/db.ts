@@ -1,4 +1,3 @@
-/*
 import sql, { config as SqlConfig, ConnectionPool } from 'mssql';
 
 const dbConfig: SqlConfig = {
@@ -13,6 +12,12 @@ const dbConfig: SqlConfig = {
   },
 };
 
+function corregirConsulta(sql: string): string {
+  // Elimina cualquier nombre de base de datos seguido por .dbo.
+  return sql.replace(/\b[\w\d_]+\b\.dbo\./g, 'dbo.');
+}
+
+
 let pool: ConnectionPool | null = null;
 
 export async function getConnection(): Promise<ConnectionPool> {
@@ -21,35 +26,27 @@ export async function getConnection(): Promise<ConnectionPool> {
   try {
     pool = await sql.connect(dbConfig);
     console.log('Conectado a SQL Server');
-    return pool;
-  } catch (error) {
-    console.error('Error de conexión:', error);
-    throw error;
-  }
-}
-*/
-import sql, { config as SqlConfig, ConnectionPool } from 'mssql';
 
-const dbConfig: SqlConfig = {
-  user: process.env.DB_USER || 'db_abac2e_facturacionhc_admin',         // Cambia por tu usuario remoto
-  password: process.env.DB_PASSWORD || 'facturacion23',    // Cambia por tu contraseña remota
-  server: process.env.DB_SERVER || 'SQL1004.site4now.net',   // IP o dominio del servidor remoto
-  database: process.env.DB_NAME || 'db_abac2e_facturacionhc',
-  port: 1433, 
-  options: {
-    encrypt: true, // true si usas Azure o conexión segura
-    trustServerCertificate: true, // true si el certificado es autofirmado
-  },
-};
+    // Guardamos la función original para luego envolverla
+    const originalRequest = pool.request.bind(pool);
 
-let pool: ConnectionPool | null = null;
+    // Reemplazamos pool.request para envolver la query
+    (pool.request as any) = function() {
+      const req = originalRequest();
 
-export async function getConnection(): Promise<ConnectionPool> {
-  if (pool) return pool;
+      // Guardamos la función query original
+      const originalQuery = req.query.bind(req);
 
-  try {
-    pool = await sql.connect(dbConfig);
-    console.log('Conectado a SQL Server remoto');
+      // Sobrescribimos query para corregir la consulta antes de ejecutarla
+      // Cast to any to work around the complex overloads of the `query` method.
+      (req.query as any) = function(queryString: string, callback?: any) {
+        const correctedQuery = corregirConsulta(queryString);
+        return originalQuery(correctedQuery, callback);
+      };
+
+      return req;
+    };
+
     return pool;
   } catch (error) {
     console.error('Error de conexión:', error);
