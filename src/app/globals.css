@@ -39,25 +39,23 @@ body {
   }
 
   .dark {
-    --background: 0 0% 8%; /* Dark Gray for main background */
+    --background: 0 0% 8%; /* Very dark gray for main background */
     --foreground: 0 0% 98%; /* Off-white */
     
-    /* Cards and Sidebar will now be black */
-    --card: 0 0% 3.9%; /* Near Black for sidebar/cards */
+    /* Cards and Sidebar will be a slightly lighter dark gray */
+    --card: 0 0% 12%; 
     --card-foreground: 0 0% 98%;
     
-    /* Popovers will match the card background */
-    --popover: 0 0% 3.9%;
+    --popover: 0 0% 12%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 16 100% 63.3%; /* Orange */
     --primary-foreground: 0 0% 98%;
     
-    /* Secondary and muted elements will be a lighter gray for contrast inside cards */
-    --secondary: 0 0% 14.9%;
+    --secondary: 0 0% 18%; /* Another shade of gray */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 14.9%;
+    --muted: 0 0% 18%;
     --muted-foreground: 0 0% 63.9%;
 
     --accent: 174 60% 40%; /* Teal */
@@ -67,8 +65,8 @@ body {
     --destructive-foreground: 0 0% 98%;
     
     /* Borders and inputs will be a visible gray */
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
+    --border: 0 0% 18%;
+    --input: 0 0% 22%; /* Slightly lighter for inputs */
     --ring: 16 100% 63.3%; /* Primary color for rings */
 
     --chart-1: 16 100% 63.3%;
