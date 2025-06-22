@@ -43,8 +43,8 @@ export function SidebarNav() {
       {navItems.map((item) => (
         <ProMenuItem
           key={item.href}
-          icon={<item.icon className="h-5 w-5 transition-transform duration-200 ease-in-out group-hover/menu-button:rotate-[5deg] group-hover/menu-button:scale-110" />}
-          component={<Link href={item.href} />}
+          icon={<item.icon className="h-5 w-5 transition-transform duration-200 ease-in-out group-hover:rotate-[5deg] group-hover:scale-110" />}
+          component={<Link href={item.href} className="group" />}
           active={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
         >
           {!collapsed && item.label}
