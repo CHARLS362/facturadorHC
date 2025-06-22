@@ -39,26 +39,26 @@ body {
   }
 
   .dark {
-    --background: 240 10% 3.9%; /* Almost Black */
+    --background: 240 4% 12%; /* Dark Gray */
     --foreground: 0 0% 98%; /* Off-white */
     
-    /* Cards and Sidebar will have a distinct dark gray background */
-    --card: 240 4% 12%; /* Dark Gray */
+    /* Cards and Sidebar will now be almost black */
+    --card: 240 10% 3.9%; /* Almost Black */
     --card-foreground: 0 0% 98%;
     
     /* Popovers will match the card background */
-    --popover: 240 4% 12%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 16 100% 63.3%; /* Orange */
     --primary-foreground: 0 0% 98%;
     
     /* Secondary elements will also match the card background for consistency */
-    --secondary: 240 4% 12%;
+    --secondary: 240 10% 3.9%;
     --secondary-foreground: 0 0% 98%;
 
     /* Muted elements will match the card background */
-    --muted: 240 4% 12%;
+    --muted: 240 10% 3.9%;
     --muted-foreground: 240 5% 64.9%;
 
     --accent: 174 60% 40%; /* Teal */
@@ -649,3 +649,5 @@ body {
     display: none !important;
   }
 }
+
+    
