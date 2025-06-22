@@ -3,12 +3,17 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
+interface User {
+  email?: string;
+  name?: string;
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { email?: string; name?: string } | null;
-  login: (email: string, rememberMe: boolean) => void;
+  user: User | null;
+  login: (userData: any, rememberMe: boolean) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -16,29 +21,45 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Hardcode user to be authenticated for development
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [user, setUser] = useState<{ email?: string; name?: string } | null>({ email: 'test@example.com', name: 'Usuario de Prueba' });
-  const [isLoading, setIsLoading] = useState(false); // Set to false as we are not loading from storage
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
-  // This effect will now ensure that if the user somehow lands on /login, they are sent to /dashboard
+  // On component mount, check for stored user session
   useEffect(() => {
-    if (pathname === '/login') {
-      router.replace('/dashboard');
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser({ email: userData.Email, name: userData.Nombre });
+        setIsAuthenticated(true);
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      // Clear potentially corrupted storage
+      localStorage.removeItem('user');
+    } finally {
+      setIsLoading(false);
     }
-  }, [pathname, router]);
+  }, []);
 
-  // Login is no longer needed for auth, but we keep it to satisfy the type.
-  const login = useCallback(() => {
+  const login = useCallback((userData: any, rememberMe: boolean) => {
+    if (rememberMe) {
+      localStorage.setItem('user', JSON.stringify(userData));
+    }
+    // Set user state from userData. The API returns { Nombre, Email, ... }
+    setUser({ email: userData.Email, name: userData.Nombre });
+    setIsAuthenticated(true);
     router.replace('/dashboard');
   }, [router]);
 
-  // Logout does nothing, to prevent signing out during development.
   const logout = useCallback(() => {
-    console.log("Logout disabled in test mode.");
-  }, []);
+    localStorage.removeItem('user');
+    setUser(null);
+    setIsAuthenticated(false);
+    router.replace('/login');
+  }, [router]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, user, login, logout, isLoading }}>
