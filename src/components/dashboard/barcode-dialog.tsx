@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -9,7 +10,7 @@ import { Printer, X } from "lucide-react";
 interface BarcodeDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  product: { id: string | number; name: string; } | null;
+  product: { id: string | number; name: string; sku?: string; } | null;
 }
 
 export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogProps) {
@@ -17,19 +18,30 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
 
   useEffect(() => {
     if (isOpen && product && barcodeRef.current) {
+      // Use SKU if available, otherwise fall back to ID. Ensure it's not an empty string.
+      const valueToEncode = product.sku || String(product.id);
+
+      if (!valueToEncode || !valueToEncode.trim()) {
+        console.error("Barcode value is empty or invalid.");
+        if (barcodeRef.current) barcodeRef.current.innerHTML = ''; // Clear previous barcode
+        return;
+      }
+      
       try {
-        JsBarcode(barcodeRef.current, String(product.id), {
+        JsBarcode(barcodeRef.current, valueToEncode, {
           format: "CODE128",
-          lineColor: "#000",
+          lineColor: "#000000",
+          background: "#ffffff",
           width: 2,
           height: 80,
           displayValue: true,
           fontOptions: "bold",
-          fontSize: 18,
+          fontSize: 16,
           textMargin: 5
         });
       } catch (e) {
         console.error("Failed to generate barcode:", e);
+        if (barcodeRef.current) barcodeRef.current.innerHTML = '';
       }
     }
   }, [isOpen, product]);
@@ -39,7 +51,6 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
   const handlePrint = () => {
     if (!barcodeRef.current || !product) return;
     
-    // Improved print content to include the product name
     const printContent = `
       <div style="text-align: center; font-family: sans-serif; page-break-inside: avoid;">
         <h3 style="margin-bottom: 10px; font-size: 16px; font-weight: bold;">${product.name}</h3>
@@ -85,7 +96,6 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
             Código de barras generado para el producto: <strong>{product.name}</strong>
           </DialogDescription>
         </DialogHeader>
-        {/* Improved preview to include product name directly above barcode */}
         <div className="py-4 flex flex-col justify-center items-center bg-white rounded-md text-black">
           <p className="font-bold text-center mb-2 px-2">{product.name}</p>
           <svg ref={barcodeRef}></svg>

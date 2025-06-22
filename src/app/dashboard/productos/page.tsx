@@ -26,6 +26,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 interface MockProduct {
   id: number;
   name: string;
+  sku: string;
   category: string;
   price: string;
   stock: number;
@@ -52,6 +53,7 @@ export default function ProductosPage() {
         const formattedProducts: MockProduct[] = data.map((prod: any) => ({
           id: prod.IdProducto,
           name: prod.Nombre,
+          sku: prod.Codigo || `N/A-${prod.IdProducto}`,
           category: prod.CategoriaNombre || 'Sin categoría',
           price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
           stock: prod.Stock,
@@ -83,8 +85,8 @@ export default function ProductosPage() {
     if (!searchTerm) return products;
     return products.filter(product =>
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(product.id).toLowerCase().includes(searchTerm.toLowerCase())
+      product.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [products, searchTerm]);
 
