@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -38,15 +37,30 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
   if (!product) return null;
 
   const handlePrint = () => {
-    if (!barcodeRef.current) return;
+    if (!barcodeRef.current || !product) return;
     
-    const printContent = barcodeRef.current.outerHTML;
+    // Improved print content to include the product name
+    const printContent = `
+      <div style="text-align: center; font-family: sans-serif; page-break-inside: avoid;">
+        <h3 style="margin-bottom: 10px; font-size: 16px; font-weight: bold;">${product.name}</h3>
+        ${barcodeRef.current.outerHTML}
+      </div>
+    `;
+
     const printWindow = window.open('', '', 'height=400,width=800');
 
     if (printWindow) {
       printWindow.document.write(`
         <html>
-          <head><title>Imprimir: ${product.name}</title></head>
+          <head>
+            <title>Imprimir: ${product.name}</title>
+            <style>
+              @media print {
+                @page { size: auto; margin: 10mm; }
+                body { margin: 0; }
+              }
+            </style>
+          </head>
           <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
             ${printContent}
             <script>
@@ -68,10 +82,12 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
         <DialogHeader>
           <DialogTitle>Código de Barras</DialogTitle>
           <DialogDescription>
-            Código de barras para el producto: <strong>{product.name}</strong>
+            Código de barras generado para el producto: <strong>{product.name}</strong>
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 flex justify-center items-center bg-white rounded-md">
+        {/* Improved preview to include product name directly above barcode */}
+        <div className="py-4 flex flex-col justify-center items-center bg-white rounded-md text-black">
+          <p className="font-bold text-center mb-2 px-2">{product.name}</p>
           <svg ref={barcodeRef}></svg>
         </div>
         <DialogFooter className="sm:justify-end">
