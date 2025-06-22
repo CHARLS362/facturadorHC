@@ -39,24 +39,37 @@ body {
   }
 
   .dark {
-    --background: 240 10% 3.9%; /* Very dark gray */
+    --background: 240 10% 3.9%; /* Almost Black */
     --foreground: 0 0% 98%; /* Off-white */
-    --card: 240 4% 18%; /* Unify with secondary for better contrast */
-    --card-foreground: 0 0% 98%; /* Off-white */
-    --popover: 240 4% 18%; /* Unify with secondary for better contrast */
-    --popover-foreground: 0 0% 98%; /* Off-white */
+    
+    /* Cards and Sidebar will have a distinct dark gray background */
+    --card: 240 4% 12%; /* Dark Gray */
+    --card-foreground: 0 0% 98%;
+    
+    /* Popovers will match the card background */
+    --popover: 240 4% 12%;
+    --popover-foreground: 0 0% 98%;
+
     --primary: 16 100% 63.3%; /* Orange */
-    --primary-foreground: 0 0% 98%; /* Off-white for primary on dark */
-    --secondary: 240 4% 18%; /* A bit lighter for secondary elements */
-    --secondary-foreground: 0 0% 98%; /* Off-white */
-    --muted: 240 4% 18%; /* Match secondary */
-    --muted-foreground: 240 5% 64.9%; /* Cooler Dark Muted Foreground */
+    --primary-foreground: 0 0% 98%;
+    
+    /* Secondary elements will also match the card background for consistency */
+    --secondary: 240 4% 12%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Muted elements will match the card background */
+    --muted: 240 4% 12%;
+    --muted-foreground: 240 5% 64.9%;
+
     --accent: 174 60% 40%; /* Teal */
-    --accent-foreground: 0 0% 98%; /* Off-white */
-    --destructive: 9 85% 63%; /* #EF5350 */
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 9 85% 63%; /* Red */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 18%; /* Match secondary/muted for a cohesive look */
-    --input: 240 4% 18%; /* Match secondary/muted */
+    
+    /* Borders and inputs will be slightly lighter than cards for visibility */
+    --border: 240 4% 20%; /* Lighter Gray for borders */
+    --input: 240 4% 20%; /* Lighter Gray for inputs */
     --ring: 16 100% 63.3%; /* Primary color for rings */
 
     --chart-1: 16 100% 63.3%;
