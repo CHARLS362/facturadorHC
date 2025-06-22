@@ -69,47 +69,51 @@ export default function NuevoUsuarioPage() {
     },
   });
 
-async function onSubmit(data: UsuarioFormValues) {
-  setIsSubmitting(true);
-  try {
-    const res = await fetch('/api/usuario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Nombre: data.fullName,
-        Email: data.email,
-        Password: data.password,
-        Rol: data.role,
-        Estado: data.status === "Activo" ? 1 : 0,
-      }),
-    });
+  async function onSubmit(data: UsuarioFormValues) {
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/usuario', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Nombre: data.fullName,
+          Email: data.email,
+          Password: data.password,
+          Rol: data.role,
+          Estado: data.status, // FIX: Send the string status directly
+        }),
+      });
 
-    if (!res.ok) throw new Error('Error al crear usuario');
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
+      const result = await res.json();
+      if (!res.ok) {
+        // FIX: Better error handling
+        throw new Error(result.error || 'No se pudo crear el usuario.');
+      }
+
+      toast({
+        variant: "success",
+        title: (
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            </div>
+            <span>Usuario Creado</span>
           </div>
-          <span>Usuario Creado</span>
-        </div>
-      ),
-      description: `El usuario ${data.fullName} ha sido creado exitosamente.`,
-    });
-    form.reset();
-  } catch (error) {
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "No se pudo crear el usuario.",
-    });
-  } finally {
-    setIsSubmitting(false);
+        ),
+        description: `El usuario ${data.fullName} ha sido creado exitosamente.`,
+      });
+      form.reset();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo crear el usuario.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-  console.log("Data enviada:", data);
 
-}
 
   return (
     <div className="space-y-8">
@@ -284,4 +288,3 @@ async function onSubmit(data: UsuarioFormValues) {
     </div>
   );
 }
-
