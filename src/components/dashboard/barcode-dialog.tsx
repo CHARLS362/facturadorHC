@@ -1,34 +1,35 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import JsBarcode from "jsbarcode";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, X } from "lucide-react";
+import { Printer, X, AlertTriangle } from "lucide-react";
 
 interface BarcodeDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  product: { id: string | number; name: string; sku?: string; } | null;
+  product: { id: string | number; name: string; sku?: string | null; } | null;
 }
 
 export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogProps) {
   const barcodeRef = useRef<SVGSVGElement | null>(null);
+  const [barcodeError, setBarcodeError] = useState<string | null>(null);
 
   useEffect(() => {
+    setBarcodeError(null);
     if (isOpen && product && barcodeRef.current) {
-      // Use SKU if available, otherwise fall back to ID. Ensure it's not an empty string.
       const valueToEncode = product.sku || String(product.id);
 
-      if (!valueToEncode || !valueToEncode.trim()) {
-        console.error("Barcode value is empty or invalid.");
-        if (barcodeRef.current) barcodeRef.current.innerHTML = ''; // Clear previous barcode
+      if (!valueToEncode || String(valueToEncode).trim() === "") {
+        setBarcodeError("Valor inválido para generar el código.");
+        if (barcodeRef.current) barcodeRef.current.innerHTML = '';
         return;
       }
       
       try {
-        JsBarcode(barcodeRef.current, valueToEncode, {
+        JsBarcode(barcodeRef.current, String(valueToEncode), {
           format: "CODE128",
           lineColor: "#000000",
           background: "#ffffff",
@@ -41,6 +42,7 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
         });
       } catch (e) {
         console.error("Failed to generate barcode:", e);
+        setBarcodeError("Error al generar código. Verifique el SKU.");
         if (barcodeRef.current) barcodeRef.current.innerHTML = '';
       }
     }
@@ -49,7 +51,7 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
   if (!product) return null;
 
   const handlePrint = () => {
-    if (!barcodeRef.current || !product) return;
+    if (!barcodeRef.current || !product || barcodeError) return;
     
     const printContent = `
       <div style="text-align: center; font-family: sans-serif; page-break-inside: avoid;">
@@ -68,11 +70,11 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
             <style>
               @media print {
                 @page { size: auto; margin: 10mm; }
-                body { margin: 0; }
+                body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; }
               }
             </style>
           </head>
-          <body style="display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0;">
+          <body>
             ${printContent}
             <script>
               window.onload = function() {
@@ -99,12 +101,18 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
         <div className="py-4 flex flex-col justify-center items-center bg-white rounded-md text-black">
           <p className="font-bold text-center mb-2 px-2">{product.name}</p>
           <svg ref={barcodeRef}></svg>
+          {barcodeError && (
+            <div className="mt-4 text-red-600 text-sm font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              {barcodeError}
+            </div>
+          )}
         </div>
         <DialogFooter className="sm:justify-end">
            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
             <X className="mr-2 h-4 w-4" /> Cerrar
           </Button>
-          <Button type="button" onClick={handlePrint}>
+          <Button type="button" onClick={handlePrint} disabled={!!barcodeError}>
             <Printer className="mr-2 h-4 w-4" /> Imprimir
           </Button>
         </DialogFooter>
