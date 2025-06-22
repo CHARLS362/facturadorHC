@@ -41,9 +41,9 @@ body {
   .dark {
     --background: 240 10% 3.9%; /* Very dark gray */
     --foreground: 0 0% 98%; /* Off-white */
-    --card: 240 4% 12%; /* Lighter dark gray for cards/sidebar */
+    --card: 240 4% 18%; /* Unify with secondary for better contrast */
     --card-foreground: 0 0% 98%; /* Off-white */
-    --popover: 240 4% 12%; /* Match card */
+    --popover: 240 4% 18%; /* Unify with secondary for better contrast */
     --popover-foreground: 0 0% 98%; /* Off-white */
     --primary: 16 100% 63.3%; /* Orange */
     --primary-foreground: 0 0% 98%; /* Off-white for primary on dark */
