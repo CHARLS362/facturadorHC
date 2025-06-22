@@ -28,15 +28,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem('user');
+      // Prefer localStorage (remember me) over sessionStorage
+      let storedUser = localStorage.getItem('user');
+      if (!storedUser) {
+        storedUser = sessionStorage.getItem('user');
+      }
+
       if (storedUser) {
         const userData = JSON.parse(storedUser);
         setUser({ email: userData.Email, name: userData.Nombre });
         setIsAuthenticated(true);
       }
     } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
+      console.error("Failed to parse user from storage", error);
       localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
     } finally {
       setIsLoading(false);
     }
@@ -60,8 +66,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const userData = result.usuario;
 
+      // Clear previous storage to avoid conflicts
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
+
       if (rememberMe) {
         localStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        sessionStorage.setItem('user', JSON.stringify(userData));
       }
       
       setUser({ email: userData.Email, name: userData.Nombre });
@@ -77,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(() => {
     localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
     router.replace('/login');
