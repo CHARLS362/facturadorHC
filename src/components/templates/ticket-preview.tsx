@@ -85,7 +85,7 @@ export function TicketPreview() {
           className="mx-auto mb-2"
           data-ai-hint="small business logo"
         />
-        <p className="font-bold text-sm">{businessInfo.name}</p>
+        <p className="font-bold text-lg text-primary">{businessInfo.name}</p>
         <p>{businessInfo.address}</p>
         <p>RUC: {businessInfo.ruc}</p>
         <p>Tel: {businessInfo.phone}</p>
@@ -95,7 +95,7 @@ export function TicketPreview() {
 
       {/* Ticket Info */}
       <section className="mb-3 text-center">
-        <p className="font-bold text-sm">BOLETA DE VENTA ELECTRÓNICA</p>
+        <p className="font-bold text-sm text-primary">BOLETA DE VENTA ELECTRÓNICA</p>
         <p>{ticketId}</p>
       </section>
       
@@ -111,7 +111,7 @@ export function TicketPreview() {
 
       {/* Items */}
       <section className="mb-3">
-        <div className="grid grid-cols-[2fr_1fr_1fr] gap-1 mb-1 font-semibold">
+        <div className="grid grid-cols-[2fr_1fr_1fr] gap-1 mb-1 font-semibold text-primary">
           <span>Descripción</span>
           <span className="text-right">Cant.</span>
           <span className="text-right">Importe</span>
@@ -137,7 +137,7 @@ export function TicketPreview() {
           <span className="font-semibold">IGV (18%):</span>
           <span>S/ {igv.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between font-bold text-sm">
+        <div className="flex justify-between font-bold text-lg text-primary mt-2 pt-2 border-t border-dashed border-border/70">
           <span className="font-headline">TOTAL A PAGAR:</span>
           <span className="font-headline">S/ {total.toFixed(2)}</span>
         </div>

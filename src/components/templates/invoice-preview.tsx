@@ -34,8 +34,7 @@ export function InvoicePreview() {
   const [isLoading, setIsLoading] = useState(true);
 
   const [currentDateString, setCurrentDateString] = useState<string>("Calculando...");
-  const [dueDateString, setDueDateString] = useState<string>("Calculando...");
-
+  
   useEffect(() => {
     // Simulate fetching company data
     setIsLoading(true);
@@ -46,10 +45,6 @@ export function InvoicePreview() {
 
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }));
-    
-    const dueDate = new Date(today);
-    dueDate.setDate(today.getDate() + 30);
-    setDueDateString(dueDate.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }));
   }, []);
 
   if (isLoading || !companyInfo) {
@@ -95,10 +90,10 @@ export function InvoicePreview() {
           <p>{companyInfo.address}</p>
           <p>Tel: {companyInfo.phone} / Email: {companyInfo.email}</p>
         </div>
-        <div className="col-span-1 border-2 border-border/80 rounded-lg p-2 text-center">
+        <div className="col-span-1 border-2 border-primary/80 rounded-lg p-2 text-center">
             <h1 className="font-bold text-lg">R.U.C. {companyInfo.ruc}</h1>
             <Separator className="my-1" />
-            <h2 className="font-bold text-lg">FACTURA ELECTRÓNICA</h2>
+            <h2 className="font-bold text-lg text-primary">FACTURA ELECTRÓNICA</h2>
             <Separator className="my-1" />
             <p className="font-bold text-lg">{invoiceId}</p>
         </div>
@@ -113,7 +108,6 @@ export function InvoicePreview() {
         </div>
          <div className="col-span-2 border border-border/50 rounded-md p-2">
             <p><span className="font-bold w-[130px] inline-block">Fecha de Emisión:</span> {currentDateString}</p>
-            <p><span className="font-bold w-[130px] inline-block">Fecha de Vencimiento:</span> {dueDateString}</p>
             <p><span className="font-bold w-[130px] inline-block">Moneda:</span> SOLES</p>
         </div>
       </section>
@@ -121,7 +115,7 @@ export function InvoicePreview() {
       {/* Items Table */}
       <section className="mb-4">
         <Table>
-          <TableHeader className="bg-muted/60">
+          <TableHeader className="bg-primary/10">
             <TableRow>
               <TableHead className="font-bold text-foreground w-[10%]">CANT.</TableHead>
               <TableHead className="font-bold text-foreground w-[15%]">UNIDAD</TableHead>
@@ -152,7 +146,7 @@ export function InvoicePreview() {
       <section className="grid grid-cols-3 gap-4">
           <div className="col-span-2 space-y-2">
             <div className="border border-border/50 rounded-md p-2">
-                <p><span className="font-bold">SON:</span> DOS MIL SETECIENTOS CATORCE Y 00/100 SOLES</p>
+                <p><span className="font-bold text-primary">SON:</span> DOS MIL SETECIENTOS CATORCE Y 00/100 SOLES</p>
             </div>
             <div className="border border-border/50 rounded-md p-2">
                 <h3 className="font-bold mb-1">OBSERVACIONES:</h3>
@@ -189,7 +183,7 @@ export function InvoicePreview() {
                 <span className="font-bold">OP. INAFECTA:</span>
                 <span className="font-medium">S/ 0.00</span>
             </div>
-            <div className="flex justify-between bg-muted/60 p-1 rounded-sm">
+            <div className="flex justify-between bg-primary text-primary-foreground p-2 rounded-md">
                 <span className="font-bold text-base">IMPORTE TOTAL:</span>
                 <span className="font-bold text-base">S/ {totalAmount.toFixed(2)}</span>
             </div>
