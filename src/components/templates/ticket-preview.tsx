@@ -4,11 +4,40 @@
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import React, { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface BusinessInfo {
+  name: string;
+  address: string;
+  ruc: string;
+  phone: string;
+  logoUrl: string;
+}
+
+const mockBusinessData: BusinessInfo = {
+  name: "Mi Cafetería Express",
+  address: "Jr. Los Pinos 456, Miraflores",
+  ruc: "10987654321",
+  phone: "987-654-321",
+  logoUrl: "https://placehold.co/120x40.png?text=Mi+Café",
+};
+
+const ticketId = "B001-00054321";
+const qrData = `https://consulta.sunat.gob.pe/cl-ti-itconsvalicpe/ConsValiCpe.htm?num_ruc=${mockBusinessData.ruc}&tip_doc=03&num_ser=${ticketId.split('-')[0]}&num_doc=${ticketId.split('-')[1]}&fec_emi=${new Date().toISOString().split('T')[0]}&mto_tot=32.45`;
 
 export function TicketPreview() {
+  const [businessInfo, setBusinessInfo] = useState<BusinessInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentDateTimeString, setCurrentDateTimeString] = useState<string>("Calculando...");
 
   useEffect(() => {
+    // Simulate fetching business data
+    setIsLoading(true);
+    setTimeout(() => {
+      setBusinessInfo(mockBusinessData);
+      setIsLoading(false);
+    }, 500);
+
     setCurrentDateTimeString(new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }));
   }, []);
 
@@ -21,22 +50,45 @@ export function TicketPreview() {
   const igv = subtotal * 0.18;
   const total = subtotal + igv;
 
+  if (isLoading || !businessInfo) {
+      return (
+          <div className="bg-card p-6 rounded-lg shadow-xl border border-border/30 max-w-sm mx-auto font-mono text-xs space-y-4">
+              <header className="text-center space-y-2">
+                  <Skeleton className="h-[40px] w-[120px] mx-auto" />
+                  <Skeleton className="h-5 w-3/4 mx-auto" />
+                  <Skeleton className="h-4 w-1/2 mx-auto" />
+              </header>
+              <Skeleton className="h-px w-full" />
+              <div className="space-y-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+              </div>
+               <Skeleton className="h-px w-full" />
+               <div className="space-y-2">
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-4/6" />
+                  <Skeleton className="h-4 w-3/6" />
+               </div>
+          </div>
+      )
+  }
+
   return (
     <div className="bg-card p-6 rounded-lg shadow-xl border border-border/30 max-w-sm mx-auto font-mono text-xs text-foreground">
       {/* Header */}
       <header className="text-center mb-4">
         <Image 
-          src="https://placehold.co/120x40.png?text=Mi+Negocio" 
+          src={businessInfo.logoUrl}
           alt="Business Logo" 
-          width={100} 
-          height={33}
+          width={120} 
+          height={40}
           className="mx-auto mb-2"
           data-ai-hint="small business logo"
         />
-        <p className="font-bold text-sm">Nombre de Mi Negocio</p>
-        <p>Jr. Los Pinos 456, Miraflores</p>
-        <p>RUC: 10987654321</p>
-        <p>Tel: 987-654-321</p>
+        <p className="font-bold text-sm">{businessInfo.name}</p>
+        <p>{businessInfo.address}</p>
+        <p>RUC: {businessInfo.ruc}</p>
+        <p>Tel: {businessInfo.phone}</p>
       </header>
 
       <Separator className="my-3 border-dashed border-border/70" />
@@ -44,7 +96,7 @@ export function TicketPreview() {
       {/* Ticket Info */}
       <section className="mb-3 text-center">
         <p className="font-bold text-sm">BOLETA DE VENTA ELECTRÓNICA</p>
-        <p>B001-00054321</p>
+        <p>{ticketId}</p>
       </section>
       
       <Separator className="my-3 border-dashed border-border/70" />
@@ -97,10 +149,10 @@ export function TicketPreview() {
       <section className="mb-4 text-center">
         <p>Forma de Pago: TARJETA VISA **** **** **** 1234</p>
         <Image 
-          src="https://placehold.co/80x80.png?text=QR" 
-          alt="QR Code" 
-          width={70} 
-          height={70}
+          src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}`} 
+          alt="Código QR de la Boleta" 
+          width={80} 
+          height={80}
           className="mx-auto my-2"
           data-ai-hint="qr code receipt"
         />

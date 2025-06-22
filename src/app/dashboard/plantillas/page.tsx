@@ -1,3 +1,4 @@
+
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { FileText, Eye, Edit, PlusCircle } from "lucide-react";
@@ -5,6 +6,7 @@ import { InvoicePreview } from "@/components/templates/invoice-preview";
 import { TicketPreview } from "@/components/templates/ticket-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 
 export default function PlantillasPage() {
@@ -15,7 +17,7 @@ export default function PlantillasPage() {
         description="Personaliza y previsualiza tus plantillas de facturas y boletas."
         icon={FileText}
         actions={
-          <Button>
+          <Button disabled>
             <PlusCircle className="mr-2 h-4 w-4" />
             Crear Nueva Plantilla
           </Button>
@@ -33,11 +35,14 @@ export default function PlantillasPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Plantilla de Factura Actual</CardTitle>
-                  <CardDescription>Previsualización de la plantilla de factura electrónica.</CardDescription>
+                  <CardDescription>Esta es una vista previa de cómo se verán tus facturas.</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4" /> Previsualizar</Button>
-                  <Button size="sm"><Edit className="mr-2 h-4 w-4" /> Personalizar</Button>
+                  <Button size="sm" asChild>
+                    <Link href="/dashboard/configuracion">
+                      <Edit className="mr-2 h-4 w-4" /> Personalizar Datos
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </CardHeader>
@@ -54,11 +59,14 @@ export default function PlantillasPage() {
               <div className="flex justify-between items-center">
                 <div>
                   <CardTitle>Plantilla de Boleta Actual</CardTitle>
-                  <CardDescription>Previsualización de la plantilla de boleta electrónica.</CardDescription>
+                  <CardDescription>Esta es una vista previa de cómo se verán tus boletas.</CardDescription>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="sm"><Eye className="mr-2 h-4 w-4" /> Previsualizar</Button>
-                  <Button size="sm"><Edit className="mr-2 h-4 w-4" /> Personalizar</Button>
+                   <Button size="sm" asChild>
+                    <Link href="/dashboard/configuracion">
+                      <Edit className="mr-2 h-4 w-4" /> Personalizar Datos
+                    </Link>
+                  </Button>
                 </div>
               </div>
             </CardHeader>

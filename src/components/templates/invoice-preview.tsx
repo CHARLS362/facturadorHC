@@ -5,19 +5,77 @@ import Image from "next/image";
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import React, { useState, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface CompanyInfo {
+  name: string;
+  address: string;
+  ruc: string;
+  phone: string;
+  email: string;
+  logoUrl: string;
+}
+
+const mockCompanyData: CompanyInfo = {
+  name: "FacturacionHC Predeterminada S.A.C.",
+  address: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
+  ruc: "20123456789",
+  phone: "(01) 555-1234",
+  email: "ventas@facturacionhc.com",
+  logoUrl: "https://placehold.co/180x60.png?text=Mi+Logo",
+};
+
+const invoiceId = "F001-00012345";
+const qrData = `https://consulta.sunat.gob.pe/cl-ti-itconsvalicpe/ConsValiCpe.htm?num_ruc=${mockCompanyData.ruc}&tip_doc=01&num_ser=${invoiceId.split('-')[0]}&num_doc=${invoiceId.split('-')[1]}&fec_emi=${new Date().toISOString().split('T')[0]}&mto_tot=2714.00`;
 
 export function InvoicePreview() {
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [currentDateString, setCurrentDateString] = useState<string>("Calculando...");
   const [dueDateString, setDueDateString] = useState<string>("Calculando...");
 
   useEffect(() => {
+    // Simulate fetching company data
+    setIsLoading(true);
+    setTimeout(() => {
+      setCompanyInfo(mockCompanyData);
+      setIsLoading(false);
+    }, 500);
+
     const today = new Date();
     setCurrentDateString(today.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
     
-    const dueDate = new Date(today); // Create a new Date object for due date calculation
+    const dueDate = new Date(today);
     dueDate.setDate(today.getDate() + 30);
     setDueDateString(dueDate.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' }));
   }, []);
+
+  if (isLoading || !companyInfo) {
+      return (
+          <div className="bg-card p-8 rounded-lg shadow-2xl border border-border/50 max-w-4xl mx-auto space-y-8">
+              <header className="flex justify-between items-start">
+                  <div>
+                      <Skeleton className="h-[60px] w-[180px] mb-2" />
+                      <Skeleton className="h-6 w-64 mt-2" />
+                      <Skeleton className="h-4 w-72 mt-2" />
+                      <Skeleton className="h-4 w-32 mt-1" />
+                  </div>
+                  <div className="text-right space-y-2">
+                      <Skeleton className="h-10 w-48 ml-auto" />
+                      <Skeleton className="h-6 w-32 ml-auto" />
+                      <Skeleton className="h-4 w-56 ml-auto mt-4" />
+                      <Skeleton className="h-4 w-56 ml-auto mt-1" />
+                  </div>
+              </header>
+              <div className="p-4 bg-muted/30 rounded-md border border-border/30 space-y-2">
+                  <Skeleton className="h-5 w-24" />
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 w-2/3" />
+              </div>
+          </div>
+      );
+  }
 
   return (
     <div className="bg-card p-8 rounded-lg shadow-2xl border border-border/50 max-w-4xl mx-auto font-body text-sm text-foreground">
@@ -25,22 +83,22 @@ export function InvoicePreview() {
       <header className="flex justify-between items-start mb-8">
         <div>
           <Image 
-            src="https://placehold.co/150x50.png?text=Mi+Logo" 
+            src={companyInfo.logoUrl}
             alt="Company Logo" 
-            width={150} 
-            height={50}
+            width={180} 
+            height={60}
             className="mb-2"
             data-ai-hint="company logo"
           />
-          <p className="font-semibold text-lg">Nombre de Mi Empresa S.A.C.</p>
-          <p>Av. Principal 123, Lima, Perú</p>
-          <p>RUC: 20123456789</p>
-          <p>Tel: (01) 555-1234</p>
-          <p>Email: ventas@miempresa.com</p>
+          <p className="font-semibold text-lg">{companyInfo.name}</p>
+          <p>{companyInfo.address}</p>
+          <p>RUC: {companyInfo.ruc}</p>
+          <p>Tel: {companyInfo.phone}</p>
+          <p>Email: {companyInfo.email}</p>
         </div>
         <div className="text-right">
           <h1 className="text-3xl font-headline font-bold text-primary mb-1">FACTURA</h1>
-          <p className="text-lg">F001-00012345</p>
+          <p className="text-lg">{invoiceId}</p>
           <Separator className="my-2 bg-border/70" />
           <p><span className="font-semibold">Fecha de Emisión:</span> {currentDateString}</p>
           <p><span className="font-semibold">Fecha de Vencimiento:</span> {dueDateString}</p>
@@ -110,7 +168,7 @@ export function InvoicePreview() {
           <p>Banco: Banco Ejemplo Perú</p>
           <p>Cuenta Corriente Soles: 123-4567890-0-01</p>
           <p>CCI: 00212300456789000150</p>
-          <p>Titular: Nombre de Mi Empresa S.A.C.</p>
+          <p>Titular: {companyInfo.name}</p>
         </div>
          <div className="p-4 bg-muted/30 rounded-md border border-border/30">
           <h3 className="font-headline font-semibold text-md mb-2 text-primary">Términos y Condiciones:</h3>
@@ -125,8 +183,8 @@ export function InvoicePreview() {
             <p>Autorizado mediante Resolución de Intendencia N° 034-005-0005555/SUNAT</p>
         </div>
         <Image 
-            src="https://placehold.co/100x100.png?text=QR" 
-            alt="QR Code" 
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(qrData)}`}
+            alt="Código QR de la Factura" 
             width={100} 
             height={100}
             data-ai-hint="qr code"
@@ -136,7 +194,7 @@ export function InvoicePreview() {
       {/* Footer */}
       <footer className="text-center text-xs text-muted-foreground pt-6 border-t border-border/50">
         <p>Gracias por su preferencia.</p>
-        <p>FacturacionHC - Innovación para tu negocio.</p>
+        <p>{companyInfo.name} - Innovación para tu negocio.</p>
       </footer>
     </div>
   );
