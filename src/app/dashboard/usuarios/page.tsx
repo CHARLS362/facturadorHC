@@ -1,6 +1,7 @@
+
 "use client";
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MockUser {
   id: string;
@@ -49,30 +50,36 @@ export default function UsuariosPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-  const fetchUsuarios = async () => {
-    try {
-      const res = await fetch('/api/usuario');
-      const data = await res.json();
-
-    const usuariosTransformados: MockUser[] = data.map((usuario: any) => ({
-      id: usuario.IdUsuario, 
-      name: usuario.Nombre,
-      email: usuario.Email,
-      role: usuario.Rol,
-      joinedDate: new Date(usuario.FechaIngreso).toISOString().split('T')[0], 
-      status: usuario.Estado,
-    }));
-
-      setUsers(usuariosTransformados);
-    } catch (error) {
-      console.error('Error al obtener usuarios:', error);
-    }
-  };
-
-  fetchUsuarios();
-  }, []);
+    const fetchUsuarios = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/usuario');
+        const data = await res.json();
+        const usuariosTransformados: MockUser[] = data.map((usuario: any) => ({
+          id: usuario.IdUsuario, 
+          name: usuario.Nombre,
+          email: usuario.Email,
+          role: usuario.Rol,
+          joinedDate: new Date(usuario.FechaIngreso).toLocaleDateString('es-PE'),
+          status: usuario.Estado,
+        }));
+        setUsers(usuariosTransformados);
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los usuarios.",
+          variant: "destructive"
+        });
+        setUsers([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchUsuarios();
+  }, [toast]);
 
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
@@ -83,51 +90,71 @@ export default function UsuariosPage() {
     );
   }, [users, searchTerm]);
 
-  //Eliminar usuario
   const handleDeleteUser = async () => {
-  if (!userToDelete) return;
+    if (!userToDelete) return;
 
-  try {
-    const res = await fetch(`/api/usuario/${userToDelete.id}`, {
-      method: 'DELETE',
-    });
+    try {
+      const res = await fetch(`/api/usuario/${userToDelete.id}`, {
+        method: 'DELETE',
+      });
 
-    if (!res.ok) {
-      throw new Error('Error al eliminar el usuario');
-    }
+      if (!res.ok) {
+        throw new Error('Error al eliminar el usuario');
+      }
 
-    // Actualizar el estado local
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
+      setUsers(prevUsers => prevUsers.filter(user => user.id !== userToDelete.id));
 
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
+      toast({
+        variant: "success",
+        title: (
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            </div>
+            <span>Usuario eliminado</span>
           </div>
-          <span>Usuario eliminado</span>
-        </div>
-      ),
-      description: `El usuario ${userToDelete.name} ha sido eliminado correctamente.`,
-    });
-  } catch (error) {
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "No se pudo eliminar el usuario.",
-    });
-  } finally {
-    setUserToDelete(null);
-    setIsDeleteDialogOpen(false);
-  }
+        ),
+        description: `El usuario ${userToDelete.name} ha sido eliminado correctamente.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo eliminar el usuario.",
+      });
+    } finally {
+      setUserToDelete(null);
+      setIsDeleteDialogOpen(false);
+    }
   };
 
-  
   const openDeleteDialog = (user: MockUser) => {
     setUserToDelete(user);
     setIsDeleteDialogOpen(true);
   };
+
+  const TableSkeleton = () => (
+    Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={`skeleton-user-${i}`}>
+        <TableCell className="font-medium flex items-center gap-3">
+          <Skeleton className="h-9 w-9 rounded-full" />
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-24" />
+          </div>
+        </TableCell>
+        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  );
 
   return (
     <div className="space-y-8">
@@ -180,45 +207,49 @@ export default function UsuariosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => {
-                const userName = user.name;
-                const userInitials = getInitials(userName);
-                return (
-                  <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
-                    <TableCell className="font-medium flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={`https://avatar.vercel.sh/${user.email}.png`} alt={userName} />
-                        <AvatarFallback>{userInitials}</AvatarFallback>
-                      </Avatar>
-                      {userName}
-                    </TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.joinedDate}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"}`}>
-                        {user.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
-                          <Link href={`/dashboard/usuarios/${user.id}/editar`}>
-                              <Edit className="h-4 w-4" />
-                              <span className="sr-only">Editar</span>
-                          </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(user)}>
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Eliminar</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {isLoading ? <TableSkeleton /> : (
+                filteredUsers.map((user) => {
+                  const userName = user.name;
+                  const userInitials = getInitials(userName);
+                  return (
+                    <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="font-medium flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={`https://avatar.vercel.sh/${user.email}.png`} alt={userName} />
+                          <AvatarFallback>{userInitials}</AvatarFallback>
+                        </Avatar>
+                        {userName}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>{user.role}</TableCell>
+                      <TableCell>{user.joinedDate}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"}`}>
+                          {user.status}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                            <Link href={`/dashboard/usuarios/${user.id}/editar`}>
+                                <Edit className="h-4 w-4" />
+                                <span className="sr-only">Editar</span>
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(user)}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
-           {filteredUsers.length === 0 && searchTerm && (
-            <p className="text-center text-muted-foreground py-4">No se encontraron usuarios con "{searchTerm}".</p>
+           {!isLoading && filteredUsers.length === 0 && (
+            <p className="text-center text-muted-foreground py-4">
+              {searchTerm ? `No se encontraron usuarios con "${searchTerm}".` : "No hay usuarios registrados."}
+            </p>
           )}
         </CardContent>
       </Card>

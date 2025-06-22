@@ -1,3 +1,4 @@
+
 "use client";
 import Link from 'next/link';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -19,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from '@/components/ui/skeleton';
 
 const getInitials = (name?: string): string => {
   if (!name || name.trim() === "") return "??";
@@ -34,17 +36,33 @@ const getInitials = (name?: string): string => {
 };
 
 export default function ClientesPage() {
-  useEffect(() => {
-  fetch("/api/cliente")
-    .then(res => res.json())
-    .then(data => setClients(data))
-    .catch(() => setClients([]));
-  }, []);
   const [clients, setClients] = useState<any[]>([]);
-  const [clientToDelete, setClientToDelete] = useState<MockClient | null>(null);
+  const [clientToDelete, setClientToDelete] = useState<any | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch("/api/cliente");
+        const data = await res.json();
+        setClients(data);
+      } catch (error) {
+        setClients([]);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los clientes.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClients();
+  }, [toast]);
 
   const filteredClients = useMemo(() => {
     if (!searchTerm) return clients;
@@ -96,10 +114,34 @@ export default function ClientesPage() {
     setIsDeleteDialogOpen(false);
   };
 
-  const openDeleteDialog = (client: MockClient) => {
+  const openDeleteDialog = (client: any) => {
     setClientToDelete(client);
     setIsDeleteDialogOpen(true);
   };
+
+  const TableSkeleton = () => (
+    Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={`skeleton-client-${i}`}>
+        <TableCell className="font-medium flex items-center gap-3">
+          <Skeleton className="h-9 w-9 rounded-full" />
+          <div className="space-y-1">
+            <Skeleton className="h-4 w-32" />
+          </div>
+        </TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  );
 
   return (
     <div className="space-y-8">
@@ -152,51 +194,54 @@ export default function ClientesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredClients.map((client) => {
-                const clientName = client.name || client.Nombre;
-                const clientInitials = getInitials(clientName);
-                return (
-                  <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
-                    <TableCell className="font-medium flex items-center gap-3">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={`https://avatar.vercel.sh/${client.email || client.Email}.png?size=40`} alt={clientName} />
-                        <AvatarFallback>{clientInitials}</AvatarFallback>
-                      </Avatar>
-                      {clientName}
-                    </TableCell>
-                    <TableCell>{client.contactName || client.Contacto}</TableCell>
-                    <TableCell>
-                      <a href={`mailto:${client.email || client.Email}`} className="text-primary hover:underline flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" /> {client.email || client.Email}
-                      </a>
-                    </TableCell>
-                    <TableCell>
-                      <a href={`tel:${client.phone || client.Telefono}`} className="text-primary hover:underline flex items-center gap-1">
-                        <Phone className="h-3.5 w-3.5" /> {client.phone || client.Telefono}
-                      </a>
-                    </TableCell>
-                    <TableCell>{client.tipoCliente?.descripcion || client.TipoCliente || client.type}</TableCell>
-                    <TableCell>{client.registeredAt || client.FechaRegistro || client.registrationDate}</TableCell>
-                    <TableCell className="text-right">
-                      {/* <Button variant="ghost" size="sm">Ver Perfil</Button> */}
-                      <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
-                        <Link href={`/dashboard/clientes/${client.id}/editar`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Editar</span>
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(client)}>
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Eliminar</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {isLoading ? <TableSkeleton /> : (
+                filteredClients.map((client) => {
+                  const clientName = client.name || client.Nombre;
+                  const clientInitials = getInitials(clientName);
+                  return (
+                    <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="font-medium flex items-center gap-3">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={`https://avatar.vercel.sh/${client.email || client.Email}.png?size=40`} alt={clientName} />
+                          <AvatarFallback>{clientInitials}</AvatarFallback>
+                        </Avatar>
+                        {clientName}
+                      </TableCell>
+                      <TableCell>{client.contactName || client.Contacto}</TableCell>
+                      <TableCell>
+                        <a href={`mailto:${client.email || client.Email}`} className="text-primary hover:underline flex items-center gap-1">
+                          <Mail className="h-3.5 w-3.5" /> {client.email || client.Email}
+                        </a>
+                      </TableCell>
+                      <TableCell>
+                        <a href={`tel:${client.phone || client.Telefono}`} className="text-primary hover:underline flex items-center gap-1">
+                          <Phone className="h-3.5 w-3.5" /> {client.phone || client.Telefono}
+                        </a>
+                      </TableCell>
+                      <TableCell>{client.tipoCliente?.descripcion || client.TipoCliente || client.type}</TableCell>
+                      <TableCell>{new Date(client.registeredAt || client.FechaRegistro).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                          <Link href={`/dashboard/clientes/${client.id}/editar`}>
+                            <Edit className="h-4 w-4" />
+                            <span className="sr-only">Editar</span>
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(client)}>
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Eliminar</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
             </TableBody>
           </Table>
-           {filteredClients.length === 0 && searchTerm && (
-            <p className="text-center text-muted-foreground py-4">No se encontraron clientes con "{searchTerm}".</p>
+           {!isLoading && filteredClients.length === 0 && (
+            <p className="text-center text-muted-foreground py-4">
+              {searchTerm ? `No se encontraron clientes con "${searchTerm}".` : "No hay clientes registrados."}
+            </p>
           )}
         </CardContent>
       </Card>
@@ -210,7 +255,7 @@ export default function ClientesPage() {
                 Confirmar Eliminación
               </AlertDialogTitle>
               <AlertDialogDescription>
-                ¿Estás seguro de que deseas eliminar al cliente <strong>{clientToDelete.name}</strong>? 
+                ¿Estás seguro de que deseas eliminar al cliente <strong>{clientToDelete.name || clientToDelete.Nombre}</strong>? 
                 Esta acción no se puede deshacer.
               </AlertDialogDescription>
             </AlertDialogHeader>

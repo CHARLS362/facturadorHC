@@ -32,7 +32,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { WhatsappConfirmationDialog } from '@/components/dashboard/whatsapp-confirmation-dialog'; // Added import
+import { WhatsappConfirmationDialog } from '@/components/dashboard/whatsapp-confirmation-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MockSale {
   id: string;
@@ -54,15 +55,19 @@ export default function VentasPage() {
   const { toast } = useToast();
   const [isWhatsappDialogOpen, setIsWhatsappDialogOpen] = useState(false);
   const [selectedSaleForWhatsapp, setSelectedSaleForWhatsapp] = useState<MockSale | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-    fetch('/api/venta')
-      .then(res => res.json())
-      .then(data => {
+  useEffect(() => {
+    const fetchSales = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch('/api/venta');
+        if (!res.ok) throw new Error("Failed to fetch sales");
+        const data = await res.json();
         const ventas = data.map((venta: any) => ({
           id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
           ventaId: venta.IdVenta,
-          date: venta.FechaVenta ? venta.FechaVenta.slice(0, 10) : "",
+          date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
           customer: venta.NombreCliente || "Sin nombre",
           total: `S/ ${Number(venta.Total).toFixed(2)}`,
           status: venta.Estado,
@@ -72,10 +77,14 @@ export default function VentasPage() {
           clientPhone: venta.TelefonoCliente || "",
         }));
         setSales(ventas);
-      })
-      .catch(() => {
+      } catch (error) {
         toast({ title: "Error", description: "No se pudieron cargar las ventas", variant: "destructive" });
-      });
+        setSales([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSales();
   }, [toast]);
 
   const filteredSales = useMemo(() => {
@@ -111,7 +120,6 @@ export default function VentasPage() {
 
   const handleAnularVenta = async (ventaId: number) => {
   try {
-    console.log('Anulando venta', ventaId);
     const res = await fetch(`/api/venta/${ventaId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -119,7 +127,6 @@ export default function VentasPage() {
     });
 
     const data = await res.json();
-    console.log('Respuesta PATCH:', data);
 
     if (!res.ok) throw new Error(data.error || "No se pudo anular la venta");
 
@@ -156,10 +163,8 @@ export default function VentasPage() {
     window.open(whatsappUrl, '_blank');
     
     if (updateClient) {
-      // Simulate updating client record
       console.log(`Simulating update of phone number for ${customerName} (Sale ID: ${saleId}) to ${phoneNumber}`);
       
-      // Update phone number in local sales state for immediate UI feedback (optional)
       setSales(prevSales => 
         prevSales.map(s => s.id === saleId ? {...s, clientPhone: phoneNumber} : s)
       );
@@ -177,6 +182,26 @@ export default function VentasPage() {
     }
   };
 
+  const TableSkeleton = () => (
+    Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={`skeleton-sale-${i}`}>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-32" /></TableCell>
+        <TableCell><Skeleton className="h-5 w-5 rounded-md" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-28" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-1">
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-8 w-16" />
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  );
 
   return (
     <div className="space-y-8">
@@ -231,89 +256,93 @@ export default function VentasPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredSales.map((sale) => (
-                  <TableRow key={sale.id} className="hover:bg-muted/50 transition-colors">
-                    <TableCell className="font-medium">{sale.id}</TableCell>
-                    <TableCell>{sale.date}</TableCell>
-                    <TableCell>{sale.customer}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2" title={sale.documentType}>
-                        {getDocumentIcon(sale.documentType)}
-                        <span className="hidden sm:inline">{sale.documentType}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{sale.total}</TableCell>
-                    <TableCell>{sale.paymentMethod}</TableCell>
-                    <TableCell>
-                       <Badge variant={getStatusBadgeVariant(sale.status)} className="capitalize">
-                         {sale.status}
-                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-right space-x-1">
-                      <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors" asChild>
-                        <Link href={`/dashboard/ventas/${sale.ventaId}/detalles`}>
-                          <Eye className="mr-1.5 h-4 w-4" /> {/* Adjusted icon size */}
-                          <span>Ver</span>
-                        </Link>
-                      </Button>
-                       {sale.status.toLowerCase() !== 'anulado' && (
-                        <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-orange-500 hover:text-orange-600 transition-colors" 
-                            onClick={() => handleAnularVenta(sale.ventaId)}
-                        >
-                            <Ban className="mr-1.5 h-4 w-4" /> {/* Adjusted icon size */}
-                            <span>Anular</span>
+                {isLoading ? <TableSkeleton /> : (
+                  filteredSales.map((sale) => (
+                    <TableRow key={sale.id} className="hover:bg-muted/50 transition-colors">
+                      <TableCell className="font-medium">{sale.id}</TableCell>
+                      <TableCell>{sale.date}</TableCell>
+                      <TableCell>{sale.customer}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2" title={sale.documentType}>
+                          {getDocumentIcon(sale.documentType)}
+                          <span className="hidden sm:inline">{sale.documentType}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{sale.total}</TableCell>
+                      <TableCell>{sale.paymentMethod}</TableCell>
+                      <TableCell>
+                         <Badge variant={getStatusBadgeVariant(sale.status)} className="capitalize">
+                           {sale.status}
+                         </Badge>
+                      </TableCell>
+                      <TableCell className="text-right space-x-1">
+                        <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors" asChild>
+                          <Link href={`/dashboard/ventas/${sale.ventaId}/detalles`}>
+                            <Eye className="mr-1.5 h-4 w-4" />
+                            <span>Ver</span>
+                          </Link>
                         </Button>
-                       )}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            Más
-                            <ChevronDown className="ml-1.5 h-4 w-4" /> {/* Adjusted icon size */}
+                         {sale.status.toLowerCase() !== 'anulado' && (
+                          <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="text-orange-500 hover:text-orange-600 transition-colors" 
+                              onClick={() => handleAnularVenta(sale.ventaId)}
+                          >
+                              <Ban className="mr-1.5 h-4 w-4" />
+                              <span>Anular</span>
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
-                            <FileText className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
-                            <span>Exportar PDF</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-blue-500 focus:text-blue-500 focus:bg-blue-500/10">
-                            <FileCode2 className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
-                            <span>Exportar XML</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-green-500 focus:text-green-500 focus:bg-green-500/10">
-                            <FileCheck2 className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
-                            <span>Ver CDR</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-gray-600 dark:text-gray-400 focus:text-gray-700 dark:focus:text-gray-300 focus:bg-gray-500/10">
-                            <Printer className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
-                            <span>Imprimir</span>
-                          </DropdownMenuItem>
-                           <DropdownMenuItem 
-                             className="text-green-600 focus:text-green-600 focus:bg-green-500/10"
-                             onSelect={() => handleOpenWhatsappDialog(sale)} // Changed to onSelect to prevent auto-closing on link click
-                           >
-                              <Send className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
-                              <span>Enviar WhatsApp</span>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild className="text-orange-500 focus:text-orange-500 focus:bg-orange-500/10">
-                            <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
-                              <Mail className="mr-2 h-4 w-4" /> {/* Adjusted icon size */}
-                              <span>Enviar Email</span>
-                            </a>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                         )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              Más
+                              <ChevronDown className="ml-1.5 h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
+                              <FileText className="mr-2 h-4 w-4" />
+                              <span>Exportar PDF</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-blue-500 focus:text-blue-500 focus:bg-blue-500/10">
+                              <FileCode2 className="mr-2 h-4 w-4" />
+                              <span>Exportar XML</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-green-500 focus:text-green-500 focus:bg-green-500/10">
+                              <FileCheck2 className="mr-2 h-4 w-4" />
+                              <span>Ver CDR</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="text-gray-600 dark:text-gray-400 focus:text-gray-700 dark:focus:text-gray-300 focus:bg-gray-500/10">
+                              <Printer className="mr-2 h-4 w-4" />
+                              <span>Imprimir</span>
+                            </DropdownMenuItem>
+                             <DropdownMenuItem 
+                               className="text-green-600 focus:text-green-600 focus:bg-green-500/10"
+                               onSelect={() => handleOpenWhatsappDialog(sale)}
+                             >
+                                <Send className="mr-2 h-4 w-4" />
+                                <span>Enviar WhatsApp</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild className="text-orange-500 focus:text-orange-500 focus:bg-orange-500/10">
+                              <a href={`mailto:${sale.clientEmail}?subject=Venta%20${sale.id}&body=Hola,%0AAdjunto%20los%20detalles%20de%20la%20venta%20${sale.id}.%0ASaludos.`}>
+                                <Mail className="mr-2 h-4 w-4" />
+                                <span>Enviar Email</span>
+                              </a>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
-           {filteredSales.length === 0 && searchTerm && (
-            <p className="text-center text-muted-foreground py-4">No se encontraron ventas con "{searchTerm}".</p>
+           {!isLoading && filteredSales.length === 0 && (
+            <p className="text-center text-muted-foreground py-4">
+              {searchTerm ? `No se encontraron ventas con "${searchTerm}".` : "No hay ventas registradas."}
+            </p>
           )}
         </CardContent>
       </Card>

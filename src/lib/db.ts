@@ -18,38 +18,37 @@ function corregirConsulta(sql: string): string {
 }
 
 
-let pool: ConnectionPool | null = null;
+let poolPromise: Promise<ConnectionPool> | null = null;
 
-export async function getConnection(): Promise<ConnectionPool> {
-  if (pool) return pool;
+const createPool = async (): Promise<ConnectionPool> => {
+    try {
+        const pool = await sql.connect(dbConfig);
+        console.log('Conexión a SQL Server establecida y pool creado');
 
-  try {
-    pool = await sql.connect(dbConfig);
-    console.log('Conectado a SQL Server');
+        const originalRequest = pool.request.bind(pool);
 
-    // Guardamos la función original para luego envolverla
-    const originalRequest = pool.request.bind(pool);
+        (pool.request as any) = function() {
+          const req = originalRequest();
+          const originalQuery = req.query.bind(req);
+          (req.query as any) = function(queryString: string, callback?: any) {
+            const correctedQuery = corregirConsulta(queryString);
+            return originalQuery(correctedQuery, callback);
+          };
+          return req;
+        };
 
-    // Reemplazamos pool.request para envolver la query
-    (pool.request as any) = function() {
-      const req = originalRequest();
+        return pool;
+    } catch (error) {
+        console.error('Error de conexión:', error);
+        // Reset promise on failure to allow retry
+        poolPromise = null;
+        throw error;
+    }
+};
 
-      // Guardamos la función query original
-      const originalQuery = req.query.bind(req);
-
-      // Sobrescribimos query para corregir la consulta antes de ejecutarla
-      // Cast to any to work around the complex overloads of the `query` method.
-      (req.query as any) = function(queryString: string, callback?: any) {
-        const correctedQuery = corregirConsulta(queryString);
-        return originalQuery(correctedQuery, callback);
-      };
-
-      return req;
-    };
-
-    return pool;
-  } catch (error) {
-    console.error('Error de conexión:', error);
-    throw error;
+export function getConnection(): Promise<ConnectionPool> {
+  if (!poolPromise) {
+    poolPromise = createPool();
   }
+  return poolPromise;
 }

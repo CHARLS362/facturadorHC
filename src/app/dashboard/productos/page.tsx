@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { BarcodeDialog } from '@/components/dashboard/barcode-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MockProduct {
   id: number;
@@ -39,9 +40,11 @@ export default function ProductosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const [selectedProductForBarcode, setSelectedProductForBarcode] = useState<MockProduct | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
+      setIsLoading(true);
       try {
         const res = await fetch('/api/producto');
         if (!res.ok) throw new Error('Error al obtener productos');
@@ -62,12 +65,19 @@ export default function ProductosPage() {
         }));
         setProducts(formattedProducts);
       } catch (error) {
-        console.error('Error cargando productos:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los productos.",
+          variant: "destructive"
+        });
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [toast]);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
@@ -120,6 +130,25 @@ export default function ProductosPage() {
     setIsDeleteDialogOpen(true);
   };
 
+  const TableSkeleton = () => (
+    Array.from({ length: 5 }).map((_, i) => (
+      <TableRow key={`skeleton-product-${i}`}>
+        <TableCell><Skeleton className="h-12 w-12 rounded-md" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-48" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+        <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+        <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
+        <TableCell className="text-right">
+          <div className="flex justify-end gap-1">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+          </div>
+        </TableCell>
+      </TableRow>
+    ))
+  );
 
   return (
     <div className="space-y-8">
@@ -179,53 +208,57 @@ export default function ProductosPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.map((product) => (
-                <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
-                  <TableCell>
-                    <Image 
-                      src={product.imageUrl || `https://placehold.co/64x64.png?text=${String(product.id).substring(0,3)}`}
-                      alt={product.name} 
-                      width={48} 
-                      height={48} 
-                      className="rounded-md object-cover aspect-square"
-                      data-ai-hint="product photo" 
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell>{product.category}</TableCell>
-                  <TableCell>{product.price}</TableCell>
-                  <TableCell>{product.stock}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      product.status === "En Stock" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : 
-                      product.status === "Stock Bajo" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100" : 
-                      "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"
-                    }`}>
-                      {product.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="hover:text-blue-500 transition-colors" onClick={() => setSelectedProductForBarcode(product)}>
-                      <Barcode className="h-4 w-4" />
-                      <span className="sr-only">Ver Código de Barras</span>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
-                      <Link href={`/dashboard/productos/${product.id}/editar`}>
-                        <Edit3 className="h-4 w-4" />
-                        <span className="sr-only">Editar</span>
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(product)}>
-                      <Trash2 className="h-4 w-4" />
-                      <span className="sr-only">Eliminar</span>
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {isLoading ? <TableSkeleton /> : (
+                filteredProducts.map((product) => (
+                  <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
+                    <TableCell>
+                      <Image 
+                        src={product.imageUrl || `https://placehold.co/64x64.png?text=${String(product.name).substring(0,3)}`}
+                        alt={product.name} 
+                        width={48} 
+                        height={48} 
+                        className="rounded-md object-cover aspect-square"
+                        data-ai-hint="product photo" 
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.price}</TableCell>
+                    <TableCell>{product.stock}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-1 text-xs rounded-full ${
+                        product.status === "En Stock" ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100" : 
+                        product.status === "Stock Bajo" ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-yellow-100" : 
+                        "bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100"
+                      }`}>
+                        {product.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="icon" className="hover:text-blue-500 transition-colors" onClick={() => setSelectedProductForBarcode(product)}>
+                        <Barcode className="h-4 w-4" />
+                        <span className="sr-only">Ver Código de Barras</span>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                        <Link href={`/dashboard/productos/${product.id}/editar`}>
+                          <Edit3 className="h-4 w-4" />
+                          <span className="sr-only">Editar</span>
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive/80 transition-colors" onClick={() => openDeleteDialog(product)}>
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Eliminar</span>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
-          {filteredProducts.length === 0 && searchTerm && (
-            <p className="text-center text-muted-foreground py-4">No se encontraron productos con "{searchTerm}".</p>
+           {!isLoading && filteredProducts.length === 0 && (
+            <p className="text-center text-muted-foreground py-4">
+              {searchTerm ? `No se encontraron productos con "${searchTerm}".` : "No hay productos registrados."}
+            </p>
           )}
         </CardContent>
       </Card>
