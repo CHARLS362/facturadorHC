@@ -20,6 +20,9 @@ import Link from "next/link";
 import React, { useEffect, useState, useMemo } from "react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
 
 const IGV_RATE = 0.18; // 18% IGV for Peru
 
@@ -32,6 +35,14 @@ const availableProducts = [
   { id: "PROD005", name: "Servicio de Consultoría Digital", price: 800.00, stock: Infinity },
   { id: "PROD006", name: "Desarrollo Web Landing Page", price: 1200.00, stock: Infinity },
 ];
+
+// Mock client data (TODO: replace with actual data fetching in a real app)
+const availableClients = [
+  { id: "CLI001", name: "Empresa XYZ S.A.C.", documentType: "RUC", documentNumber: "20123456789", address: "Av. Principal 123, Lima" },
+  { id: "CLI002", name: "Ana Morales", documentType: "DNI", documentNumber: "12345678", address: "Calle Falsa 123, Miraflores" },
+  { id: "CLI003", name: "Servicios Globales EIRL", documentType: "RUC", documentNumber: "20876543211", address: "Jr. de la Union 45, Lima" },
+];
+
 
 const ventaSchema = z.object({
   clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione el tipo de documento del cliente." }),
@@ -73,20 +84,23 @@ const ventaSchema = z.object({
 });
 
 type VentaFormValues = z.infer<typeof ventaSchema>;
+type ClientSearchMethod = 'ruc' | 'dni' | 'search';
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
+  const [searchMethod, setSearchMethod] = useState<ClientSearchMethod>('ruc');
   const [isClientDataFetched, setIsClientDataFetched] = useState(false);
   const [isConsultingSunat, setIsConsultingSunat] = useState(false);
 
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [currentQuantity, setCurrentQuantity] = useState<number>(1);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
 
   const form = useForm<VentaFormValues>({
     resolver: zodResolver(ventaSchema),
     defaultValues: {
-      clientDocumentType: undefined,
+      clientDocumentType: 'RUC',
       clientDocumentNumber: "",
       clientFullName: "",
       clientAddress: "",
@@ -104,7 +118,6 @@ export default function NuevaVentaPage() {
     name: "saleItems",
   });
 
-  const clientDocType = form.watch("clientDocumentType");
   const saleItems = form.watch("saleItems");
 
   const calculatedSubtotal = useMemo(() => {
@@ -118,18 +131,34 @@ export default function NuevaVentaPage() {
     form.setValue("grandTotal", total, { shouldValidate: true });
   }, [calculatedSubtotal, form]);
 
-  useEffect(() => {
-    form.setValue("clientDocumentNumber", "");
-    form.setValue("clientFullName", "");
-    form.setValue("clientAddress", "");
+  const handleSearchMethodChange = (value: ClientSearchMethod) => {
+    setSearchMethod(value);
+    // Reset client fields
+    const newDocType = value === 'search' ? undefined : value.toUpperCase() as 'RUC' | 'DNI';
+    form.reset({
+      ...form.getValues(),
+      // Retain existing form data but clear client info
+      saleItems: form.getValues('saleItems'),
+      documentType: form.getValues('documentType'),
+      paymentMethod: form.getValues('paymentMethod'),
+      // Clear client specific fields
+      clientDocumentType: newDocType,
+      clientDocumentNumber: "",
+      clientFullName: "",
+      clientAddress: "",
+    });
+    form.clearErrors(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
     setIsClientDataFetched(false);
-    form.clearErrors("clientDocumentNumber");
-  }, [clientDocType, form]);
-
+  };
+  
   const handleSunatQuery = async () => {
-    const docType = form.getValues("clientDocumentType");
+    const docType = searchMethod;
+    if (docType === 'search') return;
+    
     const docNumber = form.getValues("clientDocumentNumber");
 
+    form.setValue("clientDocumentType", docType.toUpperCase() as "DNI" | "RUC", { shouldValidate: true });
+    
     const isValidDocNumber = await form.trigger("clientDocumentNumber");
     if (!isValidDocNumber) {
          toast({
@@ -142,12 +171,12 @@ export default function NuevaVentaPage() {
     if (!docType || !docNumber) return;
     
     setIsConsultingSunat(true);
-    // Simulate API call to SUNAT
+    // Simulate API call to SUNAT/RENIEC
     await new Promise(resolve => setTimeout(resolve, 1500)); 
     
     let mockName = "Cliente Ejemplo S.A.C.";
     let mockAddress = "Av. Javier Prado Este 123, San Isidro, Lima";
-    if (docType === "DNI") {
+    if (docType === "dni") {
       mockName = "Juan Pérez Gonzales";
       mockAddress = "Calle Las Begonias 456, Lince, Lima";
     }
@@ -189,14 +218,12 @@ export default function NuevaVentaPage() {
     }
 
     if (existingProductIndex > -1) {
-      // Product already in list, update quantity
       const existingItem = saleItems[existingProductIndex];
       updateSaleItem(existingProductIndex, {
         ...existingItem,
         quantity: existingItem.quantity + currentQuantity,
       });
     } else {
-      // Add new product to list
       appendSaleItem({
         productId: productDetails.id,
         name: productDetails.name,
@@ -226,13 +253,13 @@ export default function NuevaVentaPage() {
       description: `La venta para ${data.clientFullName} ha sido registrada exitosamente.`,
     });
     form.reset(); 
+    setSearchMethod('ruc');
     setIsClientDataFetched(false);
     setCurrentProductId(null);
     setCurrentQuantity(1);
   }
 
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
-
 
   return (
     <div className="space-y-8 pb-12">
@@ -251,97 +278,135 @@ export default function NuevaVentaPage() {
           <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
-              <CardDescription>Ingrese los datos del cliente. Puede consultar en SUNAT (simulado).</CardDescription>
+              <CardDescription>Seleccione un método para ingresar los datos del cliente.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-3 gap-6 items-end">
+                <RadioGroup onValueChange={handleSearchMethodChange} value={searchMethod} className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="ruc" id="r-ruc" />
+                        <Label htmlFor="r-ruc" className="cursor-pointer">Consultar por RUC</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="dni" id="r-dni" />
+                        <Label htmlFor="r-dni" className="cursor-pointer">Consultar por DNI</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="search" id="r-search" />
+                        <Label htmlFor="r-search" className="cursor-pointer">Buscar Cliente Registrado</Label>
+                    </div>
+                </RadioGroup>
+
+                <Separator />
+                
+                <div className="grid md:grid-cols-3 gap-6 items-end">
+                    {(searchMethod === 'dni' || searchMethod === 'ruc') && (
+                        <>
+                            <FormField
+                                control={form.control}
+                                name="clientDocumentNumber"
+                                render={({ field }) => (
+                                    <FormItem className="md:col-span-2">
+                                    <FormLabel>Nro. de {searchMethod.toUpperCase()}</FormLabel>
+                                    <FormControl>
+                                        <Input 
+                                            placeholder={searchMethod === "dni" ? "8 dígitos" : "11 dígitos"} 
+                                            {...field} 
+                                            maxLength={searchMethod === "dni" ? 8 : 11}
+                                            onChange={(e) => {
+                                                const { value } = e.target;
+                                                if (/^\d*$/.test(value)) {
+                                                    field.onChange(value);
+                                                }
+                                                setIsClientDataFetched(false);
+                                                form.setValue("clientFullName", "", { shouldValidate: false });
+                                                form.setValue("clientAddress", "", { shouldValidate: false });
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <Button type="button" onClick={handleSunatQuery} disabled={isConsultingSunat || !form.watch("clientDocumentNumber")} className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
+                            {isConsultingSunat ? (
+                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
+                            ) : (
+                                <SearchCheck className="mr-2 h-4 w-4" />
+                            )}
+                            Consultar
+                            </Button>
+                        </>
+                    )}
+                    
+                    {searchMethod === 'search' && (
+                       <div className="md:col-span-3">
+                           <FormLabel>Buscar Cliente</FormLabel>
+                           <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button variant="outline" role="combobox" aria-expanded={clientSearchOpen} className="w-full justify-between font-normal mt-2">
+                                        {form.getValues("clientFullName") || "Seleccionar cliente..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Buscar cliente por nombre o documento..." />
+                                        <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
+                                        <CommandList>
+                                            <CommandGroup>
+                                            {availableClients.map((client) => (
+                                                <CommandItem
+                                                    key={client.id}
+                                                    value={client.name}
+                                                    onSelect={() => {
+                                                        form.setValue("clientDocumentType", client.documentType);
+                                                        form.setValue("clientDocumentNumber", client.documentNumber);
+                                                        form.setValue("clientFullName", client.name);
+                                                        form.setValue("clientAddress", client.address || "");
+                                                        form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
+                                                        setIsClientDataFetched(true);
+                                                        setClientSearchOpen(false);
+                                                    }}
+                                                >
+                                                    <Check className={cn("mr-2 h-4 w-4", form.getValues("clientDocumentNumber") === client.documentNumber ? "opacity-100" : "opacity-0")} />
+                                                    {client.name} ({client.documentType}: {client.documentNumber})
+                                                </CommandItem>
+                                            ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                           </Popover>
+                       </div>
+                    )}
+                </div>
+
                 <FormField
-                  control={form.control}
-                  name="clientDocumentType"
-                  render={({ field }) => (
+                    control={form.control}
+                    name="clientFullName"
+                    render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo Documento Cliente</FormLabel>
-                      <Select 
-                        onValueChange={(value) => { 
-                          field.onChange(value);
-                        }} 
-                        defaultValue={field.value}
-                      >
+                        <FormLabel>Nombre / Razón Social</FormLabel>
                         <FormControl>
-                          <SelectTrigger><SelectValue placeholder="Seleccione tipo" /></SelectTrigger>
+                        <Input placeholder="Se completará tras consulta o búsqueda" {...field} readOnly={isClientDataFetched} className={isClientDataFetched ? "bg-muted/50 cursor-not-allowed" : ""} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="DNI">DNI</SelectItem>
-                          <SelectItem value="RUC">RUC</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
+                        <FormMessage />
                     </FormItem>
-                  )}
+                    )}
                 />
                 <FormField
-                  control={form.control}
-                  name="clientDocumentNumber"
-                  render={({ field }) => (
+                    control={form.control}
+                    name="clientAddress"
+                    render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nro. Documento Cliente</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder={form.getValues("clientDocumentType") === "DNI" ? "8 dígitos" : form.getValues("clientDocumentType") === "RUC" ? "11 dígitos" : "Nro. Documento"} 
-                          {...field} 
-                          maxLength={form.getValues("clientDocumentType") === "DNI" ? 8 : form.getValues("clientDocumentType") === "RUC" ? 11 : undefined}
-                          onChange={(e) => {
-                            const { value } = e.target;
-                            // Allow only numbers
-                            if (/^\d*$/.test(value)) {
-                                field.onChange(value);
-                            }
-                            // Reset client data if document number changes
-                            setIsClientDataFetched(false);
-                            form.setValue("clientFullName", "", { shouldValidate: false });
-                            form.setValue("clientAddress", "", { shouldValidate: false });
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
+                        <FormLabel>Dirección del Cliente (Opcional)</FormLabel>
+                        <FormControl>
+                        <Input placeholder="Se completará tras consulta o búsqueda" {...field} readOnly={isClientDataFetched} className={isClientDataFetched ? "bg-muted/50 cursor-not-allowed" : ""} />
+                        </FormControl>
+                        <FormMessage />
                     </FormItem>
-                  )}
+                    )}
                 />
-                <Button type="button" onClick={handleSunatQuery} disabled={isConsultingSunat || !form.watch("clientDocumentType") || !form.watch("clientDocumentNumber")} className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
-                  {isConsultingSunat ? (
-                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                  ) : (
-                    <SearchCheck className="mr-2 h-4 w-4" />
-                  )}
-                  Consultar SUNAT
-                </Button>
-              </div>
-              <FormField
-                control={form.control}
-                name="clientFullName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre / Razón Social</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Se completará tras consulta" {...field} readOnly={isClientDataFetched} className={!isClientDataFetched && clientDocType ? "bg-muted/50 cursor-not-allowed" : ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="clientAddress"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dirección del Cliente (Opcional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Se completará tras consulta (opcional)" {...field} readOnly={isClientDataFetched} className={!isClientDataFetched && clientDocType ? "bg-muted/50 cursor-not-allowed" : ""} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </CardContent>
           </Card>
 
@@ -356,7 +421,7 @@ export default function NuevaVentaPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo de Comprobante</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Seleccione tipo" /></SelectTrigger>
                       </FormControl>
@@ -399,10 +464,9 @@ export default function NuevaVentaPage() {
                               {availableProducts.map((product) => (
                                 <CommandItem
                                   key={product.id}
-                                  value={product.id} // Use product.id or product.name as value based on what you want cmdk to filter on
-                                  onSelect={(currentValue) => {
-                                    // currentValue will be product.id if value is set to product.id
-                                    setCurrentProductId(product.id); // Ensure this sets the ID, not the name
+                                  value={product.name}
+                                  onSelect={() => {
+                                    setCurrentProductId(product.id);
                                     setProductSearchOpen(false);
                                   }}
                                 >
@@ -502,7 +566,7 @@ export default function NuevaVentaPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Método de Pago</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger><SelectValue placeholder="Seleccione método" /></SelectTrigger>
                         </FormControl>
@@ -558,6 +622,7 @@ export default function NuevaVentaPage() {
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border/30 mt-6">
               <Button type="button" variant="outline" onClick={() => { 
                   form.reset(); 
+                  setSearchMethod('ruc');
                   setIsClientDataFetched(false); 
                   setCurrentProductId(null);
                   setCurrentQuantity(1);
