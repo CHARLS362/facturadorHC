@@ -11,7 +11,7 @@ import {
   BarChart3, 
   PieChartIcon, 
   LineChartIcon,
-  PackageWarning,
+  ShieldAlert,
 } from "lucide-react";
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
@@ -161,7 +161,7 @@ export default function DashboardPage() {
         <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-headline">
-              <PackageWarning className="h-6 w-6 text-yellow-500" />
+              <ShieldAlert className="h-6 w-6 text-yellow-500" />
               Productos con Bajo Stock
             </CardTitle>
             <CardDescription>Productos que necesitan ser reabastecidos pronto.</CardDescription>

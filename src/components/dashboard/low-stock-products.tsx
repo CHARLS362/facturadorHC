@@ -3,7 +3,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, ArrowRight, PackageWarning } from "lucide-react";
+import { AlertTriangle, ArrowRight, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import React, { useState, useEffect } from 'react';
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,7 +62,7 @@ export function LowStockProducts() {
               <Avatar className="h-9 w-9">
                 <AvatarImage src={product.imageUrl || `https://avatar.vercel.sh/${product.sku}.png`} alt={product.name} />
                 <AvatarFallback>
-                  <PackageWarning className="h-4 w-4 text-muted-foreground"/>
+                  <ShieldAlert className="h-4 w-4 text-muted-foreground"/>
                 </AvatarFallback>
               </Avatar>
               <div className="ml-4 space-y-1">
