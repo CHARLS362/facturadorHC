@@ -58,12 +58,6 @@ export default function PlantillasPage() {
         title="Plantillas de Documentos"
         description="Personaliza y previsualiza tus plantillas de facturas y boletas."
         icon={FileText}
-        actions={
-          <Button disabled>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Crear Nueva Plantilla
-          </Button>
-        }
       />
 
       <Tabs defaultValue="factura" className="w-full">
