@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Search, Package, FileDown, Edit3, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { PlusCircle, Search, Package, FileDown, Edit3, Trash2, AlertTriangle, CheckCircle2, UploadCloud, Barcode } from "lucide-react";
 import Image from "next/image";
 import { 
   AlertDialog,
@@ -20,6 +20,17 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { BarcodeDialog } from '@/components/dashboard/barcode-dialog';
+
+interface MockProduct {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  stock: number;
+  status: string;
+  imageUrl: string | null;
+}
 
 export default function ProductosPage() {
   const [products, setProducts] = useState<MockProduct[]>([]);
@@ -27,34 +38,36 @@ export default function ProductosPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
-  useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const res = await fetch('/api/producto');
-      if (!res.ok) throw new Error('Error al obtener productos');
-      const data = await res.json();
-      const formattedProducts = data.map((prod: any) => ({
-        id: prod.IdProducto,
-        name: prod.Nombre,
-        category: prod.CategoriaNombre || 'Sin categoría',
-        price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
-        stock: prod.Stock,
-        status:
-          prod.Stock === 0
-            ? 'Agotado'
-            : prod.Stock <= prod.StockMinimo
-            ? 'Stock Bajo'
-            : 'En Stock',
-        imageUrl: prod.ImagenUrl || null,
-      }));
-      setProducts(formattedProducts);
-    } catch (error) {
-      console.error('Error cargando productos:', error);
-    }
-  };
+  const [selectedProductForBarcode, setSelectedProductForBarcode] = useState<MockProduct | null>(null);
 
-  fetchProducts();
-}, []);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('/api/producto');
+        if (!res.ok) throw new Error('Error al obtener productos');
+        const data = await res.json();
+        const formattedProducts: MockProduct[] = data.map((prod: any) => ({
+          id: prod.IdProducto,
+          name: prod.Nombre,
+          category: prod.CategoriaNombre || 'Sin categoría',
+          price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
+          stock: prod.Stock,
+          status:
+            prod.Stock === 0
+              ? 'Agotado'
+              : prod.Stock <= prod.StockMinimo
+              ? 'Stock Bajo'
+              : 'En Stock',
+          imageUrl: prod.ImagenUrl || null,
+        }));
+        setProducts(formattedProducts);
+      } catch (error) {
+        console.error('Error cargando productos:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     if (!searchTerm) return products;
@@ -116,10 +129,16 @@ export default function ProductosPage() {
         icon={Package}
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" asChild>
+             <Button variant="outline" asChild>
               <Link href="/dashboard/productos/exportar">
                 <FileDown className="mr-2 h-4 w-4" />
                 Exportar
+              </Link>
+            </Button>
+            <Button variant="secondary" asChild>
+              <Link href="/dashboard/productos/importar">
+                <UploadCloud className="mr-2 h-4 w-4" />
+                Importación Masiva
               </Link>
             </Button>
             <Button asChild>
@@ -186,6 +205,10 @@ export default function ProductosPage() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" className="hover:text-blue-500 transition-colors" onClick={() => setSelectedProductForBarcode(product)}>
+                      <Barcode className="h-4 w-4" />
+                      <span className="sr-only">Ver Código de Barras</span>
+                    </Button>
                     <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
                       <Link href={`/dashboard/productos/${product.id}/editar`}>
                         <Edit3 className="h-4 w-4" />
@@ -233,6 +256,15 @@ export default function ProductosPage() {
         </AlertDialog>
       )}
 
+      <BarcodeDialog
+        isOpen={!!selectedProductForBarcode}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setSelectedProductForBarcode(null);
+          }
+        }}
+        product={selectedProductForBarcode}
+      />
     </div>
   );
 }
