@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sql from 'mssql';
 import { getConnection } from '@/lib/db';
@@ -5,9 +6,10 @@ import { getConnection } from '@/lib/db';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const pool = await getConnection();
   if (req.method === 'GET') {
-  try {
-    const result = await pool.request()
-      .query(`
+    const { status } = req.query;
+
+    try {
+      let query = `
         SELECT 
           p.IdProducto,
           p.IdCategoria,
@@ -28,13 +30,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         FROM Producto p
         LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
         LEFT JOIN UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
-      `);
-    return res.status(200).json(result.recordset);
-  } catch (error) {
-    console.error('Error al obtener productos:', error);
-    return res.status(500).json({ error: 'Error al obtener productos' });
+      `;
+
+      if (status === 'low_stock') {
+        // We only want items that are low in stock but not yet out of stock
+        query += ' WHERE p.Stock <= p.StockMinimo AND p.Stock > 0';
+      }
+
+      const result = await pool.request().query(query);
+      return res.status(200).json(result.recordset);
+    } catch (error) {
+      console.error('Error al obtener productos:', error);
+      return res.status(500).json({ error: 'Error al obtener productos' });
+    }
   }
-}
 
 if (req.method === 'POST') {
   const {

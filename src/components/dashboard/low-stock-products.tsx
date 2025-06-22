@@ -16,26 +16,33 @@ interface LowStockProduct {
   sku: string;
 }
 
-// In a real scenario this would be fetched from an API
-// This mock data simulates products that are below a certain threshold (e.g., <= 10)
-const mockLowStockProducts: LowStockProduct[] = [
-  { id: "PROD004", name: "Mochila Antirrobo Impermeable", stock: 5, imageUrl: null, sku: "ACC-MOC-004" },
-  { id: "PROD007", name: "Zapatos de Cuero Formal", stock: 8, imageUrl: null, sku: "CAL-ZAP-007" },
-  { id: "PROD012", name: "Teclado Mecánico RGB", stock: 3, imageUrl: null, sku: "ELE-TEC-012" },
-];
-
 export function LowStockProducts() {
   const [products, setProducts] = useState<LowStockProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   useEffect(() => {
-    // Simulate API fetch
     const fetchLowStock = async () => {
         setIsLoading(true);
-        // In a real app, you would fetch from an API endpoint like `/api/producto?status=low_stock`
-        await new Promise(resolve => setTimeout(resolve, 1200));
-        setProducts(mockLowStockProducts);
-        setIsLoading(false);
+        try {
+          const res = await fetch('/api/producto?status=low_stock');
+          if (!res.ok) {
+            throw new Error('Error al cargar productos');
+          }
+          const data = await res.json();
+          const formattedProducts: LowStockProduct[] = data.map((prod: any) => ({
+            id: prod.IdProducto.toString(),
+            name: prod.Nombre,
+            stock: prod.Stock,
+            imageUrl: prod.ImagenUrl,
+            sku: prod.Codigo || 'N/A',
+          }));
+          setProducts(formattedProducts);
+        } catch (error) {
+          console.error("Failed to fetch low stock products:", error);
+          setProducts([]); // Set to empty on error
+        } finally {
+          setIsLoading(false);
+        }
     };
     fetchLowStock();
   }, []);
