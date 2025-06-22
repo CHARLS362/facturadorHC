@@ -1,4 +1,3 @@
-
 "use client";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -98,13 +97,44 @@ export default function DetallesVentaPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      const foundVenta = mockVentas.find(v => v.id === ventaId);
-      setVenta(foundVenta || null);
+  setIsLoading(true);
+  fetch(`/api/venta/${ventaId}`)
+    .then(res => res.json())
+    .then(data => {
+      setVenta({
+        id: `VENTA${data.IdVenta.toString().padStart(3, '0')}`,
+        fecha: new Date(data.FechaVenta).toLocaleString(),
+        cliente: {
+          nombre: data.NombreCliente,
+          documento: data.DocumentoCliente,
+          tipoDocumento: data.NombreTipoDocumentoCliente,
+          direccion: data.DireccionCliente,
+          email: data.EmailCliente,
+          telefono: data.TelefonoCliente,
+        },
+        tipoComprobante: data.TipoDocumento,
+        serieCorrelativo: data.IdComprobante ? `C${data.IdComprobante.toString().padStart(3, '0')}` : "",
+        // Aquí asignas los items reales:
+        items: (data.items || []).map((item: any) => ({
+          id: `PROD${item.IdProducto.toString().padStart(3, '0')}`,
+          nombre: item.NombreProducto,
+          cantidad: item.Cantidad,
+          precioUnitario: item.PrecioUnitario,
+          total: item.Total,
+        })),
+        subtotal: Number(data.Total) / 1.18,
+        igv: Number(data.Total) - (Number(data.Total) / 1.18),
+        totalGeneral: Number(data.Total),
+        metodoPago: data.NombreFormaPago,
+        estado: data.Estado,
+        notas: "", // agrega si tu API lo devuelve
+      });
       setIsLoading(false);
-    }, 500);
+    })
+    .catch(() => {
+      setVenta(null);
+      setIsLoading(false);
+    });
   }, [ventaId]);
 
   if (isLoading) {
@@ -246,4 +276,3 @@ export default function DetallesVentaPage() {
     </div>
   );
 }
-

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { ProSidebarProvider, Sidebar, Menu, MenuItem, SubMenu, useProSidebar, sidebarClasses, menuClasses } from 'react-pro-sidebar';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
@@ -35,6 +35,8 @@ function DashboardLayoutContent({
   const { collapseSidebar, toggleSidebar, collapsed, broken, toggled } = useProSidebar();
   const [isMounted, setIsMounted] = useState(false);
   const { theme } = useTheme(); // Get current theme
+  const pathname = usePathname();
+  const isExportPage = pathname.includes('/exportar');
 
   useEffect(() => {
     setIsMounted(true);
@@ -55,6 +57,16 @@ function DashboardLayoutContent({
             <Skeleton className="h-4 w-[250px]" />
             <Skeleton className="h-4 w-[200px]" />
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isExportPage) {
+    return (
+      <div className="bg-muted flex justify-center min-h-screen p-4 sm:p-8">
+        <div className="w-full max-w-5xl bg-card rounded-xl shadow-lg">
+            {children}
         </div>
       </div>
     );

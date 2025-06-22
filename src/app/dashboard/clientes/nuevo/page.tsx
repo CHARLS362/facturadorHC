@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -72,23 +71,59 @@ export default function NuevoClientePage() {
 
   async function onSubmit(data: ClientFormValues) {
     setIsSubmitting(true);
-    console.log("New client data:", data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Cliente Creado</span>
-        </div>
-      ),
-      description: `El cliente ${data.name} ha sido creado exitosamente.`,
-    });
-    form.reset();
+
+    // Mapea los datos del formulario a los campos esperados por la API
+    const payload = {
+      nombre: data.name,
+      nombreComercial: data.type === "Empresa" ? data.name : null,
+      direccion: data.address,
+      telefono: data.phone,
+      email: data.email,
+      contacto: data.contactName,
+      tipoClienteDescripcion: data.type === "Empresa" ? "Persona Jurídica" : "Persona Natural",
+      tipoDocumentoCodigo: data.type === "Empresa" ? "RUC" : "DNI",
+      numeroDocumento: data.rucDni,
+    };
+
+    try {
+      const res = await fetch("/api/cliente", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+
+      setIsSubmitting(false);
+
+      if (res.ok) {
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <span>Cliente Creado</span>
+            </div>
+          ),
+          description: `El cliente ${data.name} ha sido creado exitosamente.`,
+        });
+        form.reset();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error || "No se pudo crear el cliente.",
+        });
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error al crear el cliente.",
+      });
+    }
   }
 
   return (

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,40 +70,124 @@ export default function EditarClientePage() {
 
   useEffect(() => {
     if (clientId) {
-      // Simulate fetching client data
-      const clientToEdit = mockClients.find(c => c.id === clientId);
-      if (clientToEdit) {
-        form.reset({
-          ...clientToEdit,
-          type: clientToEdit.type as ClientFormValues["type"], // Ensure correct type
+      fetch(`/api/cliente/${clientId}`)
+        .then(res => res.json())
+        .then(client => {
+          if (client && client.IdCliente) {
+            form.reset({
+              type: client.tipoCliente?.descripcion === "Persona Jurídica" ? "Empresa" : "Persona",
+              name: client.Nombre,
+              rucDni: client.NumeroDocumento,
+              contactName: client.Contacto,
+              email: client.Email,
+              phone: client.Telefono,
+              address: client.Direccion,
+            });
+          } else {
+            toast({ title: "Error", description: "Cliente no encontrado.", variant: "destructive" });
+            router.push("/dashboard/clientes");
+          }
+        })
+        .catch(() => {
+          toast({ title: "Error", description: "Cliente no encontrado.", variant: "destructive" });
+          router.push("/dashboard/clientes");
         });
-      } else {
-        toast({ title: "Error", description: "Cliente no encontrado.", variant: "destructive" });
-        router.push("/dashboard/clientes");
-      }
     }
   }, [clientId, form, router, toast]);
 
   async function onSubmit(data: ClientFormValues) {
     setIsSubmitting(true);
-    console.log("Updating client:", clientId, data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Cliente Actualizado</span>
-        </div>
-      ),
-      description: `El cliente ${data.name} ha sido actualizado exitosamente.`,
-    });
-    // router.push("/dashboard/clientes");
+
+    // Mapea los datos del formulario a los campos esperados por la API
+    const payload = {
+      nombre: data.name,
+      nombreComercial: data.type === "Empresa" ? data.name : null,
+      direccion: data.address,
+      telefono: data.phone,
+      email: data.email,
+      contacto: data.contactName,
+      estado: 1,
+      tipoClienteDescripcion: data.type === "Empresa" ? "Persona Jurídica" : "Persona Natural",
+      tipoDocumentoCodigo: data.type === "Empresa" ? "RUC" : "DNI",
+      numeroDocumento: data.rucDni,
+    };
+
+    try {
+      const res = await fetch(`/api/cliente/${clientId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+
+      setIsSubmitting(false);
+
+      if (res.ok) {
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <span>Cliente Actualizado</span>
+            </div>
+          ),
+          description: `El cliente ${data.name} ha sido actualizado exitosamente.`,
+        });
+        router.push("/dashboard/clientes");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error || "No se pudo actualizar el cliente.",
+        });
+      }
+    } catch (error) {
+      setIsSubmitting(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error al actualizar el cliente.",
+      });
+    }
   }
+
+  const handleDeleteClient = async () => {
+    try {
+      const res = await fetch(`/api/cliente/${clientId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <span>Cliente Eliminado</span>
+            </div>
+          ),
+          description: `El cliente ha sido eliminado.`,
+        });
+        router.push("/dashboard/clientes");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "No se puede eliminar",
+          description: data.error || "No se pudo eliminar el cliente.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error al eliminar el cliente.",
+      });
+    }
+  };
 
   return (
     <div className="space-y-8">

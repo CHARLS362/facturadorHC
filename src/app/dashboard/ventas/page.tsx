@@ -1,7 +1,7 @@
 
 "use client";
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,6 +36,7 @@ import { WhatsappConfirmationDialog } from '@/components/dashboard/whatsapp-conf
 
 interface MockSale {
   id: string;
+  ventaId: number;
   date: string;
   customer: string;
   total: string;
@@ -46,20 +47,36 @@ interface MockSale {
   clientPhone: string;
 }
 
-const initialMockSales: MockSale[] = [
-  { id: "VENTA001", date: "2024-07-20", customer: "Carlos Mendoza", total: "S/ 150.00", status: "Pagado", paymentMethod: "Tarjeta", documentType: "Factura", clientEmail: "carlos.mendoza@example.com", clientPhone: "51987654321" },
-  { id: "VENTA002", date: "2024-07-19", customer: "Luisa Fernandez", total: "S/ 85.50", status: "Pendiente", paymentMethod: "Efectivo", documentType: "Boleta", clientEmail: "luisa.fernandez@example.com", clientPhone: "51912345678" },
-  { id: "VENTA003", date: "2024-07-19", customer: "Ana Torres", total: "S/ 220.00", status: "Pagado", paymentMethod: "Transferencia", documentType: "Factura", clientEmail: "ana.torres@example.com", clientPhone: "51999888777" },
-  { id: "VENTA004", date: "2024-07-18", customer: "Jorge Vargas", total: "S/ 45.00", status: "Anulado", paymentMethod: "Yape", documentType: "Boleta", clientEmail: "jorge.vargas@example.com", clientPhone: "51977666555" },
-];
 
 export default function VentasPage() {
-  const [sales, setSales] = useState<MockSale[]>(initialMockSales);
+  const [sales, setSales] = useState<MockSale[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const [isWhatsappDialogOpen, setIsWhatsappDialogOpen] = useState(false);
   const [selectedSaleForWhatsapp, setSelectedSaleForWhatsapp] = useState<MockSale | null>(null);
 
+    useEffect(() => {
+    fetch('/api/venta')
+      .then(res => res.json())
+      .then(data => {
+        const ventas = data.map((venta: any) => ({
+          id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
+          ventaId: venta.IdVenta,
+          date: venta.FechaVenta ? venta.FechaVenta.slice(0, 10) : "",
+          customer: venta.NombreCliente || "Sin nombre",
+          total: `S/ ${Number(venta.Total).toFixed(2)}`,
+          status: venta.Estado,
+          paymentMethod: venta.NombreFormaPago || "Desconocido",
+          documentType: venta.TipoDocumento || "Factura",
+          clientEmail: venta.EmailCliente || "",
+          clientPhone: venta.TelefonoCliente || "",
+        }));
+        setSales(ventas);
+      })
+      .catch(() => {
+        toast({ title: "Error", description: "No se pudieron cargar las ventas", variant: "destructive" });
+      });
+  }, [toast]);
 
   const filteredSales = useMemo(() => {
     if (!searchTerm) return sales;
@@ -70,6 +87,8 @@ export default function VentasPage() {
       sale.documentType.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [sales, searchTerm]);
+
+  
   
   const getStatusBadgeVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -90,23 +109,41 @@ export default function VentasPage() {
     return null;
   };
 
-  const handleAnularVenta = (saleId: string) => {
-    console.log(`Anulando venta ${saleId}`);
-    // Simulate updating the sale status locally
-    setSales(prevSales => 
-      prevSales.map(s => s.id === saleId ? {...s, status: "Anulado"} : s)
+  const handleAnularVenta = async (ventaId: number) => {
+  try {
+    console.log('Anulando venta', ventaId);
+    const res = await fetch(`/api/venta/${ventaId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ Estado: "Anulado" }),
+    });
+
+    const data = await res.json();
+    console.log('Respuesta PATCH:', data);
+
+    if (!res.ok) throw new Error(data.error || "No se pudo anular la venta");
+
+    setSales(prevSales =>
+      prevSales.map(s => s.ventaId === ventaId ? { ...s, status: "Anulado" } : s)
     );
     toast({
       variant: "success",
       title: (
         <div className="flex items-center gap-2">
-          <Ban className="h-5 w-5 text-white" /> 
+          <Ban className="h-5 w-5 text-white" />
           <span>Venta Anulada</span>
         </div>
       ),
-      description: `La venta ${saleId} ha sido marcada como anulada.`,
+      description: `La venta VENTA${ventaId.toString().padStart(3, '0')} ha sido marcada como anulada.`,
     });
-  };
+  } catch (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "No se pudo anular la venta.",
+    });
+  }
+};
 
   const handleOpenWhatsappDialog = (sale: MockSale) => {
     setSelectedSaleForWhatsapp(sale);
@@ -214,7 +251,7 @@ export default function VentasPage() {
                     </TableCell>
                     <TableCell className="text-right space-x-1">
                       <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors" asChild>
-                        <Link href={`/dashboard/ventas/${sale.id}/detalles`}>
+                        <Link href={`/dashboard/ventas/${sale.ventaId}/detalles`}>
                           <Eye className="mr-1.5 h-4 w-4" /> {/* Adjusted icon size */}
                           <span>Ver</span>
                         </Link>
@@ -224,7 +261,7 @@ export default function VentasPage() {
                             variant="ghost" 
                             size="sm" 
                             className="text-orange-500 hover:text-orange-600 transition-colors" 
-                            onClick={() => handleAnularVenta(sale.id)}
+                            onClick={() => handleAnularVenta(sale.ventaId)}
                         >
                             <Ban className="mr-1.5 h-4 w-4" /> {/* Adjusted icon size */}
                             <span>Anular</span>

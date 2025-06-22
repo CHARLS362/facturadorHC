@@ -1,7 +1,6 @@
-
 "use client";
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,22 +20,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
-interface MockClient {
-  id: string;
-  name: string;
-  contactName: string;
-  email: string;
-  phone: string;
-  type: "Empresa" | "Persona";
-  registrationDate: string;
-}
-
-const initialMockClients: MockClient[] = [
-  { id: "CLI001", name: "Empresa XYZ S.A.C.", contactName: "Juan Pérez", email: "juan.perez@empresa.xyz", phone: "987654321", type: "Empresa", registrationDate: "2023-05-10" },
-  { id: "CLI002", name: "Ana Morales", contactName: "Ana Morales", email: "ana.morales@personal.com", phone: "912345678", type: "Persona", registrationDate: "2023-06-22" },
-  { id: "CLI003", name: "Servicios Globales EIRL", contactName: "Luisa Castro", email: "luisa.castro@serviciosglobales.com", phone: "999888777", type: "Empresa", registrationDate: "2024-01-05" },
-];
-
 const getInitials = (name?: string): string => {
   if (!name || name.trim() === "") return "??";
   const parts = name.trim().split(/\s+/);
@@ -51,7 +34,13 @@ const getInitials = (name?: string): string => {
 };
 
 export default function ClientesPage() {
-  const [clients, setClients] = useState<MockClient[]>(initialMockClients);
+  useEffect(() => {
+  fetch("/api/cliente")
+    .then(res => res.json())
+    .then(data => setClients(data))
+    .catch(() => setClients([]));
+  }, []);
+  const [clients, setClients] = useState<any[]>([]);
   const [clientToDelete, setClientToDelete] = useState<MockClient | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -60,29 +49,49 @@ export default function ClientesPage() {
   const filteredClients = useMemo(() => {
     if (!searchTerm) return clients;
     return clients.filter(client =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.contactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.phone.includes(searchTerm) ||
-      client.type.toLowerCase().includes(searchTerm.toLowerCase())
+    (client.name || client.Nombre || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.contactName || client.Contacto || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.email || client.Email || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.phone || client.Telefono || "").includes(searchTerm) ||
+    (client.tipoCliente?.descripcion || client.TipoCliente || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
   }, [clients, searchTerm]);
 
-  const handleDeleteClient = () => {
+  const handleDeleteClient = async () => {
     if (!clientToDelete) return;
-    setClients(prevClients => prevClients.filter(c => c.id !== clientToDelete.id));
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Cliente Eliminado</span>
-        </div>
-      ),
-      description: `El cliente ${clientToDelete.name} ha sido eliminado.`,
-    });
+    try {
+      const res = await fetch(`/api/cliente/${clientToDelete.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setClients(prevClients => prevClients.filter(c => c.id !== clientToDelete.id));
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <span>Cliente Eliminado</span>
+            </div>
+          ),
+          description: `El cliente ${clientToDelete.name || clientToDelete.Nombre} ha sido eliminado.`,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "No se puede eliminar",
+          description: data.error || "No se pudo eliminar el cliente.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error al eliminar el cliente.",
+      });
+    }
     setClientToDelete(null);
     setIsDeleteDialogOpen(false);
   };
@@ -144,30 +153,30 @@ export default function ClientesPage() {
             </TableHeader>
             <TableBody>
               {filteredClients.map((client) => {
-                const clientName = client.name;
-                const clientInitials = getInitials(client.type === "Empresa" ? client.contactName : client.name);
+                const clientName = client.name || client.Nombre;
+                const clientInitials = getInitials(clientName);
                 return (
                   <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell className="font-medium flex items-center gap-3">
                       <Avatar className="h-9 w-9">
-                        <AvatarImage src={`https://avatar.vercel.sh/${client.email}.png?size=40`} alt={clientName} />
+                        <AvatarImage src={`https://avatar.vercel.sh/${client.email || client.Email}.png?size=40`} alt={clientName} />
                         <AvatarFallback>{clientInitials}</AvatarFallback>
                       </Avatar>
-                      {client.name}
+                      {clientName}
                     </TableCell>
-                    <TableCell>{client.contactName}</TableCell>
+                    <TableCell>{client.contactName || client.Contacto}</TableCell>
                     <TableCell>
-                      <a href={`mailto:${client.email}`} className="text-primary hover:underline flex items-center gap-1">
-                        <Mail className="h-3.5 w-3.5" /> {client.email}
+                      <a href={`mailto:${client.email || client.Email}`} className="text-primary hover:underline flex items-center gap-1">
+                        <Mail className="h-3.5 w-3.5" /> {client.email || client.Email}
                       </a>
                     </TableCell>
                     <TableCell>
-                      <a href={`tel:${client.phone}`} className="text-primary hover:underline flex items-center gap-1">
-                        <Phone className="h-3.5 w-3.5" /> {client.phone}
+                      <a href={`tel:${client.phone || client.Telefono}`} className="text-primary hover:underline flex items-center gap-1">
+                        <Phone className="h-3.5 w-3.5" /> {client.phone || client.Telefono}
                       </a>
                     </TableCell>
-                    <TableCell>{client.type}</TableCell>
-                    <TableCell>{client.registrationDate}</TableCell>
+                    <TableCell>{client.tipoCliente?.descripcion || client.TipoCliente || client.type}</TableCell>
+                    <TableCell>{client.registeredAt || client.FechaRegistro || client.registrationDate}</TableCell>
                     <TableCell className="text-right">
                       {/* <Button variant="ghost" size="sm">Ver Perfil</Button> */}
                       <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>

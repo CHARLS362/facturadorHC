@@ -14,7 +14,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .request()
       .input('Email', Email)
       .input('Password', Password)
-      .query('SELECT * FROM FacturacionHC.dbo.Usuario WHERE Email = @Email AND Password = @Password');
+      .query('SELECT * FROM Usuario WHERE Email = @Email AND Password = @Password');
 
     if (result.recordset.length === 0) {
       return res.status(401).json({ error: 'Credenciales inválidas' });

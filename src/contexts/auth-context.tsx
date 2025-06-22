@@ -1,13 +1,19 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
+interface User {
+  email?: string;
+  name?: string;
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { email?: string; name?: string } | null;
-  login: (email: string, rememberMe: boolean) => void;
+  user: User | null;
+  login: (userData: any, rememberMe: boolean) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -16,61 +22,43 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
+  // On component mount, check for stored user session
   useEffect(() => {
     try {
-      const storedAuth = localStorage.getItem('facturacionhc_auth');
-      if (storedAuth) {
-        const authData = JSON.parse(storedAuth);
-        if (authData.isAuthenticated && authData.user) {
-          setIsAuthenticated(true);
-          setUser(authData.user);
-        }
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser({ email: userData.Email, name: userData.Nombre });
+        setIsAuthenticated(true);
       }
     } catch (error) {
-      console.error("Failed to parse auth data from localStorage", error);
-      localStorage.removeItem('facturacionhc_auth');
+      console.error("Failed to parse user from localStorage", error);
+      // Clear potentially corrupted storage
+      localStorage.removeItem('user');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated && pathname === '/login') {
-        router.push('/dashboard');
-      } else if (!isAuthenticated && pathname.startsWith('/dashboard')) {
-        router.push('/login');
-      }
-    }
-  }, [isAuthenticated, isLoading, pathname, router]);
-
-  const login = useCallback((email: string, rememberMe: boolean) => {
-    const userData = { email, name: email.split('@')[0] }; // Simple name generation
-    setIsAuthenticated(true);
-    setUser(userData);
+  const login = useCallback((userData: any, rememberMe: boolean) => {
     if (rememberMe) {
-      try {
-        localStorage.setItem('facturacionhc_auth', JSON.stringify({ isAuthenticated: true, user: userData }));
-      } catch (error) {
-        console.error("Failed to save auth data to localStorage", error);
-      }
+      localStorage.setItem('user', JSON.stringify(userData));
     }
-    router.push('/dashboard');
+    // Set user state from userData. The API returns { Nombre, Email, ... }
+    setUser({ email: userData.Email, name: userData.Nombre });
+    setIsAuthenticated(true);
+    router.replace('/dashboard');
   }, [router]);
 
   const logout = useCallback(() => {
-    setIsAuthenticated(false);
+    localStorage.removeItem('user');
     setUser(null);
-    try {
-      localStorage.removeItem('facturacionhc_auth');
-    } catch (error) {
-      console.error("Failed to remove auth data from localStorage", error);
-    }
-    router.push('/login');
+    setIsAuthenticated(false);
+    router.replace('/login');
   }, [router]);
 
   return (

@@ -66,7 +66,7 @@ async function onSubmit(data: LoginFormValues) {
       throw new Error(result.error || 'Error desconocido');
     }
 
-    login(data.email, data.rememberMe || false);
+    login(result.usuario, data.rememberMe || false);
 
 
   } catch (error: any) {
