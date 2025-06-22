@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { PanelLeft, Menu as MenuIconLucide } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function DashboardLayoutContent({ 
   children, 
@@ -27,7 +28,7 @@ function DashboardLayoutContent({
   const { collapseSidebar, toggleSidebar, collapsed, broken, toggled } = useProSidebar();
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const isExportPage = pathname.includes('/exportar');
+  const isPrintOrExportPage = pathname.includes('/exportar') || pathname.includes('/imprimir');
 
   useEffect(() => {
     setIsMounted(true);
@@ -53,10 +54,10 @@ function DashboardLayoutContent({
     );
   }
 
-  if (isExportPage) {
+  if (isPrintOrExportPage) {
     return (
-      <div className="bg-muted flex justify-center min-h-screen p-4 sm:p-8">
-        <div className="w-full max-w-5xl bg-card rounded-xl shadow-lg">
+      <div className="bg-muted flex justify-center min-h-screen p-4 sm:p-8 print:p-0">
+        <div className="w-full max-w-6xl bg-card rounded-xl shadow-lg print:bg-transparent print:shadow-none print:max-w-none print:w-auto">
             {children}
         </div>
       </div>
