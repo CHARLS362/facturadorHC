@@ -42,20 +42,19 @@ body {
     --background: 0 0% 8%; /* Very dark gray for main background */
     --foreground: 0 0% 98%; /* Off-white */
     
-    /* Cards and Sidebar will be a slightly lighter dark gray */
-    --card: 0 0% 12%; 
+    --card: 0 0% 4%; /* Almost Black for sidebar/cards */
     --card-foreground: 0 0% 98%;
     
-    --popover: 0 0% 12%;
+    --popover: 0 0% 4%;
     --popover-foreground: 0 0% 98%;
 
     --primary: 16 100% 63.3%; /* Orange */
     --primary-foreground: 0 0% 98%;
     
-    --secondary: 0 0% 18%; /* Another shade of gray */
+    --secondary: 0 0% 15%; /* A dark gray for hovers etc */
     --secondary-foreground: 0 0% 98%;
 
-    --muted: 0 0% 18%;
+    --muted: 0 0% 15%;
     --muted-foreground: 0 0% 63.9%;
 
     --accent: 174 60% 40%; /* Teal */
@@ -64,9 +63,8 @@ body {
     --destructive: 9 85% 63%; /* Red */
     --destructive-foreground: 0 0% 98%;
     
-    /* Borders and inputs will be a visible gray */
-    --border: 0 0% 18%;
-    --input: 0 0% 22%; /* Slightly lighter for inputs */
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
     --ring: 16 100% 63.3%; /* Primary color for rings */
 
     --chart-1: 16 100% 63.3%;
