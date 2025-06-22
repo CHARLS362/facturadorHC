@@ -72,7 +72,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-200;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -96,11 +96,11 @@ body {
 
 /* React Pro Sidebar Styles v1.1.0 - Custom Theming */
 .ps-sidebar-container {
-    @apply bg-card text-card-foreground;
+    @apply bg-card text-card-foreground transition-colors duration-200 ease-in-out;
 }
 
 .ps-menu-button {
-    @apply hover:bg-secondary/80;
+    @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
 }
 
 .ps-menu-button.ps-active {
@@ -111,7 +111,7 @@ body {
 }
 
 .ps-submenu-content {
-    @apply bg-secondary/40;
+    @apply bg-secondary/40 transition-colors duration-200 ease-in-out;
 }
 
 .ps-menu-button.ps-disabled {
@@ -636,5 +636,3 @@ body {
     display: none !important;
   }
 }
-
-    
