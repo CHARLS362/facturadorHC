@@ -48,4 +48,3 @@ export default function DEPRECATED_EditarVentaPage() {
     </div>
   );
 }
-
