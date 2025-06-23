@@ -17,7 +17,6 @@ import {
   Receipt,  
   FileCode2, 
   FileCheck2, 
-  Printer,
   Send, 
   Mail,
   Ban, 
@@ -301,12 +300,6 @@ export default function VentasPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild className="text-gray-600 dark:text-gray-400 focus:text-gray-700 dark:focus:text-gray-300 focus:bg-gray-500/10">
-                              <Link href={`/dashboard/ventas/${sale.ventaId}/imprimir`}>
-                                <Printer className="mr-2 h-4 w-4" />
-                                <span>Imprimir</span>
-                              </Link>
-                            </DropdownMenuItem>
                             <DropdownMenuItem className="text-red-500 focus:text-red-500 focus:bg-red-500/10">
                               <FileText className="mr-2 h-4 w-4" />
                               <span>Exportar PDF</span>
