@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { KeyRound, Save, Eye, EyeOff, ShieldAlert, CheckCircle2 } from "lucide-react";
+import { KeyRound, Save, Eye, EyeOff, ShieldAlert, CheckCircle2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import React, { useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -74,9 +74,9 @@ export default function SunatCredentialsPage() {
 
       <Alert variant="destructive" className="max-w-3xl mx-auto border-yellow-500/50 text-yellow-600 dark:text-yellow-400 [&>svg]:text-yellow-500">
         <ShieldAlert className="h-4 w-4" />
-        <AlertTitle>¡Atención! Zona de Alta Seguridad</AlertTitle>
+        <AlertTitle>¡Atención! Zona de Alta Seguridad y Responsabilidad</AlertTitle>
         <AlertDescription>
-          Estás en una sección crítica. La información aquí guardada es extremadamente sensible. Asegúrate de no compartir tu Clave SOL con nadie.
+          Estás ingresando tus credenciales de Clave SOL. Eres el único responsable de su custodia y uso. Nuestro sistema almacena esta información de forma encriptada y la utiliza exclusivamente para la comunicación con los servicios de SUNAT.
         </AlertDescription>
       </Alert>
 
@@ -146,6 +146,25 @@ export default function SunatCredentialsPage() {
           </Form>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg rounded-lg w-full max-w-3xl mx-auto border-blue-500/30 bg-blue-500/5">
+        <CardHeader>
+          <CardTitle className="font-headline text-lg flex items-center gap-2 text-blue-800 dark:text-blue-300">
+            <ShieldCheck className="h-5 w-5" />
+            Descargo de Responsabilidad y Buenas Prácticas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+            <ul className="list-disc pl-5 space-y-2 text-sm text-muted-foreground">
+                <li><span className="font-semibold text-foreground">FacturacionHC</span> actúa como un intermediario tecnológico para facilitar la emisión de comprobantes electrónicos ante SUNAT.</li>
+                <li>Usted es el <span className="font-semibold text-foreground">único responsable</span> de la custodia, confidencialidad y correcto uso de su Usuario y Clave SOL.</li>
+                <li>Este software no se hace responsable por el mal uso, pérdida, o acceso no autorizado a sus credenciales de SUNAT que no sea resultado de una falla directa en nuestra infraestructura de seguridad.</li>
+                <li>Es su responsabilidad asegurar que solo personal de confianza tenga acceso a esta sección del sistema.</li>
+                <li>Le recomendamos encarecidamente <span className="font-semibold text-foreground">cambiar su Clave SOL periódicamente</span> desde el portal de SUNAT como medida de seguridad adicional.</li>
+            </ul>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
