@@ -61,6 +61,10 @@ export function WhatsappConfirmationDialog({ isOpen, onOpenChange, saleData, onC
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-amber-700 dark:text-amber-300 text-xs flex items-start gap-2">
+            <AlertTriangle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <p>Recuerda descargar el PDF primero para poder adjuntarlo en WhatsApp.</p>
+          </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="whatsapp-phone" className="text-right col-span-1 text-sm">
               Teléfono

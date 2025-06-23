@@ -142,6 +142,18 @@ export default function DetallesVentaPage() {
   
   const mappedData = getMappedVentaData();
 
+  const handleEmail = () => {
+    if (!mappedData || !venta) return;
+    const mailtoLink = `mailto:${venta.EmailCliente || ''}?subject=Comprobante%20Electrónico:%20${mappedData.id}&body=Estimado(a)%20${venta.NombreCliente},%0A%0AAdjuntamos%20los%20detalles%20de%20su%20comprobante.%0A%0AGracias%20por%20su%20preferencia.`;
+
+    toast({
+        title: "Paso siguiente: Adjuntar PDF",
+        description: "No olvides descargar el PDF primero para adjuntarlo a tu correo.",
+        variant: "default",
+    });
+    window.location.href = mailtoLink;
+  };
+
   const renderLoading = () => (
     <div className="space-y-8">
       <PageHeader title="Cargando Detalles de Venta..." icon={Eye} />
@@ -171,8 +183,6 @@ export default function DetallesVentaPage() {
   if (isLoading) return renderLoading();
   if (!venta || !mappedData) return renderNotFound();
 
-  const mailtoLink = `mailto:${venta.EmailCliente || ''}?subject=Comprobante%20Electrónico:%20${mappedData.id}&body=Estimado(a)%20${venta.NombreCliente},%0A%0AAdjuntamos%20los%20detalles%20de%20su%20comprobante.%0A%0AGracias%20por%20su%20preferencia.`;
-
   return (
     <div className="space-y-8">
       <div className="print-hide">
@@ -190,8 +200,8 @@ export default function DetallesVentaPage() {
               <Button variant="secondary" disabled onClick={() => toast({ title: "Próximamente", description: "La descarga de XML estará disponible pronto."})}><FileCode2 className="mr-2 h-4 w-4"/>XML</Button>
               <Button variant="secondary" disabled onClick={() => toast({ title: "Próximamente", description: "La descarga de CDR estará disponible pronto."})}><FileCheck2 className="mr-2 h-4 w-4"/>CDR</Button>
               <Button variant="outline" className="text-green-600 border-green-500/50 hover:bg-green-500/10" onClick={() => setIsWhatsappDialogOpen(true)}><Send className="mr-2 h-4 w-4"/>WhatsApp</Button>
-              <Button asChild variant="outline" className="text-orange-600 border-orange-500/50 hover:bg-orange-500/10">
-                <a href={mailtoLink}><Mail className="mr-2 h-4 w-4"/>Email</a>
+              <Button onClick={handleEmail} variant="outline" className="text-orange-600 border-orange-500/50 hover:bg-orange-500/10">
+                <Mail className="mr-2 h-4 w-4"/>Email
               </Button>
             </div>
           }
