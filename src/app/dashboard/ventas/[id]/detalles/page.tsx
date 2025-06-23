@@ -154,6 +154,84 @@ export default function DetallesVentaPage() {
     window.location.href = mailtoLink;
   };
 
+  const handleDownloadXml = () => {
+    if (!venta || !mappedData) return;
+
+    // NOTE: This is a simplified XML representation for demonstration.
+    // A real implementation requires a UBL 2.1 compliant structure.
+    const xmlString = `<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
+         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+    <cbc:ID>${mappedData.id}</cbc:ID>
+    <cbc:IssueDate>${new Date(mappedData.fecha).toISOString().split('T')[0]}</cbc:IssueDate>
+    <cac:AccountingSupplierParty>
+        <cac:Party>
+            <cac:PartyName>
+                <cbc:Name>${mockCompanyInfo.name}</cbc:Name>
+            </cac:PartyName>
+        </cac:Party>
+    </cac:AccountingSupplierParty>
+    <cac:AccountingCustomerParty>
+        <cac:Party>
+            <cac:PartyLegalEntity>
+                <cbc:RegistrationName>${mappedData.cliente.nombre}</cbc:RegistrationName>
+            </cac:PartyLegalEntity>
+        </cac:Party>
+    </cac:AccountingCustomerParty>
+    <cac:LegalMonetaryTotal>
+        <cbc:PayableAmount currencyID="PEN">${mappedData.totalGeneral.toFixed(2)}</cbc:PayableAmount>
+    </cac:LegalMonetaryTotal>
+    ${mappedData.items.map((item, index) => `
+    <cac:InvoiceLine>
+        <cbc:ID>${index + 1}</cbc:ID>
+        <cbc:InvoicedQuantity unitCode="${item.unidad}">${item.cantidad}</cbc:InvoicedQuantity>
+        <cac:Item>
+            <cbc:Description>${item.nombre}</cbc:Description>
+        </cac:Item>
+        <cac:Price>
+            <cbc:PriceAmount currencyID="PEN">${item.precioUnitario.toFixed(2)}</cbc:PriceAmount>
+        </cac:Price>
+    </cac:InvoiceLine>`).join('')}
+</Invoice>`;
+
+    const blob = new Blob([xmlString], { type: 'application/xml' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${mappedData.id}.xml`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    toast({
+        title: "XML Descargado (Simulación)",
+        description: "Se ha iniciado la descarga del archivo XML.",
+    });
+  };
+
+  const handleDownloadCdr = () => {
+    if (!venta || !mappedData) return;
+
+    // NOTE: This is a simulation. The CDR is a response file from SUNAT.
+    const cdrContent = `El comprobante ${mappedData.id} ha sido aceptado por SUNAT.`;
+    const blob = new Blob([cdrContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `R-${mappedData.id}.zip`; // CDRs are often delivered in a ZIP
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+    toast({
+        title: "CDR Descargado (Simulación)",
+        description: "Se ha iniciado la descarga del archivo CDR de respuesta.",
+    });
+  };
+
   const renderLoading = () => (
     <div className="space-y-8">
       <PageHeader title="Cargando Detalles de Venta..." icon={Eye} />
@@ -197,8 +275,8 @@ export default function DetallesVentaPage() {
               </Button>
               <Button onClick={handlePrint}><Printer className="mr-2 h-4 w-4"/>Imprimir</Button>
               <Button variant="secondary" onClick={handleDownloadPdf}><FileDown className="mr-2 h-4 w-4"/>PDF</Button>
-              <Button variant="secondary" disabled onClick={() => toast({ title: "Próximamente", description: "La descarga de XML estará disponible pronto."})}><FileCode2 className="mr-2 h-4 w-4"/>XML</Button>
-              <Button variant="secondary" disabled onClick={() => toast({ title: "Próximamente", description: "La descarga de CDR estará disponible pronto."})}><FileCheck2 className="mr-2 h-4 w-4"/>CDR</Button>
+              <Button variant="secondary" onClick={handleDownloadXml}><FileCode2 className="mr-2 h-4 w-4"/>XML</Button>
+              <Button variant="secondary" onClick={handleDownloadCdr}><FileCheck2 className="mr-2 h-4 w-4"/>CDR</Button>
               <Button variant="outline" className="text-green-600 border-green-500/50 hover:bg-green-500/10" onClick={() => setIsWhatsappDialogOpen(true)}><Send className="mr-2 h-4 w-4"/>WhatsApp</Button>
               <Button onClick={handleEmail} variant="outline" className="text-orange-600 border-orange-500/50 hover:bg-orange-500/10">
                 <Mail className="mr-2 h-4 w-4"/>Email
