@@ -58,7 +58,7 @@ export function WhatsappConfirmationDialog({ isOpen, onOpenChange, saleData, onC
         return;
     }
     
-    const shouldUpdate = selection === 'new' && updateClientRecord;
+    const shouldUpdate = selection === 'new' && updateClientRecord && !hasExistingPhone;
     
     onConfirm(finalPhoneNumber.replace(/\s+/g, ''), shouldUpdate, saleData.id, saleData.customer);
     onOpenChange(false);
@@ -121,16 +121,18 @@ export function WhatsappConfirmationDialog({ isOpen, onOpenChange, saleData, onC
                     placeholder="Ej: 51987654321"
                     className="w-full"
                   />
-                  <div className="flex items-center space-x-2">
-                     <Checkbox
-                        id="update-client-phone"
-                        checked={updateClientRecord}
-                        onCheckedChange={(checked) => setUpdateClientRecord(!!checked)}
-                      />
-                      <Label htmlFor="update-client-phone" className="text-sm font-normal cursor-pointer">
-                        Actualizar número en el registro del cliente
-                      </Label>
-                  </div>
+                  {!hasExistingPhone && (
+                    <div className="flex items-center space-x-2">
+                       <Checkbox
+                          id="update-client-phone"
+                          checked={updateClientRecord}
+                          onCheckedChange={(checked) => setUpdateClientRecord(!!checked)}
+                        />
+                        <Label htmlFor="update-client-phone" className="text-sm font-normal cursor-pointer">
+                          Guardar este número en el registro del cliente
+                        </Label>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
