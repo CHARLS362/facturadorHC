@@ -1,4 +1,3 @@
-
 "use client";
 
 import type { ReactNode } from 'react';
@@ -8,6 +7,7 @@ import { useRouter } from 'next/navigation';
 interface User {
   email?: string;
   name?: string;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -19,6 +19,16 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper to map Role ID to Role Name
+const getRoleFromId = (roleId?: number): string => {
+  switch (roleId) {
+    case 1: return 'Admin';
+    case 2: return 'Vendedor';
+    case 3: return 'Soporte';
+    default: return 'Unknown';
+  }
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,7 +46,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (storedUser) {
         const userData = JSON.parse(storedUser);
-        setUser({ email: userData.Email, name: userData.Nombre });
+        setUser({ email: userData.Email, name: userData.Nombre, role: getRoleFromId(userData.IdRol) });
         setIsAuthenticated(true);
       }
     } catch (error) {
@@ -76,7 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         sessionStorage.setItem('user', JSON.stringify(userData));
       }
       
-      setUser({ email: userData.Email, name: userData.Nombre });
+      setUser({ email: userData.Email, name: userData.Nombre, role: getRoleFromId(userData.IdRol) });
       setIsAuthenticated(true);
       router.replace('/dashboard');
 
@@ -109,5 +119,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-
-    
