@@ -49,32 +49,29 @@ export function CajaManagement({ initialActiveSession, initialHistory, chartData
   };
 
   return (
-    <>
-      <Card className="shadow-lg mb-6">
-        <CardHeader>
-          <CardTitle>Estado Actual de la Caja</CardTitle>
-          <CardDescription>
-            {activeSession ? "La caja se encuentra abierta. Puedes registrar ventas." : "La caja está cerrada. Debes abrirla para empezar a operar."}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {activeSession ? (
-            <CajaStatus session={activeSession} onCierreClick={() => setIsCierreOpen(true)} />
-          ) : (
-            <div className="text-center p-6 border-2 border-dashed rounded-lg">
-              <h3 className="text-lg font-medium">Caja Cerrada</h3>
-              <p className="text-muted-foreground mb-4">Inicia una nueva sesión para registrar ventas.</p>
-              <Button onClick={() => setIsAperturaOpen(true)}>Abrir Caja</Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-6 lg:grid-cols-7">
-        <div className="lg:col-span-4">
-          <HistorialCaja history={history} />
-        </div>
-        <Card className="lg:col-span-3 shadow-lg">
+    <div className="space-y-6">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle>Estado Actual de la Caja</CardTitle>
+            <CardDescription>
+              {activeSession ? "La caja se encuentra abierta. Puedes registrar ventas." : "La caja está cerrada. Debes abrirla para empezar a operar."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {activeSession ? (
+              <CajaStatus session={activeSession} onCierreClick={() => setIsCierreOpen(true)} />
+            ) : (
+              <div className="text-center p-6 border-2 border-dashed rounded-lg">
+                <h3 className="text-lg font-medium">Caja Cerrada</h3>
+                <p className="text-muted-foreground mb-4">Inicia una nueva sesión para registrar ventas.</p>
+                <Button onClick={() => setIsAperturaOpen(true)}>Abrir Caja</Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+        
+        <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline">
                     <PieChartIcon className="h-6 w-6 text-primary" />
@@ -90,6 +87,10 @@ export function CajaManagement({ initialActiveSession, initialHistory, chartData
         </Card>
       </div>
 
+      <div>
+        <HistorialCaja history={history} />
+      </div>
+
       <AperturaCajaDialog
         isOpen={isAperturaOpen}
         onOpenChange={setIsAperturaOpen}
@@ -102,6 +103,6 @@ export function CajaManagement({ initialActiveSession, initialHistory, chartData
         onSuccess={handleCierreSuccess}
         session={activeSession}
       />
-    </>
+    </div>
   );
 }
