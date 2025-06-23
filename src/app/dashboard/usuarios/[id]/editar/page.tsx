@@ -10,23 +10,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { UserCog, Save, RotateCcw, Eye, EyeOff, CheckCircle2 } from "lucide-react"; // Changed icon to UserCog
+import { UserCog, Save, Eye, EyeOff, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from 'next/navigation'; // For accessing route params
-
-// Mock data - in a real app, this would come from an API
-const mockUsers = [
-  { id: "USR001", fullName: "Ana García", email: "ana.garcia@example.com", role: "Admin", status: "Activo" },
-  { id: "USR002", fullName: "Carlos López", email: "carlos.lopez@example.com", role: "Vendedor", status: "Activo" },
-];
-
+import { useParams, useRouter } from 'next/navigation';
+import { Skeleton } from "@/components/ui/skeleton";
 
 const usuarioSchema = z.object({
   fullName: z.string().min(3, { message: "El nombre completo es requerido (mín. 3 caracteres)." }),
   email: z.string().email({ message: "Ingrese un email válido." }),
-  // Password can be optional on edit, or have different validation
   password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres." }).optional().or(z.literal('')),
   role: z.enum(["Admin", "Vendedor", "Soporte"], { required_error: "Seleccione un rol para el usuario." }),
   status: z.enum(["Activo", "Inactivo"], { required_error: "Seleccione un estado."}),
@@ -38,9 +31,10 @@ export default function EditarUsuarioPage() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
-  const userId = params.id as string; // Get user ID from URL
+  const userId = params.id as string;
 
   const form = useForm<UsuarioFormValues>({
     resolver: zodResolver(usuarioSchema),
@@ -54,44 +48,102 @@ export default function EditarUsuarioPage() {
   });
 
   useEffect(() => {
-    // Simulate fetching user data
-    if (userId) {
-      const userToEdit = mockUsers.find(u => u.id === userId);
-      if (userToEdit) {
+    const fetchUsuario = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/usuario/${userId}`);
+        if (!res.ok) throw new Error("Usuario no encontrado");
+        const data = await res.json();
+
         form.reset({
-          fullName: userToEdit.fullName,
-          email: userToEdit.email,
-          password: "", // Password field should be empty or handled differently for edits
-          role: userToEdit.role as "Admin" | "Vendedor" | "Soporte",
-          status: userToEdit.status as "Activo" | "Inactivo",
+          fullName: data.Nombre,
+          email: data.Email,
+          password: "",
+          role: data.Rol,
+          status: data.Estado,
         });
-      } else {
+      } catch (error) {
         toast({ title: "Error", description: "Usuario no encontrado.", variant: "destructive" });
         router.push("/dashboard/usuarios");
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+
+    if (userId) fetchUsuario();
   }, [userId, form, router, toast]);
 
   async function onSubmit(data: UsuarioFormValues) {
     setIsSubmitting(true);
-    console.log("Updating user:", userId, data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
+    try {
+      const body: any = {
+        Nombre: data.fullName,
+        Email: data.email,
+        Rol: data.role,
+        Estado: data.status,
+      };
+
+      if (data.password && data.password.trim() !== "") {
+        body.Password = data.password;
+      }
+
+      const res = await fetch(`/api/usuario/${userId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) throw new Error("Error al actualizar");
+
+      toast({
+        variant: "success",
+        title: (
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            </div>
+            <span>Usuario actualizado</span>
           </div>
-          <span>Usuario Actualizado</span>
-        </div>
-      ),
-      description: `El usuario ${data.fullName} ha sido actualizado exitosamente.`,
-    });
-    // Optionally, redirect after update
-    // router.push("/dashboard/usuarios"); 
+        ),
+        description: `El usuario ${data.fullName} ha sido actualizado correctamente.`,
+      });
+      router.push("/dashboard/usuarios");
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar",
+        description: "Hubo un problema al actualizar el usuario.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Editar Usuario"
+          description="Cargando la información del usuario..."
+          icon={UserCog}
+        />
+        <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
+          <CardHeader>
+            <CardTitle><Skeleton className="h-8 w-64" /></CardTitle>
+            <CardDescription><Skeleton className="h-4 w-48" /></CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="grid md:grid-cols-2 gap-6">
+              <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+              <div className="space-y-2"><Skeleton className="h-4 w-24" /><Skeleton className="h-10 w-full" /></div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
@@ -106,7 +158,7 @@ export default function EditarUsuarioPage() {
             </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Usuario</CardTitle>
           <CardDescription>Actualice los campos necesarios.</CardDescription>
@@ -236,3 +288,5 @@ export default function EditarUsuarioPage() {
     </div>
   );
 }
+
+    

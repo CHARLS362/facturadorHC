@@ -120,7 +120,7 @@ export default function ConfiguracionPage() {
         description="Actualiza los datos de tu empresa y preferencias de la aplicación."
         icon={Settings}
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center gap-2">
             <Building className="h-6 w-6 text-primary" /> Información de la Empresa

@@ -47,26 +47,45 @@ export default function NuevoProductoPage() {
     },
   });
 
-  async function onSubmit(data: ProductFormValues) {
-    setIsSubmitting(true);
-    console.log("New product data:", data);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Producto Creado</span>
-        </div>
-      ),
-      description: `El producto ${data.name} ha sido creado exitosamente.`,
-    });
-    form.reset();
+async function onSubmit(data: ProductFormValues) {
+  setIsSubmitting(true);
+  const payload = {
+    Codigo: data.sku || "SIN-COD",           
+    Nombre: data.name,
+    Descripcion: data.description,
+    Precio: data.price,
+    Stock: data.stock,
+    StockMinimo: 5,                          
+    Tipo: "Producto",                       
+    Estado: data.status,
+    ImagenUrl: data.imageUrl,
+    CategoriaNombre: data.category,      
+    IdUnidadMedida: 1,                    
+  };
+
+  const res = await fetch("/api/producto", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await res.json();
+  setIsSubmitting(false);
+
+  if (!res.ok) {
+    toast({ title: "Error", description: result.error, variant: "destructive" });
+    return;
   }
+
+  toast({
+    variant: "success",
+    title: "Producto creado",
+    description: `El producto ${data.name} ha sido registrado.`,
+  });
+
+  form.reset();
+}
+
 
   return (
     <div className="space-y-8">
@@ -80,7 +99,7 @@ export default function NuevoProductoPage() {
           </Button>
         }
       />
-      <Card className="shadow-xl rounded-lg w-full border-border/50">
+      <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
         <CardHeader>
           <CardTitle className="font-headline text-2xl">Información del Producto</CardTitle>
           <CardDescription>Complete todos los campos requeridos para agregar el producto.</CardDescription>

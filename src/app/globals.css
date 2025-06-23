@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,24 +39,32 @@ body {
   }
 
   .dark {
-    --background: 240 10% 3.9%; /* Cooler Dark Gray (ShadCN Default Dark) */
+    --background: 0 0% 8%; /* Very dark gray for main background */
     --foreground: 0 0% 98%; /* Off-white */
-    --card: 240 10% 3.9%; /* Match background */
-    --card-foreground: 0 0% 98%; /* Off-white */
-    --popover: 240 10% 3.9%; /* Match background */
-    --popover-foreground: 0 0% 98%; /* Off-white */
+    
+    --card: 0 0% 4%; /* Almost Black for sidebar/cards */
+    --card-foreground: 0 0% 98%;
+    
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
+
     --primary: 16 100% 63.3%; /* Orange */
-    --primary-foreground: 0 0% 98%; /* Off-white for primary on dark */
-    --secondary: 240 3.7% 15.9%; /* Cooler Dark Secondary (ShadCN Default Dark) */
-    --secondary-foreground: 0 0% 98%; /* Off-white */
-    --muted: 240 3.7% 15.9%; /* Cooler Dark Muted */
-    --muted-foreground: 240 5% 64.9%; /* Cooler Dark Muted Foreground */
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: 0 0% 15%; /* A dark gray for hovers etc */
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 63.9%;
+
     --accent: 174 60% 40%; /* Teal */
-    --accent-foreground: 0 0% 98%; /* Off-white */
-    --destructive: 9 85% 63%; /* #EF5350 */
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 9 85% 63%; /* Red */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%; /* Match muted for subtle borders */
-    --input: 240 3.7% 15.9%; /* Match muted for inputs */
+    
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
     --ring: 16 100% 63.3%; /* Primary color for rings */
 
     --chart-1: 16 100% 63.3%;
@@ -71,7 +80,7 @@ body {
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-200;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
@@ -93,7 +102,31 @@ body {
   @apply bg-primary;
 }
 
-/* React Pro Sidebar Styles v1.1.0 - BEGIN */
+/* React Pro Sidebar Styles v1.1.0 - Custom Theming */
+.ps-sidebar-container {
+    @apply bg-card text-card-foreground transition-colors duration-200 ease-in-out;
+}
+
+.ps-menu-button {
+    @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
+}
+
+.ps-menu-button.ps-active {
+    @apply bg-primary text-primary-foreground;
+}
+.ps-menu-button.ps-active:hover {
+    @apply bg-primary/90 text-primary-foreground;
+}
+
+.ps-submenu-content {
+    @apply bg-secondary/40 transition-colors duration-200 ease-in-out;
+}
+
+.ps-menu-button.ps-disabled {
+    @apply text-muted-foreground;
+}
+
+/* React Pro Sidebar - Original Structure (keep for functionality) */
 .pro-sidebar-layout {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -605,3 +638,9 @@ body {
   cursor: pointer;
 }
 /* React Pro Sidebar Styles v1.1.0 - END */
+
+@media print {
+  .print-hide {
+    display: none !important;
+  }
+}

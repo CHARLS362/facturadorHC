@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['Poppins', 'sans-serif'],
+        body: ["var(--font-pt-sans)"],
+        headline: ["var(--font-poppins)"],
         code: ['monospace'],
       },
       colors: {
@@ -88,22 +88,27 @@ export default {
           '100%': { transform: 'translateX(0)', opacity: '1' },
         },
         'content-show': {
-          '0%': { opacity: '0', transform: 'translateY(12px) scale(0.98)' },
-          '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         'gradient-pan': {
           '0%': { 'background-position': '0% 50%' },
           '50%': { 'background-position': '100% 50%' },
           '100%': { 'background-position': '0% 50%' },
-        }
+        },
+        'caret-blink': {
+          '0%,70%,100%': { opacity: '1' },
+          '20%,50%': { opacity: '0' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         'fade-in': 'fade-in 0.5s ease-out forwards',
         'slide-in-left': 'slide-in-left 0.5s ease-out forwards',
-        'content-show': 'content-show 0.4s ease-out forwards',
+        'content-show': 'content-show 0.3s ease-out forwards',
         'gradient-pan': 'gradient-pan 15s ease infinite',
+        'caret-blink': 'caret-blink 1.25s ease-out infinite',
       },
     },
   },

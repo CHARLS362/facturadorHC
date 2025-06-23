@@ -49,21 +49,7 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    if (data.email === "test@example.com" && data.password === "password") {
-      login(data.email, data.rememberMe || false);
-    } else {
-      toast({
-        variant: "destructive",
-        title: (
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" /> Error de Autenticación
-          </div>
-        ),
-        description: "Correo electrónico o contraseña incorrectos. Por favor intenta de nuevo.",
-      });
-    }
+    login(data, data.rememberMe || false);
     setIsLoading(false);
   }
 

@@ -11,11 +11,13 @@ import {
   BarChart3, 
   PieChartIcon, 
   LineChartIcon,
+  ShieldAlert,
 } from "lucide-react";
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
 import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
+import { LowStockProducts } from "@/components/dashboard/low-stock-products";
 
 interface CustomKpiData extends KpiCardProps {}
 
@@ -143,17 +145,32 @@ export default function DashboardPage() {
         </Card>
       </div>
       
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 font-headline">
-            <BarChart3 className="h-6 w-6 text-primary" />
-            Actividad Reciente
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <RecentActivity />
-        </CardContent>
-      </Card>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <BarChart3 className="h-6 w-6 text-primary" />
+              Actividad Reciente
+            </CardTitle>
+             <CardDescription>Últimas ventas y registros en el sistema.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <RecentActivity />
+          </CardContent>
+        </Card>
+        <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 rounded-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 font-headline">
+              <ShieldAlert className="h-6 w-6 text-yellow-500" />
+              Productos con Bajo Stock
+            </CardTitle>
+            <CardDescription>Productos que necesitan ser reabastecidos pronto.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <LowStockProducts />
+          </CardContent>
+        </Card>
+      </div>
 
     </div>
   );

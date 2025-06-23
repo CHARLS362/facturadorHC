@@ -56,11 +56,11 @@ export function UserNav({ user }: UserNavProps) {
         variant="ghost"
         size="icon"
         onClick={toggleTheme}
-        aria-label={!mounted ? "Toggle theme" : (theme === "light" ? "Switch to dark mode" : "Switch to light mode")}
+        aria-label={!mounted ? "Cambiar tema" : (theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro")}
         className="h-9 w-9 text-foreground hover:bg-accent hover:text-accent-foreground"
       >
         {!mounted ? (
-          <Sun className="h-5 w-5" /> 
+          <Sun className="h-5 w-5" />
         ) : theme === "light" ? (
           <Moon className="h-5 w-5" />
         ) : (
@@ -70,7 +70,7 @@ export function UserNav({ user }: UserNavProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10 border-2 border-primary/50">
+            <Avatar>
               <AvatarImage src={`https://avatar.vercel.sh/${user?.email || 'default'}.png`} alt={user?.name || "Usuario"} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>

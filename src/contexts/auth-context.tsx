@@ -2,75 +2,107 @@
 
 import type { ReactNode } from 'react';
 import React, { createContext, useState, useEffect, useCallback } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+
+interface User {
+  email?: string;
+  name?: string;
+  role?: string;
+}
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { email?: string; name?: string } | null;
-  login: (email: string, rememberMe: boolean) => void;
+  user: User | null;
+  login: (loginData: any, rememberMe: boolean) => void;
   logout: () => void;
   isLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper to map Role ID to Role Name
+const getRoleFromId = (roleId?: number): string => {
+  switch (roleId) {
+    case 1: return 'Admin';
+    case 2: return 'Vendedor';
+    case 3: return 'Soporte';
+    default: return 'Unknown';
+  }
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const pathname = usePathname();
 
   useEffect(() => {
     try {
-      const storedAuth = localStorage.getItem('facturacionhc_auth');
-      if (storedAuth) {
-        const authData = JSON.parse(storedAuth);
-        if (authData.isAuthenticated && authData.user) {
-          setIsAuthenticated(true);
-          setUser(authData.user);
-        }
+      // Prefer localStorage (remember me) over sessionStorage
+      let storedUser = localStorage.getItem('user');
+      if (!storedUser) {
+        storedUser = sessionStorage.getItem('user');
+      }
+
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        setUser({ email: userData.Email, name: userData.Nombre, role: getRoleFromId(userData.IdRol) });
+        setIsAuthenticated(true);
       }
     } catch (error) {
-      console.error("Failed to parse auth data from localStorage", error);
-      localStorage.removeItem('facturacionhc_auth');
+      console.error("Failed to parse user from storage", error);
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (isAuthenticated && pathname === '/login') {
-        router.push('/dashboard');
-      } else if (!isAuthenticated && pathname.startsWith('/dashboard')) {
-        router.push('/login');
-      }
-    }
-  }, [isAuthenticated, isLoading, pathname, router]);
+  const login = useCallback(async (loginData: any, rememberMe: boolean) => {
+    try {
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          Email: loginData.email,
+          Password: loginData.password,
+        }),
+      });
 
-  const login = useCallback((email: string, rememberMe: boolean) => {
-    const userData = { email, name: email.split('@')[0] }; // Simple name generation
-    setIsAuthenticated(true);
-    setUser(userData);
-    if (rememberMe) {
-      try {
-        localStorage.setItem('facturacionhc_auth', JSON.stringify({ isAuthenticated: true, user: userData }));
-      } catch (error) {
-        console.error("Failed to save auth data to localStorage", error);
+      const result = await res.json();
+      if (!res.ok) {
+        throw new Error(result.error || 'Error de autenticación');
       }
+      
+      const userData = result.usuario;
+
+      // Clear previous storage to avoid conflicts
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('user');
+
+      if (rememberMe) {
+        localStorage.setItem('user', JSON.stringify(userData));
+      } else {
+        sessionStorage.setItem('user', JSON.stringify(userData));
+      }
+      
+      setUser({ email: userData.Email, name: userData.Nombre, role: getRoleFromId(userData.IdRol) });
+      setIsAuthenticated(true);
+      router.replace('/dashboard');
+
+    } catch (error: any) {
+      // The component calling login should handle toast notifications
+      console.error("Login failed:", error.message);
+      throw error; // Re-throw error to be caught by the calling component
     }
-    router.push('/dashboard');
   }, [router]);
 
   const logout = useCallback(() => {
-    setIsAuthenticated(false);
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('user');
     setUser(null);
-    try {
-      localStorage.removeItem('facturacionhc_auth');
-    } catch (error) {
-      console.error("Failed to remove auth data from localStorage", error);
-    }
-    router.push('/login');
+    setIsAuthenticated(false);
+    router.replace('/login');
   }, [router]);
 
   return (
