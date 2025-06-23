@@ -9,7 +9,7 @@ import { CierreCajaDialog } from "./cierre-caja-dialog";
 import { CajaStatus } from "./caja-status";
 import { HistorialCaja } from "./historial-caja";
 import { CajaChart } from "./caja-chart";
-import { BarChart3 } from "lucide-react";
+import { PieChartIcon } from "lucide-react";
 
 interface Session {
   IdCaja: number;
@@ -75,11 +75,11 @@ export function CajaManagement({ initialActiveSession, initialHistory, chartData
         <Card className="shadow-lg lg:col-span-2">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-headline">
-                    <BarChart3 className="h-6 w-6 text-primary" />
-                    Resumen del Día (Simulado)
+                    <PieChartIcon className="h-6 w-6 text-primary" />
+                    Desglose de Movimientos (Simulado)
                 </CardTitle>
                 <CardDescription>
-                    Visualiza los ingresos, devoluciones y gastos registrados durante la sesión activa.
+                    Distribución de los movimientos de la sesión activa.
                 </CardDescription>
             </CardHeader>
             <CardContent>
