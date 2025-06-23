@@ -48,7 +48,7 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
   const qrData = `https://consulta.sunat.gob.pe/cl-ti-itconsvalicpe/ConsValiCpe.htm?num_ruc=${empresa.ruc}&tip_doc=01&num_ser=${venta.id.split('-')[0]}&num_doc=${venta.id.split('-')[1]}&fec_emi=${new Date(venta.fecha).toISOString().split('T')[0]}&mto_tot=${venta.totalGeneral.toFixed(2)}`;
 
   return (
-    <div className="bg-card p-8 rounded-lg border border-border/50 max-w-4xl mx-auto font-sans text-[12px] text-foreground w-[210mm] min-h-[297mm] print:border-0 print:shadow-none">
+    <div className="bg-card p-8 rounded-lg border border-border/50 max-w-4xl mx-auto font-sans text-[12px] text-foreground w-[210mm] min-h-[297mm] print:border-0 print:shadow-none print:h-auto print:min-h-0">
       {/* Header */}
       <header className="grid grid-cols-3 gap-4 mb-8">
         <div className="col-span-2">
