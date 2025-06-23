@@ -73,6 +73,16 @@ export default function ImprimirVentaPage() {
     }
   }, [ventaId]);
 
+  useEffect(() => {
+    if (!isLoading && venta) {
+      // Use a short timeout to ensure content is fully rendered before printing
+      const timer = setTimeout(() => {
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, venta]);
+
   const handleDownloadPdf = () => {
     const element = document.getElementById('printable-area-content');
     if (!element) return;
@@ -92,6 +102,7 @@ export default function ImprimirVentaPage() {
     html2pdf().from(element).set(opt).save();
   };
   
+  // This button is now a fallback in case the auto-print fails
   const handlePrint = () => {
     window.print();
   };
@@ -136,11 +147,12 @@ export default function ImprimirVentaPage() {
          <Card className="shadow-xl rounded-lg w-full max-w-4xl mx-auto border-destructive/50">
           <CardHeader>
             <CardTitle className="text-destructive">Venta no encontrada</CardTitle>
-            <CardDescription>No se pudo encontrar la venta con ID: {ventaId}</CardDescription>
+            <CardDescription>No se pudo encontrar la venta con ID: {ventaId}. Vuelva atrás e inténtelo de nuevo.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button variant="outline" onClick={() => router.push("/dashboard/ventas")}>
-              Volver al Listado de Ventas
+            <Button variant="outline" onClick={() => router.back()}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver
             </Button>
           </CardContent>
         </Card>
@@ -158,14 +170,14 @@ export default function ImprimirVentaPage() {
     <div className="space-y-8">
       <div className="print-hide">
         <PageHeader
-          title={`Previsualización: ${venta?.TipoDocumento || 'Comprobante'}`}
-          description="Revisa el documento antes de imprimir o descargar."
+          title={`Imprimiendo: ${venta?.TipoDocumento || 'Comprobante'}`}
+          description="Su documento se está preparando para la impresión."
           icon={Printer}
           actions={
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => router.back()}>
                 <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver
+                Volver a Detalles
               </Button>
               <Button variant="secondary" onClick={handleDownloadPdf} disabled={isLoading || !venta}>
                 <Download className="mr-2 h-4 w-4" />
@@ -173,7 +185,7 @@ export default function ImprimirVentaPage() {
               </Button>
               <Button onClick={handlePrint} disabled={isLoading || !venta}>
                 <Printer className="mr-2 h-4 w-4" />
-                Imprimir
+                Imprimir de Nuevo
               </Button>
             </div>
           }

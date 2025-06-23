@@ -79,7 +79,9 @@ export default function DetallesVentaPage() {
     }
   }, [ventaId]);
 
-  const handlePrint = () => window.print();
+  const handlePrint = () => {
+    router.push(`/dashboard/ventas/${ventaId}/imprimir`);
+  };
 
   const handleDownloadPdf = () => {
     const element = document.getElementById('printable-area-content');
