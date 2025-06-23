@@ -1,59 +1,86 @@
 
+"use client";
+
 import { PageHeader } from "@/components/shared/page-header";
 import { UserCog2 } from "lucide-react";
-import { getConnection } from '@/lib/db';
-import sql from 'mssql';
 import { EditarClienteForm } from "@/components/dashboard/editar-cliente-form";
-import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-async function getClientData(id: string) {
-  try {
-    const pool = await getConnection();
-    const result = await pool.request()
-      .input('IdCliente', sql.Int, id)
-      .query(`
-        SELECT 
-          c.IdCliente, c.NumeroDocumento, c.Nombre, c.NombreComercial, c.Direccion,
-          c.Telefono, c.Email, c.Contacto, c.Estado,
-          tc.Descripcion AS TipoCliente
-        FROM Cliente c
-        LEFT JOIN TipoCliente tc ON c.IdTipoCliente = tc.IdTipoCliente
-        WHERE c.IdCliente = @IdCliente
-      `);
 
-    if (result.recordset.length === 0) {
-      return null;
+export default function EditarClientePage() {
+  const router = useRouter();
+  const params = useParams();
+  const clientId = params.id as string;
+  const { toast } = useToast();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialData, setInitialData] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (clientId) {
+      setIsLoading(true);
+      fetch(`/api/cliente/${clientId}`)
+        .then(res => {
+          if (!res.ok) throw new Error("Cliente no encontrado");
+          return res.json();
+        })
+        .then(clientData => {
+          if (clientData && !clientData.error) {
+            const dataForForm = {
+              type: clientData.TipoCliente === "Persona Jurídica" ? "Empresa" : "Persona",
+              name: clientData.Nombre || "",
+              rucDni: clientData.NumeroDocumento || "",
+              contactName: clientData.Contacto || "",
+              email: clientData.Email || "",
+              phone: clientData.Telefono || "",
+              address: clientData.Direccion || "",
+            };
+            setInitialData(dataForForm);
+          } else {
+            throw new Error("Cliente no encontrado");
+          }
+        })
+        .catch(() => {
+          toast({ title: "Error", description: "Cliente no encontrado.", variant: "destructive" });
+          router.push("/dashboard/clientes");
+        })
+        .finally(() => setIsLoading(false));
     }
-    return result.recordset[0];
-  } catch (error) {
-    console.error("Failed to fetch client:", error);
-    return null;
+  }, [clientId, router, toast]);
+  
+  if (isLoading || !initialData) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Editar Cliente"
+          description="Cargando la información del cliente..."
+          icon={UserCog2}
+        />
+        <Card className="shadow-xl rounded-lg w-full max-w-3xl mx-auto border-border/50">
+          <CardHeader>
+            <CardTitle><Skeleton className="h-8 w-64" /></CardTitle>
+            <CardDescription><Skeleton className="h-4 w-48" /></CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+            <div className="space-y-2"><Skeleton className="h-4 w-32" /><Skeleton className="h-10 w-full" /></div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
-}
-
-export default async function EditarClientePage({ params }: { params: { id: string } }) {
-  const clientData = await getClientData(params.id);
-
-  if (!clientData) {
-    notFound();
-  }
-
-  const initialData = {
-    type: clientData.TipoCliente === "Persona Jurídica" ? "Empresa" : "Persona",
-    name: clientData.Nombre || "",
-    rucDni: clientData.NumeroDocumento || "",
-    contactName: clientData.Contacto || "",
-    email: clientData.Email || "",
-    phone: clientData.Telefono || "",
-    address: clientData.Direccion || "",
-  };
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Editar Cliente: ${clientData.Nombre || params.id}`}
+        title={`Editar Cliente: ${initialData.name || clientId}`}
         description="Modifique la información del cliente."
         icon={UserCog2}
         actions={
@@ -62,7 +89,7 @@ export default async function EditarClientePage({ params }: { params: { id: stri
             </Button>
         }
       />
-      <EditarClienteForm clientId={params.id} initialData={initialData} />
+      <EditarClienteForm clientId={clientId} initialData={initialData} />
     </div>
   );
 }
