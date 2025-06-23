@@ -14,6 +14,7 @@ import {
   FileText,
   Settings,
   KeyRound,
+  Landmark,
   type LucideIcon
 } from 'lucide-react';
 import { useProSidebar } from 'react-pro-sidebar';
@@ -31,6 +32,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard/usuarios', label: 'Usuarios', icon: Users },
   { href: '/dashboard/productos', label: 'Productos', icon: Package },
   { href: '/dashboard/ventas', label: 'Ventas', icon: ShoppingCart },
+  { href: '/dashboard/caja', label: 'Caja', icon: Landmark },
   { href: '/dashboard/clientes', label: 'Clientes', icon: UsersRound },
   { href: '/dashboard/escaner', label: 'Escáner QR/Barra', icon: ScanLine },
   { href: '/dashboard/plantillas', label: 'Plantillas Factura', icon: FileText },
