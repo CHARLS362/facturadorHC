@@ -155,59 +155,12 @@ export default function DetallesVentaPage() {
   };
 
   const handleDownloadXml = () => {
-    if (!venta || !mappedData) return;
-
-    // NOTE: This is a simplified XML representation for demonstration.
-    // A real implementation requires a UBL 2.1 compliant structure.
-    const xmlString = `<?xml version="1.0" encoding="UTF-8"?>
-<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2"
-         xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
-         xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-    <cbc:ID>${mappedData.id}</cbc:ID>
-    <cbc:IssueDate>${new Date(mappedData.fecha).toISOString().split('T')[0]}</cbc:IssueDate>
-    <cac:AccountingSupplierParty>
-        <cac:Party>
-            <cac:PartyName>
-                <cbc:Name>${mockCompanyInfo.name}</cbc:Name>
-            </cac:PartyName>
-        </cac:Party>
-    </cac:AccountingSupplierParty>
-    <cac:AccountingCustomerParty>
-        <cac:Party>
-            <cac:PartyLegalEntity>
-                <cbc:RegistrationName>${mappedData.cliente.nombre}</cbc:RegistrationName>
-            </cac:PartyLegalEntity>
-        </cac:Party>
-    </cac:AccountingCustomerParty>
-    <cac:LegalMonetaryTotal>
-        <cbc:PayableAmount currencyID="PEN">${mappedData.totalGeneral.toFixed(2)}</cbc:PayableAmount>
-    </cac:LegalMonetaryTotal>
-    ${mappedData.items.map((item, index) => `
-    <cac:InvoiceLine>
-        <cbc:ID>${index + 1}</cbc:ID>
-        <cbc:InvoicedQuantity unitCode="${item.unidad}">${item.cantidad}</cbc:InvoicedQuantity>
-        <cac:Item>
-            <cbc:Description>${item.nombre}</cbc:Description>
-        </cac:Item>
-        <cac:Price>
-            <cbc:PriceAmount currencyID="PEN">${item.precioUnitario.toFixed(2)}</cbc:PriceAmount>
-        </cac:Price>
-    </cac:InvoiceLine>`).join('')}
-</Invoice>`;
-
-    const blob = new Blob([xmlString], { type: 'application/xml' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${mappedData.id}.xml`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    
+    if (!ventaId) return;
+    // The browser will handle the download via the Content-Disposition header set by the API
+    window.open(`/api/venta/${ventaId}/xml`, '_blank');
     toast({
-        title: "XML Descargado (Simulación)",
-        description: "Se ha iniciado la descarga del archivo XML.",
+        title: "Descargando XML...",
+        description: "Se está generando el archivo XML para la descarga.",
     });
   };
 
