@@ -10,13 +10,10 @@ const dbConfig: SqlConfig = {
     encrypt: true,
     trustServerCertificate: true, 
   },
+  // Adding timeouts to prevent long hangs on startup
+  connectionTimeout: 15000, 
+  requestTimeout: 15000,
 };
-
-function corregirConsulta(sql: string): string {
-  // Elimina cualquier nombre de base de datos seguido por .dbo.
-  return sql.replace(/\b[\w\d_]+\b\.dbo\./g, 'dbo.');
-}
-
 
 let poolPromise: Promise<ConnectionPool> | null = null;
 
@@ -24,24 +21,11 @@ const createPool = async (): Promise<ConnectionPool> => {
     try {
         const pool = await sql.connect(dbConfig);
         console.log('Conexión a SQL Server establecida y pool creado');
-
-        const originalRequest = pool.request.bind(pool);
-
-        (pool.request as any) = function() {
-          const req = originalRequest();
-          const originalQuery = req.query.bind(req);
-          (req.query as any) = function(queryString: string, callback?: any) {
-            const correctedQuery = corregirConsulta(queryString);
-            return originalQuery(correctedQuery, callback);
-          };
-          return req;
-        };
-
         return pool;
     } catch (error) {
-        console.error('Error de conexión:', error);
-        // Reset promise on failure to allow retry
-        poolPromise = null;
+        console.error('Error de conexión a la base de datos:', error);
+        // Reset promise on failure to allow retry on next request
+        poolPromise = null; 
         throw error;
     }
 };
