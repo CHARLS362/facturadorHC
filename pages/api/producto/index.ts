@@ -72,6 +72,7 @@ if (req.method === 'POST') {
     const pool = await getConnection();
 
     const categoriaRes = await pool
+    
       .request()
       .input('NombreCategoria', sql.VarChar, CategoriaNombre)
       .query('SELECT IdCategoria FROM Categoria WHERE Descripcion = @NombreCategoria');

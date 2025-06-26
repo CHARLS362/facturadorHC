@@ -18,8 +18,8 @@ import React, { useState } from "react";
 
 const productSchema = z.object({
   name: z.string().min(3, { message: "El nombre del producto es requerido (mín. 3 caracteres)." }),
-  sku: z.string().optional(), // SKU can be optional
-  category: z.enum(["Ropa", "Calzado", "Accesorios", "Electrónicos", "Hogar", "Servicios", "Otro"], { required_error: "Seleccione una categoría." }),
+  sku: z.string().optional(), 
+  category: z.enum(["Ropa", "Calzado", "Accesorios", "Electrónica", "Hogar", "Servicios"], { required_error: "Seleccione una categoría." }),
   price: z.coerce.number().positive({ message: "El precio debe ser un número positivo." }),
   stock: z.coerce.number().int().min(0, { message: "El stock no puede ser negativo." }),
   status: z.enum(["En Stock", "Stock Bajo", "Agotado"], { required_error: "Seleccione un estado." }),
@@ -62,6 +62,8 @@ async function onSubmit(data: ProductFormValues) {
     CategoriaNombre: data.category,      
     IdUnidadMedida: 1,                    
   };
+
+
 
   const res = await fetch("/api/producto", {
     method: "POST",
@@ -152,10 +154,9 @@ async function onSubmit(data: ProductFormValues) {
                         <SelectItem value="Ropa">Ropa</SelectItem>
                         <SelectItem value="Calzado">Calzado</SelectItem>
                         <SelectItem value="Accesorios">Accesorios</SelectItem>
-                        <SelectItem value="Electrónicos">Electrónicos</SelectItem>
+                        <SelectItem value="Electrónica">Electrónica</SelectItem>
                         <SelectItem value="Hogar">Hogar</SelectItem>
                         <SelectItem value="Servicios">Servicios</SelectItem>
-                        <SelectItem value="Otro">Otro</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

@@ -1,49 +1,64 @@
+'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Package, FileDown, UploadCloud } from "lucide-react";
-import { getConnection } from '@/lib/db';
 import { ProductosList } from '@/components/dashboard/productos-list';
 
-async function getProductsData() {
-  try {
-    const pool = await getConnection();
-    const result = await pool.request().query(`
-      SELECT 
-        p.IdProducto, p.IdCategoria, c.Descripcion AS CategoriaNombre,
-        p.IdUnidadMedida, u.Descripcion AS UnidadMedidaNombre, u.Codigo AS UnidadMedidaSimbolo,
-        p.Codigo, p.Nombre, p.Descripcion, p.Precio, p.Stock, p.StockMinimo,
-        p.Tipo, p.Estado, p.ImagenUrl, p.FechaRegistro
-      FROM Producto p
-      LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
-      LEFT JOIN UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
-    `);
-
-    return result.recordset.map((prod: any) => ({
-      id: prod.IdProducto,
-      name: prod.Nombre,
-      sku: prod.Codigo || null,
-      category: prod.CategoriaNombre || 'Sin categoría',
-      price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
-      stock: prod.Stock,
-      status:
-        prod.Stock === 0
-          ? 'Agotado'
-          : prod.Stock <= prod.StockMinimo
-          ? 'Stock Bajo'
-          : 'En Stock',
-      imageUrl: prod.ImagenUrl || null,
-    }));
-  } catch (error) {
-    console.error("Error fetching products data:", error);
-    return [];
-  }
+interface ProductData {
+  id: number;
+  name: string;
+  sku: string | null;
+  category: string;
+  price: string;
+  stock: number;
+  status: 'Agotado' | 'Stock Bajo' | 'En Stock';
+  imageUrl: string | null;
 }
 
+export default function ProductosPage() {
+  const [productsData, setProductsData] = useState<ProductData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function ProductosPage() {
-  const productsData = await getProductsData();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/producto');
+
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos de los productos.');
+        }
+
+        const rawData = await response.json();
+        const formattedData = rawData.map((prod: any) => ({
+            id: prod.IdProducto,
+            name: prod.Nombre,
+            sku: prod.Codigo || null,
+            category: prod.CategoriaNombre || 'Sin categoría',
+            price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
+            stock: prod.Stock,
+            status:
+              prod.Stock === 0
+                ? 'Agotado'
+                : prod.Stock <= prod.StockMinimo
+                ? 'Stock Bajo'
+                : 'En Stock',
+            imageUrl: prod.ImagenUrl || null,
+        }));
+        
+        setProductsData(formattedData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []); 
 
   return (
     <div className="space-y-8">
@@ -74,7 +89,13 @@ export default async function ProductosPage() {
           </div>
         }
       />
-      <ProductosList initialData={productsData} />
+      {isLoading ? (
+        <p>Cargando productos...</p>
+      ) : error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : (
+        <ProductosList initialData={productsData} />
+      )}
     </div>
   );
 }
