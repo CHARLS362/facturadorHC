@@ -96,6 +96,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     const xmlSinFirma = generarXml(facturaParaXml);
+
+    // Guarda el XML en la raíz del proyecto con un nombre único
+    const nombreArchivo = `${facturaParaXml.empresa.ruc}-01-${facturaParaXml.venta.serie}-${facturaParaXml.venta.numero}.xml`;
+    const xmlPath = path.join(process.cwd(), nombreArchivo);
+    fs.writeFileSync(xmlPath, xmlSinFirma, 'utf8');
     // --- INICIO DE CÓDIGO DE DEPURACIÓN TEMPORAL ---
     const rawCertPath = process.env.CERTIFICATE_PATH;
     const rawCertPass = process.env.CERTIFICATE_PASSWORD;
@@ -118,13 +123,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({ error: 'Error de configuración del servidor.' });
     }
     
-    const certificateBuffer = fs.readFileSync(certificatePath);
-    
-    const xmlFirmado = firmarXml(xmlSinFirma, certificateBuffer, certificatePassword);
+    const certificatePem = fs.readFileSync(certificatePath, 'utf8');
+    const privateKeyPem = fs.readFileSync(process.env.PRIVATE_KEY_PATH!, 'utf8'); // Ajusta la variable si es necesario
+
+    const xmlFirmado = firmarXml(xmlSinFirma, privateKeyPem, certificatePem);
 
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-    const nombreArchivo = `${facturaParaXml.empresa.ruc}-01-${facturaParaXml.venta.serie}-${facturaParaXml.venta.numero}.xml`;
-    res.setHeader('Content-Disposition', `attachment; filename=${nombreArchivo}`);
+    const nombreArchivoDescarga = `${facturaParaXml.empresa.ruc}-01-${facturaParaXml.venta.serie}-${facturaParaXml.venta.numero}.xml`;
+    res.setHeader('Content-Disposition', `attachment; filename=${nombreArchivoDescarga}`);
     
     return res.status(200).send(xmlFirmado);
 

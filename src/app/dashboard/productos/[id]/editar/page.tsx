@@ -1,61 +1,86 @@
 
+'use client'; 
+import { useState, useEffect } from 'react';
+import { notFound, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
-import { PackageSearch } from "lucide-react";
+import { EditarProductoForm } from "@/components/dashboard/editar-producto-form"; 
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { getConnection } from '@/lib/db';
-import { sql } from 'mssql';
-import { notFound } from 'next/navigation';
-import { EditarProductoForm } from "@/components/dashboard/editar-producto-form";
+import { PackageSearch } from "lucide-react";
 
-async function getProductData(id: string) {
-  try {
-    const pool = await getConnection();
-    const result = await pool.request()
-      .input('IdProducto', sql.Int, id)
-      .query(`
-        SELECT 
-          p.IdProducto, p.IdCategoria, c.Descripcion AS CategoriaNombre,
-          p.IdUnidadMedida, u.Descripcion AS UnidadMedidaNombre, u.Codigo AS UnidadMedidaSimbolo,
-          p.Codigo, p.Nombre, p.Descripcion, p.Precio, p.Stock, p.StockMinimo,
-          p.Tipo, p.Estado, p.ImagenUrl, p.FechaRegistro
-        FROM Producto p
-        LEFT JOIN Categoria c ON p.IdCategoria = c.IdCategoria
-        LEFT JOIN UnidadMedida u ON p.IdUnidadMedida = u.IdUnidadMedida
-        WHERE p.IdProducto = @IdProducto
-      `);
-    
-    if (result.recordset.length === 0) {
-      return null;
-    }
-    return result.recordset[0];
-  } catch (error) {
-    console.error("Error fetching product data:", error);
-    return null;
-  }
+export interface ProductFormData {
+  name: string;
+  sku: string;
+  categoryId: number; 
+  price: number;
+  stock: number;
+  status: string;
+  description: string;
+  imageUrl: string;
 }
 
-export default async function EditarProductoPage({ params }: { params: { id: string } }) {
-  const productData = await getProductData(params.id);
-  if (!productData) {
-    notFound();
+export default function EditarProductoPage() {
+  const params = useParams(); 
+  const productId = params.id as string;
+
+  const [initialData, setInitialData] = useState<ProductFormData | null>(null);
+  const [productName, setProductName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!productId) return;
+
+    async function fetchProductData() {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/producto/${productId}`);
+
+        if (res.status === 404) {
+          notFound(); 
+          return;
+        }
+        if (!res.ok) {
+          throw new Error('Error al cargar los datos del producto');
+        }
+
+        const data = await res.json();
+        
+        const formattedData: ProductFormData = {
+          name: data.Nombre ?? "",
+          sku: data.Codigo ?? "",
+          categoryId: data.IdCategoria, 
+          price: data.Precio ?? 0,
+          stock: data.Stock ?? 0,
+          status: data.Estado ?? "En Stock",
+          description: data.Descripcion ?? "",
+          imageUrl: data.ImagenUrl ?? "",
+        };
+        
+        setInitialData(formattedData);
+        setProductName(data.Nombre || productId); 
+
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchProductData();
+  }, [productId]);
+
+  if (isLoading) {
+    return <div>Cargando editor de producto...</div>;
   }
 
-  const initialData = {
-    name: productData.Nombre ?? "",
-    sku: productData.Codigo ?? "",
-    category: productData.CategoriaNombre ?? undefined,
-    price: productData.Precio ?? 0,
-    stock: productData.Stock ?? 0,
-    status: productData.Estado ?? "En Stock",
-    description: productData.Descripcion ?? "",
-    imageUrl: productData.ImagenUrl ?? "",
-  };
+  if (!initialData) {
+    return <div>No se pudieron cargar los datos del producto.</div>;
+  }
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Editar Producto: ${initialData.name || params.id}`}
+        title={`Editar Producto: ${productName}`}
         description="Modifique la información del producto o servicio."
         icon={PackageSearch}
         actions={
@@ -64,7 +89,10 @@ export default async function EditarProductoPage({ params }: { params: { id: str
           </Button>
         }
       />
-      <EditarProductoForm productId={params.id} initialData={initialData} />
+      <EditarProductoForm 
+        productId={productId} 
+        initialData={initialData} 
+      />
     </div>
   );
 }

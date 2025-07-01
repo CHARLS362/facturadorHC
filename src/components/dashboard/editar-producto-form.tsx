@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,10 +14,37 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import React, { useState } from "react";
 
+// Catálogo de categorías
+const categorias = [
+  { id: 1, descripcion: "Electrónica" },
+  { id: 2, descripcion: "Ropa" },
+  { id: 3, descripcion: "Calzado" },
+  { id: 4, descripcion: "Accesorios" },
+  { id: 5, descripcion: "Hogar" },
+  { id: 6, descripcion: "Servicios" },
+];
+
+// Mapeo para status si tu API devuelve valores distintos
+function mapStatus(apiStatus: string) {
+  switch (apiStatus) {
+    case "EN_STOCK":
+    case "En Stock":
+      return "En Stock";
+    case "STOCK_BAJO":
+    case "Stock Bajo":
+      return "Stock Bajo";
+    case "AGOTADO":
+    case "Agotado":
+      return "Agotado";
+    default:
+      return "En Stock";
+  }
+}
+
 const productSchema = z.object({
   name: z.string().min(3, { message: "El nombre del producto es requerido (mín. 3 caracteres)." }),
   sku: z.string().optional(),
-  category: z.enum(["Ropa", "Calzado", "Accesorios", "Electrónicos", "Hogar", "Servicios", "Otro"], { required_error: "Seleccione una categoría." }),
+  category: z.enum(["Electrónica", "Ropa", "Calzado", "Accesorios", "Hogar", "Servicios"], { required_error: "Seleccione una categoría." }),
   price: z.coerce.number().positive({ message: "El precio debe ser un número positivo." }),
   stock: z.coerce.number().int().min(0, { message: "El stock no puede ser negativo." }),
   status: z.enum(["En Stock", "Stock Bajo", "Agotado"], { required_error: "Seleccione un estado." }),
@@ -28,31 +54,55 @@ const productSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
-export function EditarProductoForm({ productId, initialData }: { productId: string, initialData: ProductFormValues }) {
+export function EditarProductoForm({ productId, initialData }: { productId: string, initialData: any }) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
-  
+
+  // Mapea el IdCategoria o categoryId a su descripción para el valor inicial del select
+  const initialCategory =
+    initialData.IdCategoria
+      ? categorias.find(cat => cat.id === initialData.IdCategoria)?.descripcion
+      : initialData.categoryId
+        ? categorias.find(cat => cat.id === initialData.categoryId)?.descripcion
+        : initialData.category || categorias[0].descripcion;
+
+  // Mapea el estado de stock si viene en otro formato
+  const initialStatus = initialData.status ? mapStatus(initialData.status) : "En Stock";
+
+  // useForm con la categoría y estado ya mapeados
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: initialData,
+    defaultValues: { ...initialData, category: initialCategory, status: initialStatus },
   });
 
   async function onSubmit(data: ProductFormValues) {
     setIsSubmitting(true);
     try {
+      // Convertir descripción de categoría a ID
+      const categoriaId = categorias.find(cat => cat.descripcion === data.category)?.id;
+      if (!categoriaId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Debe seleccionar una categoría válida.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+
       const payload = {
         Nombre: data.name,
         Codigo: data.sku,
-        CategoriaNombre: data.category,
+        IdCategoria: categoriaId,
         Precio: data.price,
         Stock: data.stock,
         Estado: data.status,
         Descripcion: data.description,
         ImagenUrl: data.imageUrl,
-        IdUnidadMedida: 1, // Defaulting as per new product page
-        Tipo: "Producto",      // Defaulting as per new product page
-        StockMinimo: 5,        // Defaulting as per new product page
+        IdUnidadMedida: 1,
+        Tipo: "Producto",
+        StockMinimo: 5,
       };
 
       const res = await fetch(`/api/producto/${productId}`, {
@@ -77,7 +127,7 @@ export function EditarProductoForm({ productId, initialData }: { productId: stri
         description: `El producto ${data.name} ha sido actualizado exitosamente.`,
       });
       router.push("/dashboard/productos");
-      router.refresh(); // Refresh server-side data
+      router.refresh();
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -140,13 +190,11 @@ export function EditarProductoForm({ productId, initialData }: { productId: stri
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Ropa">Ropa</SelectItem>
-                      <SelectItem value="Calzado">Calzado</SelectItem>
-                      <SelectItem value="Accesorios">Accesorios</SelectItem>
-                      <SelectItem value="Electrónicos">Electrónicos</SelectItem>
-                      <SelectItem value="Hogar">Hogar</SelectItem>
-                      <SelectItem value="Servicios">Servicios</SelectItem>
-                      <SelectItem value="Otro">Otro</SelectItem>
+                      {categorias.map(cat => (
+                        <SelectItem key={cat.id} value={cat.descripcion}>
+                          {cat.descripcion}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
