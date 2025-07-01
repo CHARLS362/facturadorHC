@@ -40,12 +40,7 @@ export default function ProductosPage() {
             category: prod.CategoriaNombre || 'Sin categoría',
             price: `S/ ${parseFloat(prod.Precio).toFixed(2)}`,
             stock: prod.Stock,
-            status:
-              prod.Stock === 0
-                ? 'Agotado'
-                : prod.Stock <= prod.StockMinimo
-                ? 'Stock Bajo'
-                : 'En Stock',
+            status: prod.Estado, 
             imageUrl: prod.ImagenUrl || null,
         }));
         
