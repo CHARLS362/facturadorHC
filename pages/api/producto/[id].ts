@@ -74,16 +74,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     ImagenUrl
   } = req.body;
 
+    console.log('Datos recibidos en PUT /api/producto/[id]:', req.body);
+
   let IdCategoria = null;
   try {
     const pool = await getConnection();
-    const catResult = await pool.request()
-      .input('Descripcion', sql.VarChar, CategoriaNombre)
-      .query('SELECT IdCategoria FROM Categoria WHERE Descripcion = @Descripcion');
-    if (catResult.recordset.length === 0) {
-      return res.status(400).json({ error: 'Categoría no encontrada' });
-    }
-    IdCategoria = catResult.recordset[0].IdCategoria;
+    // Buscar el ID de la categoría por nombre
+const catResult = await pool.request()
+  .input('Descripcion', sql.VarChar, CategoriaNombre)
+  .query('SELECT IdCategoria FROM Categoria WHERE Descripcion = @Descripcion');
+if (catResult.recordset.length === 0) {
+  return res.status(400).json({ error: 'Categoría no encontrada' });
+}
+const IdCategoria = catResult.recordset[0].IdCategoria;
 
     await pool.request()
       .input('IdProducto', sql.Int, parseInt(id as string))
