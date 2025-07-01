@@ -61,7 +61,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   if (req.method === 'PUT') {
   let {
-    CategoriaNombre, 
+    IdCategoria, 
     IdUnidadMedida,
     Codigo,
     Nombre,
@@ -76,18 +76,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Datos recibidos en PUT /api/producto/[id]:', req.body);
 
-  let IdCategoria = null;
+  if (!IdCategoria) {
+    return res.status(400).json({ error: 'IdCategoria requerido' });
+  }
+
   try {
     const pool = await getConnection();
-    // Buscar el ID de la categoría por nombre
-const catResult = await pool.request()
-  .input('Descripcion', sql.VarChar, CategoriaNombre)
-  .query('SELECT IdCategoria FROM Categoria WHERE Descripcion = @Descripcion');
-if (catResult.recordset.length === 0) {
-  return res.status(400).json({ error: 'Categoría no encontrada' });
-}
-const IdCategoria = catResult.recordset[0].IdCategoria;
-
     await pool.request()
       .input('IdProducto', sql.Int, parseInt(id as string))
       .input('IdCategoria', sql.Int, IdCategoria)
