@@ -26,7 +26,7 @@ const IGV_RATE = 0.18; // 18% IGV for Peru
 
 
 const ventaSchema = z.object({
-  clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione el tipo de documento del cliente." }),
+  clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione o consulte un cliente." }),
   clientDocumentNumber: z.string()
     .min(1, { message: "El número de documento es requerido."})
     .refine(val => /^\d+$/.test(val), { message: "Solo se permiten números." }),
@@ -65,21 +65,17 @@ const ventaSchema = z.object({
 });
 
 type VentaFormValues = z.infer<typeof ventaSchema>;
-type ClientSearchMethod = 'ruc' | 'dni' | 'search';
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
-  const router = useRouter(); // Agrega esto
-
   const [searchMethod, setSearchMethod] = useState<ClientSearchMethod>('ruc');
   const [isClientDataFetched, setIsClientDataFetched] = useState(false);
   const [isConsultingSunat, setIsConsultingSunat] = useState(false);
-
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
-  const [availableProducts, setAvailableProducts] = useState([]);
+  const [availableProducts, setAvailableProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("/api/producto") 
+    fetch("/api/producto") // Cambia la ruta si tu endpoint es diferente
       .then(res => res.json())
       .then(data => setAvailableProducts(
         data.map((p: any) => ({
@@ -91,14 +87,18 @@ export default function NuevaVentaPage() {
       ))
       .catch(() => setAvailableProducts([]));
   }, []);
+
   const [currentQuantity, setCurrentQuantity] = useState<number>(1);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
+  
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [clientSearchValue, setClientSearchValue] = useState("");
+
 
   const form = useForm<VentaFormValues>({
     resolver: zodResolver(ventaSchema),
     defaultValues: {
-      clientDocumentType: 'RUC',
+      clientDocumentType: undefined,
       clientDocumentNumber: "",
       clientFullName: "",
       clientAddress: "",
@@ -117,6 +117,15 @@ export default function NuevaVentaPage() {
   });
 
   const saleItems = form.watch("saleItems");
+  const clientDocType = form.watch("clientDocumentType");
+
+  useEffect(() => {
+    if (clientDocType === "RUC") {
+      form.setValue("documentType", "Factura");
+    } else if (clientDocType === "DNI") {
+      form.setValue("documentType", "Boleta");
+    }
+  }, [clientDocType, form]);
 
   const calculatedSubtotal = useMemo(() => {
     return _.round(saleItems.reduce((acc, item) => acc + (item.price * item.quantity), 0), 2);
@@ -129,24 +138,14 @@ export default function NuevaVentaPage() {
     form.setValue("grandTotal", total, { shouldValidate: true });
   }, [calculatedSubtotal, form]);
 
-  const handleSearchMethodChange = (value: ClientSearchMethod) => {
-    setSearchMethod(value);
-    // Reset client fields
-    const newDocType = value === 'search' ? undefined : value.toUpperCase() as 'RUC' | 'DNI';
-    form.reset({
-      ...form.getValues(),
-      // Retain existing form data but clear client info
-      saleItems: form.getValues('saleItems'),
-      documentType: form.getValues('documentType'),
-      paymentMethod: form.getValues('paymentMethod'),
-      // Clear client specific fields
-      clientDocumentType: newDocType,
-      clientDocumentNumber: "",
-      clientFullName: "",
-      clientAddress: "",
-    });
-    form.clearErrors(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
-    setIsClientDataFetched(false);
+  const handleClientSelect = (client: { documentType: "DNI" | "RUC", documentNumber: string, name: string, address?: string }) => {
+    form.setValue("clientDocumentType", client.documentType);
+    form.setValue("clientDocumentNumber", client.documentNumber);
+    form.setValue("clientFullName", client.name);
+    form.setValue("clientAddress", client.address || "");
+    form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
+    setClientSearchValue(client.name);
+    setClientSearchOpen(false);
   };
   
   const handleSunatQuery = async () => {
@@ -159,51 +158,42 @@ export default function NuevaVentaPage() {
     
     const isValidDocNumber = await form.trigger("clientDocumentNumber");
     if (!isValidDocNumber) {
-      toast({
-        variant: "destructive",
-        title: "Error de Validación",
-        description: "Por favor, corrija el número de documento.",
-      });
-      return;
+         toast({
+            variant: "destructive",
+            title: "Error de Validación",
+            description: "Por favor, corrija el número de documento.",
+          });
+        return;
     }
     if (!docType || !docNumber) return;
     
     setIsConsultingSunat(true);
-
-    try {
-      const res = await fetch(`/api/cliente/consulta-cliente?tipo=${docType.toUpperCase()}&numero=${docNumber}`);
-      if (!res.ok) {
-        throw new Error("No se encontró el cliente.");
-      }
-      const data = await res.json();
-      // ACTUALIZA EL NOMBRE DEL CLIENTE CON EL VALOR REAL DE LA BD
-      form.setValue("clientFullName", data.Nombre || "", { shouldValidate: true });
-      form.setValue("clientAddress", data.Direccion || "");
-      setIsClientDataFetched(true);
-      toast({
-        variant: "success",
-        title: (
-          <div className="flex items-center gap-2">
-            <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-              <CheckCircle2 className="h-5 w-5 text-white" />
-            </div>
-            <span>Consulta Exitosa</span>
-          </div>
-        ),
-        description: "Datos del cliente recuperados.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "No encontrado",
-        description: "No se encontró el cliente con ese documento.",
-      });
-      form.setValue("clientFullName", "", { shouldValidate: true });
-      form.setValue("clientAddress", "");
-      setIsClientDataFetched(false);
-    } finally {
-      setIsConsultingSunat(false);
+    // Simulate API call to SUNAT/RENIEC
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
+    
+    let mockName = "Cliente Ejemplo S.A.C.";
+    let mockAddress = "Av. Javier Prado Este 123, San Isidro, Lima";
+    if (docType === "dni") {
+      mockName = "Juan Pérez Gonzales";
+      mockAddress = "Calle Las Begonias 456, Lince, Lima";
     }
+    
+    form.setValue("clientFullName", mockName, { shouldValidate: true });
+    form.setValue("clientAddress", mockAddress);
+    setIsClientDataFetched(true);
+    setIsConsultingSunat(false);
+    toast({
+      variant: "success",
+      title: (
+        <div className="flex items-center gap-2">
+          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+            <CheckCircle2 className="h-5 w-5 text-white" />
+          </div>
+          <span>Consulta Exitosa (Simulada)</span>
+        </div>
+      ),
+      description: "Datos del cliente recuperados.",
+    });
   };
 
   const handleAddProduct = () => {
@@ -252,9 +242,9 @@ export default function NuevaVentaPage() {
       });
     }
     
-    setCurrentProductId(null); // Reset product selection
-    setCurrentQuantity(1); // Reset quantity
-    form.trigger("saleItems"); // Validate saleItems after adding/updating
+    setCurrentProductId(null);
+    setCurrentQuantity(1);
+    form.trigger("saleItems");
   };
 
   async function onSubmit(data: VentaFormValues) {
@@ -297,9 +287,11 @@ export default function NuevaVentaPage() {
         ),
         description: `La venta para ${data.clientFullName} ha sido registrada exitosamente.`,
       });
-      // Redirige al listado de ventas después de registrar la venta
-      router.push("/dashboard/ventas");
-      return; // Opcional: para evitar que se ejecute el reset
+      form.reset();
+      setSearchMethod('ruc');
+      setIsClientDataFetched(false);
+      setCurrentProductId(null);
+      setCurrentQuantity(1);
     } else {
       toast({
         variant: "destructive",
@@ -315,18 +307,8 @@ export default function NuevaVentaPage() {
     });
   }
   }
+  
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
-
-  const [registeredClients, setRegisteredClients] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (searchMethod === 'search') {
-      fetch('/api/cliente/listar')
-        .then(res => res.json())
-        .then(data => setRegisteredClients(data))
-        .catch(() => setRegisteredClients([]));
-    }
-  }, [searchMethod]);
 
   return (
     <div className="space-y-8 pb-12">
@@ -334,18 +316,14 @@ export default function NuevaVentaPage() {
         title="Registrar Nueva Venta"
         description="Complete los detalles para registrar una nueva transacción."
         icon={ShoppingCart}
-        actions={
-            <Button variant="outline" asChild>
-                <Link href="/dashboard/ventas">Volver al Listado</Link>
-            </Button>
-        }
+        actions={ <Button variant="outline" asChild><Link href="/dashboard/ventas">Volver al Listado</Link></Button> }
       />
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
-              <CardDescription>Seleccione un método para ingresar los datos del cliente.</CardDescription>
+              <CardDescription>Busque un cliente existente o ingrese un DNI/RUC para consultar.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <RadioGroup onValueChange={handleSearchMethodChange} value={searchMethod} className="flex flex-col sm:flex-row gap-4 sm:gap-8">
@@ -421,27 +399,24 @@ export default function NuevaVentaPage() {
                                         <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
                                         <CommandList>
                                             <CommandGroup>
-                                              {registeredClients.map((client) => (
+                                            {availableClients.map((client) => (
                                                 <CommandItem
-                                                  key={client.IdCliente}
-                                                  value={client.Nombre}
-                                                  onSelect={() => {
-                                                    form.setValue("clientFullName", client.Nombre, { shouldValidate: true });
-                                                    form.setValue("clientDocumentNumber", client.NumeroDocumento, { shouldValidate: true });
-                                                    form.setValue("clientAddress", client.Direccion || "");
-                                                    setIsClientDataFetched(true);
-                                                    setClientSearchOpen(false);
-                                                  }}
+                                                    key={client.id}
+                                                    value={client.name}
+                                                    onSelect={() => {
+                                                        form.setValue("clientDocumentType", client.documentType);
+                                                        form.setValue("clientDocumentNumber", client.documentNumber);
+                                                        form.setValue("clientFullName", client.name);
+                                                        form.setValue("clientAddress", client.address || "");
+                                                        form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
+                                                        setIsClientDataFetched(true);
+                                                        setClientSearchOpen(false);
+                                                    }}
                                                 >
-                                                  <Check
-                                                    className={cn(
-                                                      "mr-2 h-4 w-4",
-                                                      form.getValues("clientFullName") === client.Nombre ? "opacity-100" : "opacity-0"
-                                                    )}
-                                                  />
-                                                  {client.Nombre} — {client.NumeroDocumento}
+                                                    <Check className={cn("mr-2 h-4 w-4", form.getValues("clientDocumentNumber") === client.documentNumber ? "opacity-100" : "opacity-0")} />
+                                                    {client.name} ({client.documentType}: {client.documentNumber})
                                                 </CommandItem>
-                                              ))}
+                                            ))}
                                             </CommandGroup>
                                         </CommandList>
                                     </Command>
@@ -458,20 +433,34 @@ export default function NuevaVentaPage() {
                     <FormItem>
                         <FormLabel>Nombre / Razón Social</FormLabel>
                         <FormControl>
-                        <Input placeholder="Se completará tras consulta o búsqueda" {...field} readOnly={isClientDataFetched} className={isClientDataFetched ? "bg-muted/50 cursor-not-allowed" : ""} />
+                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
-                <FormField
+                 <FormField
+                    control={form.control}
+                    name="clientDocumentNumber"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Nro. Documento</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
+                 <FormField
                     control={form.control}
                     name="clientAddress"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Dirección del Cliente (Opcional)</FormLabel>
+                        <FormLabel>Dirección del Cliente</FormLabel>
                         <FormControl>
-                        <Input placeholder="Se completará tras consulta o búsqueda" {...field} readOnly={isClientDataFetched} className={isClientDataFetched ? "bg-muted/50 cursor-not-allowed" : ""} />
+                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -607,7 +596,7 @@ export default function NuevaVentaPage() {
                     <FormField
                         control={form.control}
                         name="saleItems"
-                        render={() => ( <FormMessage /> )} // This will display the general "Debe agregar al menos un producto." message
+                        render={() => ( <FormMessage /> )}
                     />
                 </div>
               )}
@@ -623,7 +612,6 @@ export default function NuevaVentaPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
-                 {/* Subtotal Display (Calculated) */}
                 <div>
                     <FormLabel>Subtotal (S/)</FormLabel>
                     <p className="text-lg font-semibold mt-1 h-10 flex items-center px-3 py-2 border rounded-md bg-muted/50">
@@ -692,11 +680,9 @@ export default function NuevaVentaPage() {
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border/30 mt-6">
               <Button type="button" variant="outline" onClick={() => { 
                   form.reset(); 
-                  setSearchMethod('ruc');
-                  setIsClientDataFetched(false); 
+                  setClientSearchValue("");
                   setCurrentProductId(null);
                   setCurrentQuantity(1);
-                  // Ensure saleItems array is also cleared
                   while(saleItemsFields.length > 0) {
                       removeSaleItem(0);
                   }
@@ -718,3 +704,4 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
+
