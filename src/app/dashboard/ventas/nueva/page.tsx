@@ -8,7 +8,7 @@ import * as z from "zod";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -20,8 +20,6 @@ import Link from "next/link";
 import React, { useEffect, useState, useMemo } from "react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 
 
 const IGV_RATE = 0.18; // 18% IGV for Peru
@@ -101,6 +99,7 @@ export default function NuevaVentaPage() {
   
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [clientSearchValue, setClientSearchValue] = useState("");
+  const [newClientDoc, setNewClientDoc] = useState("");
 
 
   const form = useForm<VentaFormValues>({
@@ -152,21 +151,24 @@ export default function NuevaVentaPage() {
     form.setValue("clientFullName", client.name);
     form.setValue("clientAddress", client.address || "");
     form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
-    setClientSearchValue(client.name);
+    
+    // Reset other input methods
+    setClientSearchValue("");
+    setNewClientDoc("");
     setClientSearchOpen(false);
   };
   
   const handleSunatQuery = async () => {
     setIsConsultingSunat(true);
-    const docType = /^\d{8}$/.test(clientSearchValue) ? "DNI" : "RUC";
+    const docType = /^\d{8}$/.test(newClientDoc) ? "DNI" : "RUC";
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500)); 
     
     const mockData = {
       documentType: docType,
-      documentNumber: clientSearchValue,
-      name: docType === 'DNI' ? `Cliente DNI ${clientSearchValue}` : `Empresa RUC ${clientSearchValue}`,
+      documentNumber: newClientDoc,
+      name: docType === 'DNI' ? `Cliente DNI ${newClientDoc}` : `Empresa RUC ${newClientDoc}`,
       address: 'Av. Simulación 123, Lima'
     };
 
@@ -252,6 +254,7 @@ export default function NuevaVentaPage() {
         });
         form.reset();
         setClientSearchValue("");
+        setNewClientDoc("");
         setCurrentProductId(null);
         setCurrentQuantity(1);
       } else {
@@ -264,8 +267,6 @@ export default function NuevaVentaPage() {
   
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
 
-  const isDniQuery = /^\d{8}$/.test(clientSearchValue);
-  const isRucQuery = /^\d{11}$/.test(clientSearchValue);
   const filteredClients = clientSearchValue ? availableClients.filter(c =>
     c.name.toLowerCase().includes(clientSearchValue.toLowerCase())
   ) : availableClients;
@@ -283,15 +284,15 @@ export default function NuevaVentaPage() {
           <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
-              <CardDescription>Busque un cliente existente o ingrese un DNI/RUC para consultar.</CardDescription>
+              <CardDescription>Busque un cliente existente o consulte uno nuevo por DNI/RUC.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <FormItem>
-                <FormLabel>Buscar Cliente (Nombre, DNI o RUC)</FormLabel>
+                <FormLabel>Paso 1: Buscar Cliente Registrado</FormLabel>
                 <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <Button variant="outline" role="combobox" className={cn("w-full justify-between", !form.getValues("clientFullName") && "text-muted-foreground")}>
+                      <Button variant="outline" role="combobox" className={cn("w-full justify-between font-normal", !form.getValues("clientFullName") && "text-muted-foreground")}>
                         {form.getValues("clientFullName") || "Seleccione un cliente..."}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
@@ -300,19 +301,13 @@ export default function NuevaVentaPage() {
                   <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
                     <Command>
                       <CommandInput 
-                        placeholder="Buscar cliente..." 
+                        placeholder="Buscar por nombre..." 
                         value={clientSearchValue}
                         onValueChange={setClientSearchValue}
                       />
                       <CommandList>
-                         {(filteredClients.length === 0 && !isDniQuery && !isRucQuery) && (
+                         {(filteredClients.length === 0) && (
                             <CommandEmpty>No se encontraron clientes.</CommandEmpty>
-                         )}
-                         {(isDniQuery || isRucQuery) && (
-                           <CommandItem onSelect={handleSunatQuery} className="cursor-pointer bg-accent/50">
-                             <SearchCheck className="mr-2 h-4 w-4"/>
-                             <span>Consultar {isDniQuery ? 'DNI' : 'RUC'}: {clientSearchValue}</span>
-                           </CommandItem>
                          )}
                         <CommandGroup>
                           {filteredClients.map((client) => (
@@ -331,8 +326,38 @@ export default function NuevaVentaPage() {
                   </PopoverContent>
                 </Popover>
               </FormItem>
+
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Ó</span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <FormLabel>Paso 2: Consultar Nuevo Cliente por DNI/RUC</FormLabel>
+                <div className="flex items-start gap-2">
+                    <Input
+                        value={newClientDoc}
+                        onChange={(e) => setNewClientDoc(e.target.value.replace(/[^0-9]/g, ''))}
+                        placeholder="Ingrese 8 dígitos para DNI u 11 para RUC"
+                        maxLength={11}
+                    />
+                    <Button
+                        type="button"
+                        onClick={handleSunatQuery}
+                        disabled={!(/^\d{8}$/.test(newClientDoc) || /^\d{11}$/.test(newClientDoc)) || isConsultingSunat}
+                        className="w-40"
+                    >
+                        {isConsultingSunat ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground"></div> : <SearchCheck className="mr-2 h-4 w-4"/>}
+                        {isConsultingSunat ? 'Consultando...' : 'Consultar'}
+                    </Button>
+                </div>
+              </div>
               
-              <div className="grid md:grid-cols-2 gap-4 pt-2">
+              <div className="grid md:grid-cols-2 gap-4 pt-4 border-t mt-6">
                  <FormField
                     control={form.control}
                     name="clientFullName"
@@ -611,4 +636,3 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
-
