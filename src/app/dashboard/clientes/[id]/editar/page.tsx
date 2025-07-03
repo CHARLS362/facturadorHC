@@ -5,7 +5,7 @@ import { EditarClienteForm } from "@/components/dashboard/editar-cliente-form";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getConnection } from '@/lib/db';
-import { sql } from 'mssql';
+import * as  sql  from 'mssql';
 import { notFound } from 'next/navigation';
 
 async function getClientData(id: string) {
