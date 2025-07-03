@@ -5,8 +5,8 @@ import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Badge, badgeVariants } from "@/components/ui/badge";
-import type { VariantProps } from "class-variance-authority";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 
 export interface MockSale {
@@ -16,7 +16,7 @@ export interface MockSale {
   total: string;
   status: string;
   paymentMethod: string;
-  documentType: "Factura" | "Boleta";
+  documentType: "Factura" | "Boleta" | string;
   clientEmail: string;
   clientPhone: string;
 }
@@ -37,15 +37,15 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
       minute: '2-digit'
     }));
   }, []);
-
-  const getStatusBadgeVariant = (status: string): VariantProps<typeof badgeVariants>["variant"] => {
+  
+  const getStatusBadgeClass = (status: string) => {
     switch (status.toLowerCase()) {
-      case "pagado": return "default";
-      case "pendiente": return "secondary";
-      case "anulado": return "destructive";
-      default: return "outline";
+      case "pagado": return "bg-green-100 text-green-800 border-green-200";
+      case "pendiente": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "anulado": return "bg-red-100 text-red-800 border-red-200";
+      default: return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
+  }
 
   return (
     <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-md border bg-card print:shadow-none print:border-0 print:bg-transparent">
@@ -96,7 +96,7 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
                   <TableCell>{sale.total}</TableCell>
                   <TableCell>{sale.paymentMethod}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusBadgeVariant(sale.status)} className="capitalize text-xs">
+                    <Badge className={cn("capitalize", getStatusBadgeClass(sale.status))} variant="outline">
                       {sale.status}
                     </Badge>
                   </TableCell>
@@ -108,10 +108,11 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
       </CardContent>
       <CardFooter className="px-6 py-4 md:p-8 border-t text-sm text-muted-foreground">
         <div className="w-full flex justify-between items-center">
-          <p>Total de Ventas: {sales.length}</p>
-          <p className="text-right">Página 1 de 1</p>
+            <p>Total de Ventas: {sales.length}</p>
+            <p className="text-right">Página 1 de 1</p>
         </div>
       </CardFooter>
     </Card>
   );
 }
+

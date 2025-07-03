@@ -10,14 +10,6 @@ import { SaleExportPreview, type MockSale } from '@/components/dashboard/sale-ex
 import { Skeleton } from '@/components/ui/skeleton';
 import html2pdf from 'html2pdf.js';
 
-// Using mock data from the sales list page
-const initialMockSales: MockSale[] = [
-  { id: "VENTA001", date: "2024-07-20", customer: "Carlos Mendoza", total: "S/ 150.00", status: "Pagado", paymentMethod: "Tarjeta", documentType: "Factura", clientEmail: "carlos.mendoza@example.com", clientPhone: "51987654321" },
-  { id: "VENTA002", date: "2024-07-19", customer: "Luisa Fernandez", total: "S/ 85.50", status: "Pendiente", paymentMethod: "Efectivo", documentType: "Boleta", clientEmail: "luisa.fernandez@example.com", clientPhone: "51912345678" },
-  { id: "VENTA003", date: "2024-07-19", customer: "Ana Torres", total: "S/ 220.00", status: "Pagado", paymentMethod: "Transferencia", documentType: "Factura", clientEmail: "ana.torres@example.com", clientPhone: "51999888777" },
-  { id: "VENTA004", date: "2024-07-18", customer: "Jorge Vargas", total: "S/ 45.00", status: "Anulado", paymentMethod: "Yape", documentType: "Boleta", clientEmail: "jorge.vargas@example.com", clientPhone: "51977666555" },
-];
-
 export default function ExportarVentasPage() {
   const [sales, setSales] = useState<MockSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -26,10 +18,29 @@ export default function ExportarVentasPage() {
   useEffect(() => {
     const fetchSales = async () => {
       setIsLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setSales(initialMockSales);
-      setIsLoading(false);
+      try {
+        const response = await fetch('/api/venta');
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos de las ventas.');
+        }
+        const rawData = await response.json();
+        const formattedData: MockSale[] = rawData.map((venta: any) => ({
+          id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
+          date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
+          customer: venta.NombreCliente || "Sin nombre",
+          total: `S/ ${Number(venta.Total).toFixed(2)}`,
+          status: venta.Estado,
+          paymentMethod: venta.NombreFormaPago || "Desconocido",
+          documentType: venta.TipoDocumento || "Factura",
+          clientEmail: venta.EmailCliente || "",
+          clientPhone: venta.TelefonoCliente || "",
+        }));
+        setSales(formattedData);
+      } catch (error) {
+        console.error("Error fetching sales data:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchSales();
   }, []);
