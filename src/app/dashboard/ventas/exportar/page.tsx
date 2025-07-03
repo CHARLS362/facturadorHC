@@ -9,26 +9,67 @@ import { SaleExportPreview, type MockSale } from '@/components/dashboard/sale-ex
 import { Skeleton } from '@/components/ui/skeleton';
 import html2pdf from 'html2pdf.js';
 
-// Using mock data from the sales list page
-const initialMockSales: MockSale[] = [
-  { id: "VENTA001", date: "2024-07-20", customer: "Carlos Mendoza", total: "S/ 150.00", status: "Pagado", paymentMethod: "Tarjeta", documentType: "Factura", clientEmail: "carlos.mendoza@example.com", clientPhone: "51987654321" },
-  { id: "VENTA002", date: "2024-07-19", customer: "Luisa Fernandez", total: "S/ 85.50", status: "Pendiente", paymentMethod: "Efectivo", documentType: "Boleta", clientEmail: "luisa.fernandez@example.com", clientPhone: "51912345678" },
-  { id: "VENTA003", date: "2024-07-19", customer: "Ana Torres", total: "S/ 220.00", status: "Pagado", paymentMethod: "Transferencia", documentType: "Factura", clientEmail: "ana.torres@example.com", clientPhone: "51999888777" },
-  { id: "VENTA004", date: "2024-07-18", customer: "Jorge Vargas", total: "S/ 45.00", status: "Anulado", paymentMethod: "Yape", documentType: "Boleta", clientEmail: "jorge.vargas@example.com", clientPhone: "51977666555" },
-];
+type MockSaleWithEstado = MockSale & {
+  Estado: string;
+  FechaVenta?: string;
+  Total?: number | string;
+  NombreFormaPago?: string;
+  TipoDocumento?: string;
+  EmailCliente?: string;
+  TelefonoCliente?: string;
+  IdVenta: number;
+  NombreCliente?: string;
+};
+
+type ExportSale = MockSaleWithEstado & {
+  status: string;
+  date: string;
+  total: string;
+  paymentMethod: string;
+  documentType: string;
+  clientEmail: string;
+  clientPhone: string;
+  id: string;
+  ventaId: number;
+  customer: string;
+};
 
 export default function ExportarVentasPage() {
-  const [sales, setSales] = useState<MockSale[]>([]);
+  const [sales, setSales] = useState<ExportSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     const fetchSales = async () => {
-      setIsLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setSales(initialMockSales);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/venta');
+        if (!response.ok) throw new Error("Error al obtener ventas");
+        const data: MockSaleWithEstado[] = await response.json();
+
+        // Mapear Estado => status para evitar errores en SaleExportPreview
+        const transformed = data.map((venta) => ({
+          ...venta,
+          status: venta.Estado,           // alias de compatibilidad por el cambio de idioma 
+          date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
+          total: `S/ ${Number(venta.Total).toFixed(2)}`,
+          paymentMethod: venta.NombreFormaPago || "Desconocido",
+          documentType: (venta.TipoDocumento === "Boleta" ? "Boleta" : "Factura") as "Boleta" | "Factura",
+          clientEmail: venta.EmailCliente || "",
+          clientPhone: venta.TelefonoCliente || "",
+          id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
+          ventaId: venta.IdVenta,
+          customer: venta.NombreCliente || "Sin nombre",
+        }));
+        // Actualizar el estado con los datos transformados
+        // Esto asegura que los campos coincidan con lo que espera SaleExportPreview
+        setSales(transformed);
+      } catch (error) {
+        console.error("Error cargando ventas:", error);
+        setSales([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchSales();
   }, []);
@@ -36,11 +77,11 @@ export default function ExportarVentasPage() {
   const handleDownloadPdf = () => {
     const element = document.getElementById('printable-area');
     const opt = {
-      margin:       0.5,
-      filename:     'reporte-ventas.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+      margin: 0.5,
+      filename: 'reporte-ventas.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     };
     html2pdf().from(element).set(opt).save();
   };
@@ -73,17 +114,17 @@ export default function ExportarVentasPage() {
 
       {isLoading ? (
         <div className="p-10 border rounded-lg bg-card">
-           <div className="flex items-center space-x-4 mb-6">
-              <Skeleton className="h-12 w-12" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
+          <div className="flex items-center space-x-4 mb-6">
+            <Skeleton className="h-12 w-12" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
             </div>
-            <Skeleton className="h-8 w-full mb-4" />
-            <Skeleton className="h-8 w-full mb-2" />
-            <Skeleton className="h-8 w-full mb-2" />
-            <Skeleton className="h-8 w-full mb-2" />
+          </div>
+          <Skeleton className="h-8 w-full mb-4" />
+          <Skeleton className="h-8 w-full mb-2" />
+          <Skeleton className="h-8 w-full mb-2" />
+          <Skeleton className="h-8 w-full mb-2" />
         </div>
       ) : (
         <SaleExportPreview sales={sales} />
