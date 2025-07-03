@@ -1,46 +1,32 @@
+'use client';
 
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, FileDown, UsersRound } from "lucide-react";
-import { getConnection } from '@/lib/db';
 import { ClientesList } from '@/components/dashboard/clientes-list';
 
-async function getClientsData() {
-  try {
-    const pool = await getConnection();
-    const result = await pool.request().query(`
-      SELECT 
-        c.IdCliente, c.NumeroDocumento, c.Nombre, c.NombreComercial, c.Direccion,
-        c.Telefono, c.Email, c.Contacto, c.Estado, c.FechaRegistro,
-        tc.IdTipoCliente, tc.Descripcion AS TipoCliente,
-        td.IdTipoDocumento, td.Codigo AS TipoDocumento
-      FROM Cliente c
-      LEFT JOIN TipoCliente tc ON c.IdTipoCliente = tc.IdTipoCliente
-      LEFT JOIN TipoDocumento td ON c.IdTipoDocumento = td.IdTipoDocumento
-    `);
-    return result.recordset.map(c => ({
-      id: c.IdCliente,
-      documentNumber: c.NumeroDocumento,
-      name: c.Nombre,
-      commercialName: c.NombreComercial,
-      address: c.Direccion,
-      phone: c.Telefono,
-      email: c.Email,
-      contact: c.Contacto,
-      status: c.Estado,
-      registeredAt: c.FechaRegistro,
-      tipoCliente: { id: c.IdTipoCliente, descripcion: c.TipoCliente },
-      tipoDocumento: { id: c.IdTipoDocumento, codigo: c.TipoDocumento }
-    }));
-  } catch (error) {
-    console.error("Error fetching clients data:", error);
-    return []; // Return an empty array in case of an error
-  }
-}
+export default function ClientesPage() {
+  const [clientsData, setClientsData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-export default async function ClientesPage() {
-  const clientsData = await getClientsData();
+  useEffect(() => {
+    async function fetchClients() {
+      try {
+        const res = await fetch('/api/cliente');
+        if (!res.ok) throw new Error('Error al obtener los clientes');
+        const data = await res.json();
+        setClientsData(data);
+      } catch (error) {
+        console.error('Error al cargar los clientes:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchClients();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -65,7 +51,13 @@ export default async function ClientesPage() {
           </div>
         }
       />
-      <ClientesList initialData={clientsData} />
+
+      {loading ? (
+        <p className="text-gray-500">Cargando clientes... Espere un momento por favor</p>
+      ) : (
+        <ClientesList initialData={clientsData} />
+      )}
     </div>
   );
 }
+
