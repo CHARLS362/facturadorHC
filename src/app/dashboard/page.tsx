@@ -30,8 +30,8 @@ const kpiData: CustomKpiData[] = [
     description: "comparado a ayer", 
     trend: "up", 
     href: "/dashboard/ventas",
-    iconBgClass: "bg-green-500 dark:bg-green-600",
-    iconColorClass: "text-white"
+    iconBgClass: "bg-primary",
+    iconColorClass: "text-primary-foreground"
   },
   { 
     title: "NUEVOS CLIENTES (MES)", 
@@ -41,8 +41,8 @@ const kpiData: CustomKpiData[] = [
     description: "este mes", 
     trend: "up", 
     href: "/dashboard/clientes",
-    iconBgClass: "bg-blue-500 dark:bg-blue-600",
-    iconColorClass: "text-white"
+    iconBgClass: "bg-primary",
+    iconColorClass: "text-primary-foreground"
   },
   { 
     title: "FACTURAS EMITIDAS (MES)", 
@@ -51,8 +51,8 @@ const kpiData: CustomKpiData[] = [
     description: "Meta mensual: 500", 
     progressValue: 64, // (320/500)*100
     href: "/dashboard/ventas",
-    iconBgClass: "bg-orange-500 dark:bg-orange-600",
-    iconColorClass: "text-white"
+    iconBgClass: "bg-primary",
+    iconColorClass: "text-primary-foreground"
   },
   { 
     title: "TOTAL FACTURADO (MES)", 
@@ -61,7 +61,7 @@ const kpiData: CustomKpiData[] = [
     description: "en el mes actual",
     trend: "neutral", // Or 'up'/'down' if comparing to previous month
     href: "/dashboard/ventas",
-    iconBgClass: "bg-primary", // Using theme primary
+    iconBgClass: "bg-primary",
     iconColorClass: "text-primary-foreground"
   },
 ];
@@ -70,7 +70,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader 
-        title="Panel Centralizado" 
+        title="Panel Principal" 
         description="Resumen de la actividad y KPIs de tu negocio."
         icon={LayoutDashboard}
       />
