@@ -5,6 +5,9 @@ import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
 
 export interface MockUser {
   id: string;
@@ -31,10 +34,18 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
       minute: '2-digit'
     }));
   }, []);
+  
+  const getStatusBadgeClass = (status: string) => {
+    switch (status.toLowerCase()) {
+        case "activo": return "bg-green-100 text-green-800 border-green-200";
+        case "inactivo": return "bg-red-100 text-red-800 border-red-200";
+        default: return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  }
 
   return (
-    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-none border-0 print:shadow-none print:border-0">
-      <CardHeader className="px-2 py-4 md:p-6">
+    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-md border bg-card print:shadow-none print:border-0 print:bg-transparent">
+      <CardHeader className="px-6 py-4 md:p-8 border-b">
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex items-center gap-4">
             <Image
@@ -46,48 +57,54 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
               data-ai-hint="modern business logo"
             />
             <div>
-              <CardTitle className="text-2xl font-headline">Reporte de Usuarios</CardTitle>
+              <CardTitle className="text-2xl font-headline text-primary">Reporte de Usuarios</CardTitle>
               <CardDescription>Generado el: {currentDate}</CardDescription>
             </div>
           </div>
-          <div className="text-left md:text-right">
-            <p className="font-semibold">FacturacionHC</p>
+          <div className="text-left md:text-right mt-4 md:mt-0">
+            <p className="font-bold text-lg">FacturacionHC</p>
             <p className="text-sm text-muted-foreground">reportes@facturacionhc.com</p>
+            <p className="text-sm text-muted-foreground">www.facturacionhc.com</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0 md:p-2">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Rol</TableHead>
-              <TableHead>Fecha de Ingreso</TableHead>
-              <TableHead>Estado</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-mono text-xs">{user.id}</TableCell>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.role}</TableCell>
-                <TableCell>{user.joinedDate}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
-                    {user.status}
-                  </span>
-                </TableCell>
+      <CardContent className="p-4 md:p-6">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Rol</TableHead>
+                <TableHead>Fecha de Ingreso</TableHead>
+                <TableHead>Estado</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id} className="hover:bg-muted/30">
+                  <TableCell className="font-mono text-xs">{user.id}</TableCell>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.role}</TableCell>
+                  <TableCell>{user.joinedDate}</TableCell>
+                  <TableCell>
+                    <Badge className={cn("capitalize", getStatusBadgeClass(user.status))} variant="outline">
+                      {user.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
-      <CardFooter className="px-2 py-4 md:p-6 text-sm text-muted-foreground">
-        <p>Total de Usuarios: {users.length}</p>
+      <CardFooter className="px-6 py-4 md:p-8 border-t text-sm text-muted-foreground">
+        <div className="w-full flex justify-between items-center">
+          <p>Total de Usuarios: {users.length}</p>
+          <p className="text-right">Página 1 de 1</p>
+        </div>
       </CardFooter>
     </Card>
   );

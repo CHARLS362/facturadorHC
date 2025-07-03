@@ -5,6 +5,8 @@ import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export interface MockProduct {
   id: string;
@@ -31,10 +33,19 @@ export function ProductExportPreview({ products }: ProductExportPreviewProps) {
       minute: '2-digit'
     }));
   }, []);
+  
+  const getStatusBadgeClass = (status: string) => {
+    switch (status.toLowerCase()) {
+        case "en stock": return "bg-green-100 text-green-800 border-green-200";
+        case "stock bajo": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+        case "agotado": return "bg-red-100 text-red-800 border-red-200";
+        default: return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  }
 
   return (
-    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-none border-0 print:shadow-none print:border-0">
-      <CardHeader className="px-2 py-4 md:p-6">
+    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-md border bg-card print:shadow-none print:border-0 print:bg-transparent">
+      <CardHeader className="px-6 py-4 md:p-8 border-b">
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex items-center gap-4">
             <Image
@@ -46,52 +57,54 @@ export function ProductExportPreview({ products }: ProductExportPreviewProps) {
               data-ai-hint="modern business logo"
             />
             <div>
-              <CardTitle className="text-2xl font-headline">Reporte de Productos</CardTitle>
+              <CardTitle className="text-2xl font-headline text-primary">Reporte de Productos</CardTitle>
               <CardDescription>Generado el: {currentDate}</CardDescription>
             </div>
           </div>
-          <div className="text-left md:text-right">
-            <p className="font-semibold">FacturacionHC</p>
+          <div className="text-left md:text-right mt-4 md:mt-0">
+            <p className="font-bold text-lg">FacturacionHC</p>
             <p className="text-sm text-muted-foreground">reportes@facturacionhc.com</p>
+            <p className="text-sm text-muted-foreground">www.facturacionhc.com</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0 md:p-2">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Nombre</TableHead>
-              <TableHead>Categoría</TableHead>
-              <TableHead>Precio</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Estado</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {products.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-mono text-xs">{product.id}</TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.category}</TableCell>
-                <TableCell>{product.price}</TableCell>
-                <TableCell>{product.stock}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 text-xs rounded-full ${
-                      product.status === "En Stock" ? "bg-green-100 text-green-800" : 
-                      product.status === "Stock Bajo" ? "bg-yellow-100 text-yellow-800" : 
-                      "bg-red-100 text-red-800"
-                    }`}>
-                    {product.status}
-                  </span>
-                </TableCell>
+      <CardContent className="p-4 md:p-6">
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Nombre</TableHead>
+                <TableHead>Categoría</TableHead>
+                <TableHead>Precio</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Estado</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {products.map((product) => (
+                <TableRow key={product.id} className="hover:bg-muted/30">
+                  <TableCell className="font-mono text-xs">{product.id}</TableCell>
+                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.price}</TableCell>
+                  <TableCell>{product.stock}</TableCell>
+                  <TableCell>
+                    <Badge className={cn("capitalize", getStatusBadgeClass(product.status))} variant="outline">
+                      {product.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
-      <CardFooter className="px-2 py-4 md:p-6 text-sm text-muted-foreground">
-        <p>Total de Productos: {products.length}</p>
+      <CardFooter className="px-6 py-4 md:p-8 border-t text-sm text-muted-foreground">
+        <div className="w-full flex justify-between items-center">
+            <p>Total de Productos: {products.length}</p>
+            <p className="text-right">Página 1 de 1</p>
+        </div>
       </CardFooter>
     </Card>
   );
