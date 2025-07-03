@@ -137,7 +137,7 @@ export function UsuariosList({ initialData }: { initialData: MockUser[] }) {
                     <TableRow key={user.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={`https://avatar.vercel.sh/${user.email}.png`} alt={userName} />
+                          <AvatarImage src="https://placehold.co/40x40.png" alt={userName} data-ai-hint="person portrait" />
                           <AvatarFallback>{userInitials}</AvatarFallback>
                         </Avatar>
                         {userName}

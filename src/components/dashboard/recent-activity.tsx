@@ -31,7 +31,7 @@ export function RecentActivity() {
       {activities.map((activity, index) => (
         <div key={index} className="flex items-center p-2 hover:bg-muted/50 rounded-md transition-colors">
           <Avatar className="h-9 w-9">
-            <AvatarImage src={`https://avatar.vercel.sh/${activity.email}.png`} alt={activity.name} />
+            <AvatarImage src="https://placehold.co/40x40.png" alt={activity.name} data-ai-hint="person portrait" />
             <AvatarFallback>{activity.avatarInitials}</AvatarFallback>
           </Avatar>
           <div className="ml-4 space-y-1">
