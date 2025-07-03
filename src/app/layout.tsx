@@ -4,7 +4,6 @@ import { Poppins, PT_Sans } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { Toaster } from '@/components/ui/toaster';
-import { ThemeProvider } from "next-themes";
 import { cn } from '@/lib/utils';
 
 const poppins = Poppins({
@@ -36,17 +35,10 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
           <AuthProvider>
             {children}
             <Toaster />
           </AuthProvider>
-        </ThemeProvider>
       </body>
     </html>
   );

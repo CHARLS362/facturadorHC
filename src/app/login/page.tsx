@@ -3,44 +3,18 @@
 
 import { LoginForm } from '@/components/auth/login-form';
 import Image from 'next/image';
-import { Sun, Moon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 export default function LoginPage() {
-  const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
   return (
     <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-700 via-blue-800 to-indigo-900 bg-[length:200%_200%] animate-gradient-pan">
       
-      <div className="absolute top-4 right-4 z-20">
-         <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            aria-label={!mounted ? "Cambiar tema" : (theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro")}
-            className="h-10 w-10 text-white hover:bg-white/20 hover:text-white rounded-full"
-          >
-            {!mounted ? (
-              <Sun className="h-5 w-5" />
-            ) : theme === "light" ? (
-              <Moon className="h-5 w-5" />
-            ) : (
-              <Sun className="h-5 w-5" />
-            )}
-          </Button>
-      </div>
-
       <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-4xl">
         {/* Welcome Text Section (for larger screens) */}
         <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">

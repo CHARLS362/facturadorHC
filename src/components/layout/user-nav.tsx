@@ -13,10 +13,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/auth-context";
-import { LogOut, UserCircle, Settings, Sun, Moon } from "lucide-react";
+import { LogOut, UserCircle, Settings } from "lucide-react";
 import Link from "next/link";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
 
 interface UserNavProps {
   user: { email?: string; name?: string } | null;
@@ -37,36 +35,11 @@ const getInitials = (name?: string): string => {
 
 export function UserNav({ user }: UserNavProps) {
   const { logout } = useAuth();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const userInitials = getInitials(user?.name);
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
-  };
-
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={toggleTheme}
-        aria-label={!mounted ? "Cambiar tema" : (theme === "light" ? "Cambiar a modo oscuro" : "Cambiar a modo claro")}
-        className="h-9 w-9 text-foreground hover:bg-accent hover:text-accent-foreground"
-      >
-        {!mounted ? (
-          <Sun className="h-5 w-5" />
-        ) : theme === "light" ? (
-          <Moon className="h-5 w-5" />
-        ) : (
-          <Sun className="h-5 w-5" />
-        )}
-      </Button>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
