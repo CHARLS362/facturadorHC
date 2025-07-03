@@ -66,7 +66,7 @@ export function KpiCard({
 
   const cardContent = (
     <Card className={cn(
-        "shadow-lg transition-all duration-300 rounded-lg ease-out w-full",
+        "shadow-lg transition-all duration-300 rounded-lg ease-out w-full h-full flex flex-col",
         href && "hover:scale-[1.03] hover:shadow-xl cursor-pointer"
       )}>
       <CardHeader className="pb-2">
@@ -84,7 +84,7 @@ export function KpiCard({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-0">
+      <CardContent className="pt-0 flex-grow">
         <div className="text-3xl font-bold font-headline text-foreground mb-1">{value}</div>
         {change && description && (
           <div className="text-xs text-muted-foreground flex items-center">
@@ -103,7 +103,7 @@ export function KpiCard({
   );
 
   if (href) {
-    return <Link href={href} className="block">{cardContent}</Link>;
+    return <Link href={href} className="block h-full">{cardContent}</Link>;
   }
 
   return cardContent;

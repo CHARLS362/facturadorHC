@@ -30,7 +30,7 @@ const kpiData: CustomKpiData[] = [
     description: "comparado a ayer", 
     trend: "up", 
     href: "/dashboard/ventas",
-    iconBgClass: "bg-primary",
+    iconBgClass: "bg-chart-1",
     iconColorClass: "text-primary-foreground"
   },
   { 
@@ -41,8 +41,8 @@ const kpiData: CustomKpiData[] = [
     description: "este mes", 
     trend: "up", 
     href: "/dashboard/clientes",
-    iconBgClass: "bg-primary",
-    iconColorClass: "text-primary-foreground"
+    iconBgClass: "bg-chart-2",
+    iconColorClass: "text-accent-foreground"
   },
   { 
     title: "FACTURAS EMITIDAS (MES)", 
@@ -51,7 +51,7 @@ const kpiData: CustomKpiData[] = [
     description: "Meta mensual: 500", 
     progressValue: 64, // (320/500)*100
     href: "/dashboard/ventas",
-    iconBgClass: "bg-primary",
+    iconBgClass: "bg-chart-3",
     iconColorClass: "text-primary-foreground"
   },
   { 
@@ -61,7 +61,7 @@ const kpiData: CustomKpiData[] = [
     description: "en el mes actual",
     trend: "neutral", // Or 'up'/'down' if comparing to previous month
     href: "/dashboard/ventas",
-    iconBgClass: "bg-primary",
+    iconBgClass: "bg-chart-4",
     iconColorClass: "text-primary-foreground"
   },
 ];
