@@ -1,0 +1,6 @@
+Codigo,Nombre,CategoriaNombre,UnidadMedidaCodigo,Precio,Stock,StockMinimo,Tipo,Estado,ImagenUrl
+SKU-001,Polo Algodon Pima Negro,Ropa,NIU,79.90,150,10,Producto,En Stock,https://placehold.co/400x400.png
+SKU-002,Zapatillas Urbanas Blancas,Calzado,NIU,249.90,50,5,Producto,En Stock,https://placehold.co/400x400.png
+SKU-003,Mochila Antirrobo,Accesorios,NIU,189.50,45,15,Producto,Stock Bajo,https://placehold.co/400x400.png
+SKU-004,Servicio de Consultoria,Servicios,ZZ,1500.00,999,0,Servicio,En Stock,
+SKU-005,Gorra Deportiva,Accesorios,NIU,59.90,0,5,Producto,Agotado,https://placehold.co/400x400.png
