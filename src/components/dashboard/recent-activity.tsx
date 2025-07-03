@@ -3,14 +3,21 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
+import { cn } from "@/lib/utils";
 
 const activities = [
   { name: "Olivia Martin", email: "olivia.martin@email.com", amount: "+S/1,999.00", type: "Venta", avatarInitials: "OM" },
+  { name: "Sofia Davis", email: "sofia.davis@email.com", amount: "Registro", type: "Nuevo Cliente", avatarInitials: "SD" },
   { name: "Jackson Lee", email: "jackson.lee@email.com", amount: "+S/39.00", type: "Venta", avatarInitials: "JL" },
+  { name: "Liam Smith", email: "liam@email.com", amount: "-S/85.00", type: "Devolución", avatarInitials: "LS" },
   { name: "Isabella Nguyen", email: "isabella.nguyen@email.com", amount: "+S/299.00", type: "Venta", avatarInitials: "IN" },
-  { name: "William Kim", email: "will@email.com", amount: "+S/99.00", type: "Venta", avatarInitials: "WK" },
-  { name: "Sofia Davis", email: "sofia.davis@email.com", amount: "+S/139.00", type: "Nuevo Cliente", avatarInitials: "SD" },
 ]
+
+const typeStyles: Record<string, string> = {
+  "Venta": "text-emerald-600 dark:text-emerald-400",
+  "Nuevo Cliente": "text-blue-600 dark:text-blue-400",
+  "Devolución": "text-amber-600 dark:text-amber-400",
+}
 
 export function RecentActivity() {
   return (
@@ -25,8 +32,18 @@ export function RecentActivity() {
             <p className="text-sm font-medium leading-none">{activity.name}</p>
             <p className="text-xs text-muted-foreground">{activity.email}</p>
           </div>
-          <div className="ml-auto font-medium text-sm">{activity.amount}</div>
-           <div className="ml-4 text-xs text-muted-foreground w-24 text-right">{activity.type}</div>
+          <div className="ml-auto text-right">
+            <p className={cn(
+              "font-medium text-sm",
+              activity.amount.startsWith('+') ? 'text-emerald-600' :
+              activity.amount.startsWith('-') ? 'text-destructive' : 'text-foreground'
+            )}>
+              {activity.amount}
+            </p>
+            <p className={cn("text-xs font-semibold", typeStyles[activity.type] || "text-muted-foreground")}>
+              {activity.type}
+            </p>
+          </div>
         </div>
       ))}
       <div className="pt-4 text-center">
