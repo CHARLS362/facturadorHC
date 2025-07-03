@@ -70,26 +70,19 @@ body {
     @apply bg-card text-card-foreground transition-colors duration-200 ease-in-out;
 }
 
+/* Default hover for menu items */
 .ps-menu-button {
     @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
 }
 
-/* Correctly target the active menu item's button */
+/* Active menu item style */
 .ps-menu-item.ps-active > .ps-menu-button {
     @apply bg-primary text-primary-foreground;
 }
 
-/* Ensure the hover state on an active button doesn't lose its active style */
+/* Hover style for an active menu item to ensure it doesn't lose its color */
 .ps-menu-item.ps-active > .ps-menu-button:hover {
     @apply bg-primary/90 text-primary-foreground;
-}
-
-.ps-submenu-content {
-    @apply bg-secondary/40 transition-colors duration-200 ease-in-out;
-}
-
-.ps-menu-button.ps-disabled {
-    @apply text-muted-foreground;
 }
 
 /* React Pro Sidebar - Original Structure (keep for functionality) */
