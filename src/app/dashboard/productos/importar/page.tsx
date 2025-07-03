@@ -9,14 +9,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { UploadCloud, FileDown, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-// Example structure for a parsed CSV row
 interface ParsedProduct {
-  name: string;
-  sku: string;
-  category: string;
-  price: string;
-  stock: string;
+  Codigo: string;
+  Nombre: string;
+  CategoriaNombre: string;
+  UnidadMedidaCodigo: string;
+  Precio: string;
+  Stock: string;
+  Estado: string;
 }
 
 export default function ImportarProductosPage() {
@@ -31,9 +33,10 @@ export default function ImportarProductosPage() {
       setUploadedFile(file);
       // Simulate CSV parsing for preview
       const mockParsed: ParsedProduct[] = [
-        { name: "Polo de Algodón Pima", sku: "POL-PIMA-01", category: "Ropa", price: "49.90", stock: "150" },
-        { name: "Zapatillas de Cuero Genuino", sku: "ZAP-CUERO-42", category: "Calzado", price: "299.90", stock: "50" },
-        { name: "Lentes de Sol UV400", sku: "LEN-SOL-BLK", category: "Accesorios", price: "89.00", stock: "200" },
+        { Codigo: "POL-PIMA-01", Nombre: "Polo de Algodón Pima", CategoriaNombre: "Ropa", UnidadMedidaCodigo: "NIU", Precio: "49.90", Stock: "150", Estado: "En Stock" },
+        { Codigo: "ZAP-CUERO-42", Nombre: "Zapatillas de Cuero Genuino", CategoriaNombre: "Calzado", UnidadMedidaCodigo: "NIU", Precio: "299.90", Stock: "50", Estado: "En Stock" },
+        { Codigo: "LEN-SOL-BLK", Nombre: "Lentes de Sol UV400", CategoriaNombre: "Accesorios", UnidadMedidaCodigo: "NIU", Precio: "89.00", Stock: "200", Estado: "Stock Bajo" },
+        { Codigo: "SERV-WEB-01", Nombre: "Servicio de Diseño Web", CategoriaNombre: "Servicios", UnidadMedidaCodigo: "ZZ", Precio: "1200.00", Stock: "999", Estado: "En Stock" },
       ];
       setParsedData(mockParsed);
     } else {
@@ -83,16 +86,23 @@ export default function ImportarProductosPage() {
         <CardHeader>
           <CardTitle>Paso 1: Preparar el archivo</CardTitle>
           <CardDescription>
-            Descargue la plantilla CSV y llénela con la información de sus productos. Asegúrese de mantener el formato y los encabezados de las columnas.
+            Descargue nuestra plantilla para asegurar que su archivo tenga el formato correcto.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Button variant="secondary" asChild>
             <a href="/templates/plantilla_productos.csv" download>
               <FileDown className="mr-2 h-4 w-4" />
               Descargar Plantilla CSV
             </a>
           </Button>
+           <Alert>
+            <FileDown className="h-4 w-4" />
+            <AlertTitle>Columnas Requeridas</AlertTitle>
+            <AlertDescription>
+                Asegúrese de que su archivo CSV contenga las siguientes columnas: <strong>Codigo, Nombre, CategoriaNombre, UnidadMedidaCodigo, Precio, Stock, Estado.</strong> La descripción y otros campos son opcionales.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
 
@@ -132,28 +142,34 @@ export default function ImportarProductosPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Precio</TableHead>
-                  <TableHead>Stock</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {parsedData.map((product, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>{product.sku}</TableCell>
-                    <TableCell>{product.category}</TableCell>
-                    <TableCell>{product.price}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Código</TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Unidad</TableHead>
+                      <TableHead>Precio</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parsedData.map((product, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{product.Codigo}</TableCell>
+                        <TableCell>{product.Nombre}</TableCell>
+                        <TableCell>{product.CategoriaNombre}</TableCell>
+                        <TableCell>{product.UnidadMedidaCodigo}</TableCell>
+                        <TableCell>S/ {product.Precio}</TableCell>
+                        <TableCell>{product.Stock}</TableCell>
+                        <TableCell>{product.Estado}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+            </div>
             
              <div className="flex justify-end gap-3 pt-6 mt-4 border-t">
                 <Button variant="destructive" onClick={() => { setUploadedFile(null); setParsedData([]); }} disabled={isProcessing}>

@@ -1,1 +1,5 @@
-name,sku,category,price,stock
+Codigo,Nombre,Descripcion,CategoriaNombre,UnidadMedidaCodigo,Precio,Stock,StockMinimo,Tipo,Estado,ImagenUrl
+"POL-PIMA-01","Polo de Algodón Pima","Polo de alta calidad color blanco.","Ropa","NIU",49.90,150,10,"Producto","En Stock","https://placehold.co/200x200.png"
+"ZAP-CUERO-42","Zapatillas de Cuero Genuino","Zapatillas para uso diario talla 42.","Calzado","NIU",299.90,50,5,"Producto","En Stock","https://placehold.co/200x200.png"
+"LEN-SOL-BLK","Lentes de Sol UV400","Lentes de sol con protección UV400.","Accesorios","NIU",89.00,200,15,"Producto","Stock Bajo","https://placehold.co/200x200.png"
+"SERV-WEB-01","Servicio de Diseño Web","Servicio de diseño y desarrollo de página web.","Servicios","ZZ",1200.00,999,0,"Servicio","En Stock",""
