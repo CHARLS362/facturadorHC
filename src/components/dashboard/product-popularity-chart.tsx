@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo } from "react";
@@ -107,7 +106,7 @@ export function ProductPopularityChart() {
               strokeWidth={2}
               stroke="hsl(var(--background))" 
               activeIndex={activeIndex}
-              activeShape={ActiveShape as any} 
+              activeShape={ActiveShape as any} // Type assertion if ActiveShape type doesn't match exactly
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(undefined)}
               paddingAngle={2}
@@ -118,15 +117,12 @@ export function ProductPopularityChart() {
             </Pie>
           </PieChart>
         </ChartContainer>
-        {/* Conditionally render total sales based on hover state */}
-        {activeIndex === undefined && (
-          <div className="absolute text-center pointer-events-none flex flex-col items-center justify-center transition-opacity duration-300">
-            <p className="text-2xl md:text-3xl font-bold font-headline text-foreground">
-              S/{totalSales.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Ventas Totales</p>
-          </div>
-        )}
+        <div className="absolute text-center pointer-events-none flex flex-col items-center justify-center">
+          <p className="text-2xl md:text-3xl font-bold font-headline text-foreground">
+            S/{totalSales.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Ventas Totales</p>
+        </div>
       </div>
 
       <div className="w-full md:w-1/2 md:pl-6 space-y-3">

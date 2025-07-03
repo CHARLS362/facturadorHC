@@ -108,12 +108,14 @@ export function CajaChart({ data: initialData }: { data: any[] }) {
             </Pie>
           </PieChart>
         </ChartContainer>
-        <div className="absolute text-center pointer-events-none flex flex-col items-center justify-center">
-          <p className="text-2xl md:text-3xl font-bold font-headline text-foreground">
-            S/{totalValue.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">Flujo Neto</p>
-        </div>
+        {activeIndex === undefined && (
+          <div className="absolute text-center pointer-events-none flex flex-col items-center justify-center transition-opacity duration-300">
+            <p className="text-2xl md:text-3xl font-bold font-headline text-foreground">
+              S/{totalValue.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">Flujo Neto</p>
+          </div>
+        )}
       </div>
 
       <div className="w-full md:w-1/2 md:pl-6 space-y-3">
