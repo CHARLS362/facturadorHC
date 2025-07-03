@@ -1,3 +1,4 @@
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sql from 'mssql';
 import { getConnection } from '@/lib/db';
@@ -11,6 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           v.IdVenta,
           v.FechaVenta,
           cl.Nombre AS NombreCliente,
+          cl.Email AS EmailCliente,
+          cl.Telefono AS TelefonoCliente,
           tc.Descripcion AS TipoDocumento,
           v.Total,
           fp.Descripcion AS NombreFormaPago,
