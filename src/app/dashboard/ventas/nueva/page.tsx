@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,22 +16,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ShoppingCart, Save, RotateCcw, SearchCheck, AlertTriangle, Calculator, PlusCircle, Trash2, Check, ChevronsUpDown, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, } from "react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
-
+import { useRouter } from "next/navigation";
 const IGV_RATE = 0.18; // 18% IGV for Peru
-
-
-// Mock client data (TODO: replace with actual data fetching in a real app)
-const availableClients = [
-  { id: "CLI001", name: "Empresa XYZ S.A.C.", documentType: "RUC", documentNumber: "20123456789", address: "Av. Principal 123, Lima" },
-  { id: "CLI002", name: "Ana Morales", documentType: "DNI", documentNumber: "12345678", address: "Calle Falsa 123, Miraflores" },
-  { id: "CLI003", name: "Servicios Globales EIRL", documentType: "RUC", documentNumber: "20876543211", address: "Jr. de la Union 45, Lima" },
-];
 
 
 const ventaSchema = z.object({
@@ -79,6 +69,8 @@ type ClientSearchMethod = 'ruc' | 'dni' | 'search';
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
+  const router = useRouter(); // Agrega esto
+
   const [searchMethod, setSearchMethod] = useState<ClientSearchMethod>('ruc');
   const [isClientDataFetched, setIsClientDataFetched] = useState(false);
   const [isConsultingSunat, setIsConsultingSunat] = useState(false);
@@ -87,7 +79,7 @@ export default function NuevaVentaPage() {
   const [availableProducts, setAvailableProducts] = useState([]);
 
   useEffect(() => {
-    fetch("/api/producto") // Cambia la ruta si tu endpoint es diferente
+    fetch("/api/producto") 
       .then(res => res.json())
       .then(data => setAvailableProducts(
         data.map((p: any) => ({
@@ -167,42 +159,51 @@ export default function NuevaVentaPage() {
     
     const isValidDocNumber = await form.trigger("clientDocumentNumber");
     if (!isValidDocNumber) {
-         toast({
-            variant: "destructive",
-            title: "Error de Validación",
-            description: "Por favor, corrija el número de documento.",
-          });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Error de Validación",
+        description: "Por favor, corrija el número de documento.",
+      });
+      return;
     }
     if (!docType || !docNumber) return;
     
     setIsConsultingSunat(true);
-    // Simulate API call to SUNAT/RENIEC
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    
-    let mockName = "Cliente Ejemplo S.A.C.";
-    let mockAddress = "Av. Javier Prado Este 123, San Isidro, Lima";
-    if (docType === "dni") {
-      mockName = "Juan Pérez Gonzales";
-      mockAddress = "Calle Las Begonias 456, Lince, Lima";
-    }
-    
-    form.setValue("clientFullName", mockName, { shouldValidate: true });
-    form.setValue("clientAddress", mockAddress);
-    setIsClientDataFetched(true);
-    setIsConsultingSunat(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
+
+    try {
+      const res = await fetch(`/api/cliente/consulta-cliente?tipo=${docType.toUpperCase()}&numero=${docNumber}`);
+      if (!res.ok) {
+        throw new Error("No se encontró el cliente.");
+      }
+      const data = await res.json();
+      // ACTUALIZA EL NOMBRE DEL CLIENTE CON EL VALOR REAL DE LA BD
+      form.setValue("clientFullName", data.Nombre || "", { shouldValidate: true });
+      form.setValue("clientAddress", data.Direccion || "");
+      setIsClientDataFetched(true);
+      toast({
+        variant: "success",
+        title: (
+          <div className="flex items-center gap-2">
+            <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+              <CheckCircle2 className="h-5 w-5 text-white" />
+            </div>
+            <span>Consulta Exitosa</span>
           </div>
-          <span>Consulta Exitosa (Simulada)</span>
-        </div>
-      ),
-      description: "Datos del cliente recuperados.",
-    });
+        ),
+        description: "Datos del cliente recuperados.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "No encontrado",
+        description: "No se encontró el cliente con ese documento.",
+      });
+      form.setValue("clientFullName", "", { shouldValidate: true });
+      form.setValue("clientAddress", "");
+      setIsClientDataFetched(false);
+    } finally {
+      setIsConsultingSunat(false);
+    }
   };
 
   const handleAddProduct = () => {
@@ -219,8 +220,21 @@ export default function NuevaVentaPage() {
     const productDetails = availableProducts.find(p => p.id === currentProductId);
 
     if (!productDetails) {
-        toast({ title: "Error", description: "Producto no encontrado.", variant: "destructive" });
-        return;
+      toast({ title: "Error", description: "Producto no encontrado.", variant: "destructive" });
+      return;
+    }
+
+    const cantidadEnVenta = existingProductIndex > -1
+      ? saleItems[existingProductIndex].quantity + currentQuantity
+      : currentQuantity;
+
+    if (cantidadEnVenta > productDetails.stock) {
+      toast({
+        title: "Stock insuficiente",
+        description: `Producto: ${productDetails.name} | Stock disponible: ${productDetails.stock} | Cantidad solicitada: ${cantidadEnVenta}`,
+        variant: "destructive"
+      });
+      return;
     }
 
     if (existingProductIndex > -1) {
@@ -283,11 +297,9 @@ export default function NuevaVentaPage() {
         ),
         description: `La venta para ${data.clientFullName} ha sido registrada exitosamente.`,
       });
-      form.reset();
-      setSearchMethod('ruc');
-      setIsClientDataFetched(false);
-      setCurrentProductId(null);
-      setCurrentQuantity(1);
+      // Redirige al listado de ventas después de registrar la venta
+      router.push("/dashboard/ventas");
+      return; // Opcional: para evitar que se ejecute el reset
     } else {
       toast({
         variant: "destructive",
@@ -304,6 +316,17 @@ export default function NuevaVentaPage() {
   }
   }
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
+
+  const [registeredClients, setRegisteredClients] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (searchMethod === 'search') {
+      fetch('/api/cliente/listar')
+        .then(res => res.json())
+        .then(data => setRegisteredClients(data))
+        .catch(() => setRegisteredClients([]));
+    }
+  }, [searchMethod]);
 
   return (
     <div className="space-y-8 pb-12">
@@ -398,24 +421,27 @@ export default function NuevaVentaPage() {
                                         <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
                                         <CommandList>
                                             <CommandGroup>
-                                            {availableClients.map((client) => (
+                                              {registeredClients.map((client) => (
                                                 <CommandItem
-                                                    key={client.id}
-                                                    value={client.name}
-                                                    onSelect={() => {
-                                                        form.setValue("clientDocumentType", client.documentType);
-                                                        form.setValue("clientDocumentNumber", client.documentNumber);
-                                                        form.setValue("clientFullName", client.name);
-                                                        form.setValue("clientAddress", client.address || "");
-                                                        form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
-                                                        setIsClientDataFetched(true);
-                                                        setClientSearchOpen(false);
-                                                    }}
+                                                  key={client.IdCliente}
+                                                  value={client.Nombre}
+                                                  onSelect={() => {
+                                                    form.setValue("clientFullName", client.Nombre, { shouldValidate: true });
+                                                    form.setValue("clientDocumentNumber", client.NumeroDocumento, { shouldValidate: true });
+                                                    form.setValue("clientAddress", client.Direccion || "");
+                                                    setIsClientDataFetched(true);
+                                                    setClientSearchOpen(false);
+                                                  }}
                                                 >
-                                                    <Check className={cn("mr-2 h-4 w-4", form.getValues("clientDocumentNumber") === client.documentNumber ? "opacity-100" : "opacity-0")} />
-                                                    {client.name} ({client.documentType}: {client.documentNumber})
+                                                  <Check
+                                                    className={cn(
+                                                      "mr-2 h-4 w-4",
+                                                      form.getValues("clientFullName") === client.Nombre ? "opacity-100" : "opacity-0"
+                                                    )}
+                                                  />
+                                                  {client.Nombre} — {client.NumeroDocumento}
                                                 </CommandItem>
-                                            ))}
+                                              ))}
                                             </CommandGroup>
                                         </CommandList>
                                     </Command>

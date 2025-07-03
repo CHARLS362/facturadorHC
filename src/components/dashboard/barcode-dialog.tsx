@@ -20,7 +20,8 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
   useEffect(() => {
     setBarcodeError(null);
     if (isOpen && product && barcodeRef.current) {
-      const valueToEncode = product.sku || String(product.id);
+      console.log("Producto recibido para código de barras:", product); // <-- Agrega esto
+      const valueToEncode = (product.sku && product.sku.trim() !== "") ? product.sku : String(product.id);
 
       if (!valueToEncode || String(valueToEncode).trim() === "") {
         setBarcodeError("Valor inválido para generar el código.");
@@ -48,7 +49,10 @@ export function BarcodeDialog({ isOpen, onOpenChange, product }: BarcodeDialogPr
     }
   }, [isOpen, product]);
 
-  if (!product) return null;
+  if (!product) {
+    console.log("No hay producto para generar código de barras");
+    return null;
+  }
 
   const handlePrint = () => {
     if (!barcodeRef.current || !product || barcodeError) return;

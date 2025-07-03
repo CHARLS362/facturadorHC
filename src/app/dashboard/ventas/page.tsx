@@ -15,7 +15,7 @@ interface VentaData {
   total: string;
   status: string;
   paymentMethod: string;
-  documentType: string;
+  documentType: "Boleta" | "Factura";
   clientEmail: string;
   clientPhone: string;
 }
@@ -33,18 +33,22 @@ export default function VentasPage() {
           throw new Error('Error al obtener los datos de las ventas.');
         }
         const rawData = await response.json();
-        const formattedData = rawData.map((venta: any) => ({
-          id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
-          ventaId: venta.IdVenta,
-          date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
-          customer: venta.NombreCliente || "Sin nombre",
-          total: `S/ ${Number(venta.Total).toFixed(2)}`,
-          status: venta.Estado,
-          paymentMethod: venta.NombreFormaPago || "Desconocido",
-          documentType: venta.TipoDocumento || "Factura",
-          clientEmail: venta.EmailCliente || "",
-          clientPhone: venta.TelefonoCliente || "",
-        }));
+        const formattedData = rawData.map((venta: any) => {
+          let docType: "Boleta" | "Factura" = "Factura";
+          if (venta.TipoDocumento === "Boleta") docType = "Boleta";
+          return {
+            id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
+            ventaId: venta.IdVenta,
+            date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
+            customer: venta.NombreCliente || "Sin nombre",
+            total: `S/ ${Number(venta.Total).toFixed(2)}`,
+            status: venta.Estado,
+            paymentMethod: venta.NombreFormaPago || "Desconocido",
+            documentType: docType,
+            clientEmail: venta.EmailCliente || "",
+            clientPhone: venta.TelefonoCliente || "",
+          };
+        });
         setSalesData(formattedData);
       } catch (err: any) {
         setError(err.message);
