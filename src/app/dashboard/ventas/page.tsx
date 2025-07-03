@@ -1,46 +1,60 @@
+'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ShoppingCart, FileDown } from "lucide-react";
-import { getConnection } from '@/lib/db';
 import { VentasList } from '@/components/dashboard/ventas-list';
 
-async function getSalesData() {
-  try {
-    const pool = await getConnection();
-    const result = await pool.request().query(`
-      SELECT 
-        v.IdVenta, v.FechaVenta, cl.Nombre AS NombreCliente, cl.Email AS EmailCliente, cl.Telefono AS TelefonoCliente,
-        tc.Descripcion AS TipoDocumento, v.Total, fp.Descripcion AS NombreFormaPago, v.Estado
-      FROM Ventas v
-      LEFT JOIN Comprobante c ON v.IdComprobante = c.IdComprobante
-      LEFT JOIN Serie s ON c.IdSerie = s.IdSerie
-      LEFT JOIN TipoComprobante tc ON s.IdTipoComprobante = tc.IdTipoComprobante
-      LEFT JOIN Cliente cl ON v.IdCliente = cl.IdCliente
-      LEFT JOIN FormaPago fp ON v.IdFormaPago = fp.IdFormaPago
-    `);
-    
-    return result.recordset.map((venta: any) => ({
-      id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
-      ventaId: venta.IdVenta,
-      date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
-      customer: venta.NombreCliente || "Sin nombre",
-      total: `S/ ${Number(venta.Total).toFixed(2)}`,
-      status: venta.Estado,
-      paymentMethod: venta.NombreFormaPago || "Desconocido",
-      documentType: venta.TipoDocumento || "Factura",
-      clientEmail: venta.EmailCliente || "",
-      clientPhone: venta.TelefonoCliente || "",
-    }));
-  } catch (error) {
-    console.error("Error fetching sales data:", error);
-    return [];
-  }
+interface VentaData {
+  id: string;
+  ventaId: number;
+  date: string;
+  customer: string;
+  total: string;
+  status: string;
+  paymentMethod: string;
+  documentType: string;
+  clientEmail: string;
+  clientPhone: string;
 }
 
-export default async function VentasPage() {
-  const salesData = await getSalesData();
+export default function VentasPage() {
+  const [salesData, setSalesData] = useState<VentaData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/venta');
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos de las ventas.');
+        }
+        const rawData = await response.json();
+        const formattedData = rawData.map((venta: any) => ({
+          id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
+          ventaId: venta.IdVenta,
+          date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
+          customer: venta.NombreCliente || "Sin nombre",
+          total: `S/ ${Number(venta.Total).toFixed(2)}`,
+          status: venta.Estado,
+          paymentMethod: venta.NombreFormaPago || "Desconocido",
+          documentType: venta.TipoDocumento || "Factura",
+          clientEmail: venta.EmailCliente || "",
+          clientPhone: venta.TelefonoCliente || "",
+        }));
+        setSalesData(formattedData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -65,7 +79,13 @@ export default async function VentasPage() {
           </div>
         }
       />
-      <VentasList initialData={salesData} />
+      {isLoading ? (
+        <p>Cargando ventas...</p>
+      ) : error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : (
+        <VentasList initialData={salesData} />
+      )}
     </div>
   );
 }

@@ -93,6 +93,7 @@ export default function EditarProductoPage() {
         productId={productId} 
         initialData={initialData} 
       />
+
     </div>
   );
 }
