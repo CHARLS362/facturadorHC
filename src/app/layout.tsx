@@ -47,6 +47,9 @@ export default function RootLayout({
             <Toaster />
           </AuthProvider>
         </ThemeProvider>
+        {/* 🌟 Agente de voz ElevenLabs siempre activo */}
+        <elevenlabs-convai agent-id="agent_01jz770peremfvbyt65yxrx2mz"></elevenlabs-convai>
+        <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
       </body>
     </html>
   );
