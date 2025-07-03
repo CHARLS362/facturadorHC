@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import type { EmpresaDataForTemplate } from "@/components/templates/invoice-preview";
 
 export interface MockUser {
   id: string;
@@ -59,10 +58,18 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
         console.error("Failed to load company settings for export preview", e);
     }
   }, []);
+  
+  const getStatusBadgeClass = (status: string) => {
+    switch (status.toLowerCase()) {
+        case "activo": return "bg-green-100 text-green-800 border-green-200";
+        case "inactivo": return "bg-red-100 text-red-800 border-red-200";
+        default: return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  }
 
   return (
-    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-lg border print:shadow-none print:border-0">
-      <CardHeader className="px-6 py-4">
+    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-none border-0 print:shadow-none print:border-0">
+      <CardHeader className="px-2 py-4 md:p-6">
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex items-center gap-4">
             <Image
@@ -74,21 +81,21 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
               data-ai-hint="modern business logo"
             />
             <div>
-              <CardTitle className="text-2xl font-headline">Reporte de Usuarios</CardTitle>
+              <CardTitle className="text-2xl font-headline text-primary">Reporte de Usuarios</CardTitle>
               <CardDescription>Generado el: {currentDate}</CardDescription>
             </div>
           </div>
           <div className="text-left md:text-right">
-            <p className="font-semibold">{companyInfo.name}</p>
-            <p className="text-sm text-muted-foreground">{companyInfo.email}</p>
+            <p className="font-semibold">FacturacionHC</p>
+            <p className="text-sm text-muted-foreground">reportes@facturacionhc.com</p>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 md:p-2">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px]">ID</TableHead>
+              <TableHead>ID</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Rol</TableHead>
@@ -105,7 +112,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
                 <TableCell>{user.role}</TableCell>
                 <TableCell>{user.joinedDate}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800 dark:bg-green-900/70 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/70 dark:text-red-300"}`}>
+                  <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
                     {user.status}
                   </span>
                 </TableCell>
@@ -114,7 +121,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
           </TableBody>
         </Table>
       </CardContent>
-      <CardFooter className="px-6 py-4 text-sm text-muted-foreground">
+      <CardFooter className="px-2 py-4 md:p-6 text-sm text-muted-foreground">
         <p>Total de Usuarios: {users.length}</p>
       </CardFooter>
     </Card>
