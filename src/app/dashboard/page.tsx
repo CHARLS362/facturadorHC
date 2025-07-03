@@ -1,4 +1,5 @@
-
+"use client";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,57 +17,93 @@ import {
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
+import { KpiCard } from "@/components/dashboard/kpi-card";
 import { LowStockProducts } from "@/components/dashboard/low-stock-products";
 
-interface CustomKpiData extends KpiCardProps {}
-
-const kpiData: CustomKpiData[] = [
-  { 
-    title: "VENTAS DEL DÍA", 
-    value: "S/ 1,250.50", 
-    change: "+5%", 
-    iconName: "DollarSign", 
-    description: "comparado a ayer", 
-    trend: "up", 
-    href: "/dashboard/ventas",
-    iconBgClass: "bg-green-500 dark:bg-green-600",
-    iconColorClass: "text-white"
-  },
-  { 
-    title: "NUEVOS CLIENTES (MES)", 
-    value: "12", 
-    change: "+3", 
-    iconName: "UserPlus", 
-    description: "este mes", 
-    trend: "up", 
-    href: "/dashboard/clientes",
-    iconBgClass: "bg-blue-500 dark:bg-blue-600",
-    iconColorClass: "text-white"
-  },
-  { 
-    title: "FACTURAS EMITIDAS (MES)", 
-    value: "320 / 500", 
-    iconName: "FileText", 
-    description: "Meta mensual: 500", 
-    progressValue: 64, // (320/500)*100
-    href: "/dashboard/ventas",
-    iconBgClass: "bg-orange-500 dark:bg-orange-600",
-    iconColorClass: "text-white"
-  },
-  { 
-    title: "TOTAL FACTURADO (MES)", 
-    value: "S/ 25,800.00", 
-    iconName: "TrendingUp", 
-    description: "en el mes actual",
-    trend: "neutral", // Or 'up'/'down' if comparing to previous month
-    href: "/dashboard/ventas",
-    iconBgClass: "bg-primary", // Using theme primary
-    iconColorClass: "text-primary-foreground"
-  },
-];
-
 export default function DashboardPage() {
+  const [ventasDia, setVentasDia] = useState("S/ 0.00");
+  const [clientesMes, setClientesMes] = useState("0");
+  const [facturasMes, setFacturasMes] = useState({ actual: 0, meta: 500 });
+  const [totalFacturadoMes, setTotalFacturadoMes] = useState("S/ 0.00");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchKpis() {
+      setLoading(true);
+      // Ventas del día
+      const ventasRes = await fetch("/api/venta");
+      const ventas = await ventasRes.json();
+      // Suponiendo que cada venta tiene { FechaVenta, Total }
+      const hoy = new Date().toISOString().slice(0, 10);
+      const ventasHoy = ventas.filter((v: any) => v.FechaVenta?.slice(0, 10) === hoy);
+      const totalHoy = ventasHoy.reduce((acc: number, v: any) => acc + Number(v.Total), 0);
+      setVentasDia(`S/ ${totalHoy.toLocaleString("es-PE", { minimumFractionDigits: 2 })}`);
+
+      // Clientes del mes
+      const clientesRes = await fetch("/api/cliente");
+      const clientes = await clientesRes.json();
+      const mesActual = new Date().toISOString().slice(0, 7);
+      const clientesMes = clientes.filter((c: any) => c.FechaRegistro?.slice(0, 7) === mesActual);
+      setClientesMes(clientesMes.length.toString());
+
+      // Facturas emitidas (ventas del mes)
+      const ventasMes = ventas.filter((v: any) => v.FechaVenta?.slice(0, 7) === mesActual);
+      setFacturasMes({ actual: ventasMes.length, meta: 500 });
+
+      // Total facturado mes
+      const totalMes = ventasMes.reduce((acc: number, v: any) => acc + Number(v.Total), 0);
+      setTotalFacturadoMes(`S/ ${totalMes.toLocaleString("es-PE", { minimumFractionDigits: 2 })}`);
+
+      setLoading(false);
+    }
+    fetchKpis();
+  }, []);
+
+  const kpiData = [
+    { 
+      title: "VENTAS DEL DÍA", 
+      value: ventasDia, 
+      change: "", 
+      iconName: "DollarSign", 
+      description: "comparado a ayer", 
+      trend: "up", 
+      href: "/dashboard/ventas",
+      iconBgClass: "bg-green-500 dark:bg-green-600",
+      iconColorClass: "text-white"
+    },
+    { 
+      title: "NUEVOS CLIENTES (MES)", 
+      value: clientesMes, 
+      change: "", 
+      iconName: "UserPlus", 
+      description: "este mes", 
+      trend: "up", 
+      href: "/dashboard/clientes",
+      iconBgClass: "bg-blue-500 dark:bg-blue-600",
+      iconColorClass: "text-white"
+    },
+    { 
+      title: "FACTURAS EMITIDAS (MES)", 
+      value: `${facturasMes.actual} / ${facturasMes.meta}`, 
+      iconName: "FileText", 
+      description: `Meta mensual: ${facturasMes.meta}`, 
+      progressValue: Math.round((facturasMes.actual / facturasMes.meta) * 100),
+      href: "/dashboard/ventas",
+      iconBgClass: "bg-orange-500 dark:bg-orange-600",
+      iconColorClass: "text-white"
+    },
+    { 
+      title: "TOTAL FACTURADO (MES)", 
+      value: totalFacturadoMes, 
+      iconName: "TrendingUp", 
+      description: "en el mes actual",
+      trend: "neutral",
+      href: "/dashboard/ventas",
+      iconBgClass: "bg-primary",
+      iconColorClass: "text-primary-foreground"
+    },
+  ];
+
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -80,7 +117,7 @@ export default function DashboardPage() {
           <KpiCard 
             key={index} 
             title={kpi.title} 
-            value={kpi.value} 
+            value={loading ? "..." : kpi.value} 
             change={kpi.change} 
             iconName={kpi.iconName} 
             description={kpi.description} 
@@ -171,7 +208,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }
