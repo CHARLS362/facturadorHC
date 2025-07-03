@@ -44,7 +44,7 @@ export function UserNav({ user }: UserNavProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar>
-              <AvatarImage src={`https://avatar.vercel.sh/${user?.email || 'default'}.png`} alt={user?.name || "Usuario"} />
+              <AvatarImage src="https://placehold.co/40x40.png" alt={user?.name || "Usuario"} data-ai-hint="person portrait" />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>

@@ -132,7 +132,7 @@ export function ClientesList({ initialData }: { initialData: any[] }) {
                     <TableRow key={client.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell className="font-medium flex items-center gap-3">
                         <Avatar className="h-9 w-9">
-                          <AvatarImage src={`https://avatar.vercel.sh/${client.email}.png?size=40`} alt={clientName} />
+                          <AvatarImage src="https://placehold.co/40x40.png" alt={clientName} data-ai-hint="person portrait" />
                           <AvatarFallback>{clientInitials}</AvatarFallback>
                         </Avatar>
                         {clientName}
