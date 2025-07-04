@@ -98,10 +98,6 @@ export function ProductPopularityChart() {
           className="mx-auto aspect-square h-full w-full max-w-[280px] md:max-w-[300px]"
         >
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-            <ChartTooltip
-              cursor={true}
-              content={<ChartTooltipContent hideLabel />}
-            />
             <Pie
               data={chartData}
               dataKey="salesValue"
