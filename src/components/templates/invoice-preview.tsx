@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -57,7 +56,7 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
             alt="Company Logo" 
             width={180} 
             height={60}
-            className="mb-2"
+            className="mb-2 object-contain"
             data-ai-hint="company logo"
           />
           <p className="font-bold text-base">{empresa.name}</p>

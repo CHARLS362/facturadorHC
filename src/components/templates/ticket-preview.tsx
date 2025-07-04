@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -25,7 +24,7 @@ export function TicketPreview({ venta, empresa }: TicketPreviewProps) {
           alt="Business Logo" 
           width={120} 
           height={40}
-          className="mx-auto mb-2"
+          className="mx-auto mb-2 object-contain"
           data-ai-hint="small business logo"
         />
         <p className="font-bold text-lg text-primary">{empresa.name}</p>
