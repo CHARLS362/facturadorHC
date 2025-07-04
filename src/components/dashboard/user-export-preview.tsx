@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -61,8 +60,8 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
   }, []);
 
   return (
-    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-none border-0 print:shadow-none print:border-0">
-      <CardHeader className="px-2 py-4 md:p-6">
+    <Card id="printable-area" className="w-full max-w-4xl mx-auto shadow-lg border print:shadow-none print:border-0">
+      <CardHeader className="px-6 py-4">
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex items-center gap-4">
             <Image
@@ -84,11 +83,11 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0 md:p-2">
+      <CardContent className="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
+              <TableHead className="w-[50px]">ID</TableHead>
               <TableHead>Nombre</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Rol</TableHead>
@@ -105,7 +104,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
                 <TableCell>{user.role}</TableCell>
                 <TableCell>{user.joinedDate}</TableCell>
                 <TableCell>
-                  <span className={`px-2 py-1 text-xs rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${user.status === "Activo" ? "bg-green-100 text-green-800 dark:bg-green-900/70 dark:text-green-300" : "bg-red-100 text-red-800 dark:bg-red-900/70 dark:text-red-300"}`}>
                     {user.status}
                   </span>
                 </TableCell>
@@ -114,7 +113,7 @@ export function UserExportPreview({ users }: UserExportPreviewProps) {
           </TableBody>
         </Table>
       </CardContent>
-      <CardFooter className="px-2 py-4 md:p-6 text-sm text-muted-foreground">
+      <CardFooter className="px-6 py-4 text-sm text-muted-foreground">
         <p>Total de Usuarios: {users.length}</p>
       </CardFooter>
     </Card>
