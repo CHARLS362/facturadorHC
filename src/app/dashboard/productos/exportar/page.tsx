@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -48,7 +47,7 @@ export default function ExportarProductosPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6 print:p-0">
       <div className="print-hide">
         <PageHeader
           title="Previsualización de Exportación"

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { PageHeader } from "@/components/shared/page-header";
@@ -186,7 +185,7 @@ export default function ImprimirVentaPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-6 print:p-0">
       <div className="print-hide">
         <PageHeader
           title={`Imprimiendo: ${venta?.TipoDocumento || 'Comprobante'}`}
