@@ -28,6 +28,7 @@ interface VentaFromApi {
     Total: number;
   }>;
   Total: number;
+  NombreFormaPago: string;
 }
 
 const mockCompanyInfoFallback: EmpresaDataForTemplate = {
@@ -149,7 +150,8 @@ export default function ImprimirVentaPage() {
           opGravada: opGravada,
           igv: igv,
           totalGeneral: totalGeneral,
-          totalEnLetras: numberToWords(totalGeneral)
+          totalEnLetras: numberToWords(totalGeneral),
+          paymentMethod: venta.NombreFormaPago || 'Efectivo',
       };
   }
   

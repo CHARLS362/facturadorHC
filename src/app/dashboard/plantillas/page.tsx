@@ -39,7 +39,8 @@ const mockVenta: VentaDataForTemplate = {
   opGravada: 2314.00,
   igv: 416.52,
   totalGeneral: 2730.52,
-  totalEnLetras: "DOS MIL SETECIENTOS TREINTA Y 52/100 SOLES"
+  totalEnLetras: "DOS MIL SETECIENTOS TREINTA Y 52/100 SOLES",
+  paymentMethod: "Tarjeta de Crédito",
 };
 
 const mockBoleta: VentaDataForTemplate = {
@@ -50,7 +51,8 @@ const mockBoleta: VentaDataForTemplate = {
         documento: "12345678",
         tipoDocumento: "DNI",
         direccion: "Av. Sol 123, Cusco"
-    }
+    },
+    paymentMethod: "Efectivo",
 };
 
 

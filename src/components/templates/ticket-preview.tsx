@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -90,7 +91,7 @@ export function TicketPreview({ venta, empresa }: TicketPreviewProps) {
 
       {/* Payment & QR */}
       <section className="mb-4 text-center">
-        <p>Forma de Pago: TARJETA VISA **** **** **** 1234</p> {/* This is still mock */}
+        <p>Forma de Pago: {venta.paymentMethod}</p>
         <Image 
           src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(qrData)}`} 
           alt="Código QR de la Boleta" 

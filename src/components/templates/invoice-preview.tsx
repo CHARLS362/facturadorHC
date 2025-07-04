@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -26,6 +27,7 @@ export interface VentaDataForTemplate {
   igv: number;
   totalGeneral: number;
   totalEnLetras: string;
+  paymentMethod: string;
 }
 
 export interface EmpresaDataForTemplate {
