@@ -49,39 +49,43 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
   return (
     <div className="bg-card p-8 rounded-lg border border-border/50 max-w-4xl mx-auto font-sans text-[12px] text-foreground w-[210mm] min-h-[297mm] print:border-0 print:shadow-none print:h-auto print:min-h-0">
       {/* Header */}
-      <header className="grid grid-cols-3 gap-4 mb-8">
+      <header className="grid grid-cols-3 gap-8 mb-8">
         <div className="col-span-2">
-          <Image 
-            src={empresa.logoUrl}
-            alt="Company Logo" 
-            width={180} 
-            height={60}
-            className="mb-2 object-contain"
-            data-ai-hint="company logo"
-          />
-          <p className="font-bold text-base">{empresa.name}</p>
-          <p>{empresa.address}</p>
-          <p>Tel: {empresa.phone} / Email: {empresa.email}</p>
+            <div className="h-[60px] mb-4">
+              <Image 
+                src={empresa.logoUrl}
+                alt="Company Logo" 
+                width={200}
+                height={60}
+                className="h-full w-auto object-contain object-left"
+                data-ai-hint="company logo"
+              />
+            </div>
+            <div className="space-y-1">
+              <p className="font-bold text-lg">{empresa.name}</p>
+              <p className="text-sm">{empresa.address}</p>
+              <p className="text-sm">Tel: {empresa.phone} / Email: {empresa.email}</p>
+            </div>
         </div>
-        <div className="col-span-1 border-2 border-primary/80 rounded-lg p-2 text-center">
+        <div className="col-span-1 border border-primary/80 rounded-lg p-3 text-center flex flex-col justify-center">
             <h1 className="font-bold text-lg">R.U.C. {empresa.ruc}</h1>
-            <Separator className="my-1" />
+            <Separator className="my-2 bg-border" />
             <h2 className="font-bold text-lg text-primary">FACTURA ELECTRÓNICA</h2>
-            <Separator className="my-1" />
-            <p className="font-bold text-lg">{venta.id}</p>
+            <Separator className="my-2 bg-border" />
+            <p className="font-bold text-lg tracking-wider">{venta.id}</p>
         </div>
       </header>
 
       {/* Client Info and Dates */}
-      <section className="mb-4 grid grid-cols-5 gap-4">
-        <div className="col-span-3 border border-border/50 rounded-md p-2">
-            <p><span className="font-bold w-[120px] inline-block">Señor(es):</span> {venta.cliente.nombre}</p>
-            <p><span className="font-bold w-[120px] inline-block">Dirección:</span> {venta.cliente.direccion || 'No especificada'}</p>
-            <p><span className="font-bold w-[120px] inline-block">{venta.cliente.tipoDocumento}:</span> {venta.cliente.documento}</p>
+      <section className="mb-6 grid grid-cols-5 gap-4">
+        <div className="col-span-3 border border-border/50 rounded-md p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+            <span className="font-bold">Señor(es):</span> <span>{venta.cliente.nombre}</span>
+            <span className="font-bold">Dirección:</span> <span>{venta.cliente.direccion || 'No especificada'}</span>
+            <span className="font-bold">{venta.cliente.tipoDocumento}:</span> <span>{venta.cliente.documento}</span>
         </div>
-         <div className="col-span-2 border border-border/50 rounded-md p-2">
-            <p><span className="font-bold w-[130px] inline-block">Fecha de Emisión:</span> {fechaEmision}</p>
-            <p><span className="font-bold w-[130px] inline-block">Moneda:</span> SOLES</p>
+         <div className="col-span-2 border border-border/50 rounded-md p-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
+            <span className="font-bold">Fecha de Emisión:</span> <span>{fechaEmision}</span>
+            <span className="font-bold">Moneda:</span> <span>SOLES</span>
         </div>
       </section>
 
@@ -99,7 +103,7 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
           </TableHeader>
           <TableBody>
             {venta.items.map((row, index) => (
-              <TableRow key={index} className="hover:bg-muted/20 transition-colors">
+              <TableRow key={index} className="border-b-border/50 hover:bg-muted/20 transition-colors">
                 <TableCell className="text-center">{row.cantidad}</TableCell>
                 <TableCell className="text-center">{row.unidad}</TableCell>
                 <TableCell className="font-medium">{row.nombre}</TableCell>
@@ -112,8 +116,8 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
       </section>
 
        {/* Totals and Observations */}
-      <section className="grid grid-cols-3 gap-4">
-          <div className="col-span-2 space-y-2">
+      <section className="grid grid-cols-3 gap-8">
+          <div className="col-span-2 space-y-4">
             <div className="border border-border/50 rounded-md p-2">
                 <p><span className="font-bold text-primary">SON:</span> {venta.totalEnLetras}</p>
             </div>
@@ -135,32 +139,35 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
                 </div>
             </div>
           </div>
-          <div className="col-span-1 space-y-1">
-            <div className="flex justify-between border-b p-1">
+          <div className="col-span-1 space-y-2 text-sm">
+            <div className="flex justify-between items-center py-1">
                 <span className="font-bold">OP. GRAVADA:</span>
                 <span className="font-medium">S/ {venta.opGravada.toFixed(2)}</span>
             </div>
-             <div className="flex justify-between border-b p-1">
+             <Separator />
+             <div className="flex justify-between items-center py-1">
                 <span className="font-bold">I.G.V. (18%):</span>
                 <span className="font-medium">S/ {venta.igv.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between border-b p-1">
+            <Separator />
+            <div className="flex justify-between items-center py-1">
                 <span className="font-bold">OP. EXONERADA:</span>
                 <span className="font-medium">S/ 0.00</span>
             </div>
-             <div className="flex justify-between border-b p-1">
+             <Separator />
+             <div className="flex justify-between items-center py-1">
                 <span className="font-bold">OP. INAFECTA:</span>
                 <span className="font-medium">S/ 0.00</span>
             </div>
-            <div className="flex justify-between bg-primary text-primary-foreground p-2 rounded-md">
-                <span className="font-bold text-base">IMPORTE TOTAL:</span>
-                <span className="font-bold text-base">S/ {venta.totalGeneral.toFixed(2)}</span>
+            <div className="flex justify-between bg-primary text-primary-foreground p-2 mt-2 rounded-md">
+                <span className="font-bold">IMPORTE TOTAL:</span>
+                <span className="font-bold">S/ {venta.totalGeneral.toFixed(2)}</span>
             </div>
           </div>
       </section>
 
       {/* Footer */}
-      <footer className="text-center text-xs text-muted-foreground pt-4 mt-4 border-t border-border/50">
+      <footer className="text-center text-xs text-muted-foreground pt-6 mt-6 border-t border-border/50">
         <p>Gracias por su preferencia.</p>
       </footer>
     </div>
