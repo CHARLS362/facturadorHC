@@ -20,7 +20,10 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/sv
 
 const companySettingsSchema = z.object({
   companyName: z.string().min(3, { message: "El nombre de la empresa es requerido (mín. 3 caracteres)." }),
+  companyRuc: z.string().length(11, { message: "El RUC debe tener 11 dígitos." }).refine(val => /^\d+$/.test(val), { message: "El RUC solo debe contener números." }),
   companyAddress: z.string().min(10, { message: "La dirección es requerida (mín. 10 caracteres)." }),
+  companyPhone: z.string().optional(),
+  companyEmail: z.string().email({ message: "Ingrese un correo válido." }).optional().or(z.literal('')),
   companyLogoUrl: z.string().url({ message: "Ingrese una URL válida para el logo." }).optional().or(z.literal('')),
   companyLogoFile: z
     .custom<FileList>((val) => val === null || val instanceof FileList, "Se esperaba un archivo.")
@@ -41,8 +44,11 @@ type CompanySettingsFormValues = z.infer<typeof companySettingsSchema>;
 // Mock data as fallback
 const mockCompanySettings = {
   companyName: "FacturacionHC Predeterminada S.A.C.",
+  companyRuc: "20123456789",
   companyAddress: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
-  companyLogoUrl: "https://placehold.co/200x80.png?text=Mi+Logo",
+  companyPhone: "(01) 555-1234",
+  companyEmail: "ventas@facturacionhc.com",
+  companyLogoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
 };
 
 
@@ -55,7 +61,10 @@ export default function ConfiguracionPage() {
     resolver: zodResolver(companySettingsSchema),
     defaultValues: {
       companyName: "",
+      companyRuc: "",
       companyAddress: "",
+      companyPhone: "",
+      companyEmail: "",
       companyLogoUrl: "",
       companyLogoFile: null,
     },
@@ -68,7 +77,10 @@ export default function ConfiguracionPage() {
       const initialValues = savedSettings ? JSON.parse(savedSettings) : mockCompanySettings;
       form.reset({
           companyName: initialValues.companyName || "",
+          companyRuc: initialValues.companyRuc || "",
           companyAddress: initialValues.companyAddress || "",
+          companyPhone: initialValues.companyPhone || "",
+          companyEmail: initialValues.companyEmail || "",
           companyLogoUrl: initialValues.companyLogoUrl || "",
           companyLogoFile: null
       });
@@ -101,7 +113,7 @@ export default function ConfiguracionPage() {
     } else {
       setLogoPreview(null);
     }
-  }, [watchedLogoUrl, watchedLogoFile]);
+  }, [watchedLogoUrl, watchedLogoFile, toast]);
 
   const fileToDataUrl = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -124,7 +136,10 @@ export default function ConfiguracionPage() {
 
         const settingsToSave = {
             companyName: data.companyName,
+            companyRuc: data.companyRuc,
             companyAddress: data.companyAddress,
+            companyPhone: data.companyPhone,
+            companyEmail: data.companyEmail,
             companyLogoUrl: logoUrlToSave
         };
 
@@ -182,19 +197,35 @@ export default function ConfiguracionPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre de la Empresa / Razón Social</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej: Tu Empresa S.A.C." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid md:grid-cols-2 gap-6">
+                 <FormField
+                    control={form.control}
+                    name="companyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre de la Empresa / Razón Social</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Tu Empresa S.A.C." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="companyRuc"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RUC</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: 20123456789" {...field} maxLength={11} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+
               <FormField
                 control={form.control}
                 name="companyAddress"
@@ -208,6 +239,35 @@ export default function ConfiguracionPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="companyPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teléfono de Contacto (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: (01) 555-1234" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="companyEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email de Contacto (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="Ej: contacto@empresa.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="space-y-2 p-4 border rounded-md bg-muted/30">
                 <h3 className="text-md font-medium text-foreground mb-1">Logo de la Empresa</h3>
@@ -269,18 +329,20 @@ export default function ConfiguracionPage() {
               {logoPreview ? (
                 <div className="mt-4 p-4 border rounded-md bg-muted/50">
                   <FormLabel className="mb-2 block">Vista Previa del Logo:</FormLabel>
-                  <Image 
-                    src={logoPreview} 
-                    alt="Vista previa del logo" 
-                    width={200} 
-                    height={80} 
-                    className="rounded-md object-contain border bg-background"
-                    data-ai-hint="company logo preview"
-                    onError={() => {
-                      setLogoPreview(null);
-                      toast({ variant: "destructive", title: "Error al cargar URL del logo", description: "La URL proporcionada no es una imagen válida."})
-                    }}
-                  />
+                  <div className="h-[80px] w-[200px]">
+                     <Image 
+                      src={logoPreview} 
+                      alt="Vista previa del logo" 
+                      width={200} 
+                      height={80} 
+                      className="rounded-md object-contain border bg-background h-full w-auto"
+                      data-ai-hint="company logo preview"
+                      onError={() => {
+                        setLogoPreview(null);
+                        toast({ variant: "destructive", title: "Error al cargar URL del logo", description: "La URL proporcionada no es una imagen válida."})
+                      }}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="mt-4 p-4 border rounded-md bg-muted/50 text-center">

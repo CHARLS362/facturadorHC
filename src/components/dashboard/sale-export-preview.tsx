@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -52,9 +53,9 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
             setCompanyInfo({
                 name: parsed.companyName || mockCompanyInfoFallback.name,
                 address: parsed.companyAddress || mockCompanyInfoFallback.address,
-                ruc: mockCompanyInfoFallback.ruc,
-                phone: mockCompanyInfoFallback.phone,
-                email: "reportes@facturacionhc.com",
+                ruc: parsed.companyRuc || mockCompanyInfoFallback.ruc,
+                phone: parsed.companyPhone || mockCompanyInfoFallback.phone,
+                email: parsed.companyEmail || mockCompanyInfoFallback.email,
                 logoUrl: parsed.companyLogoUrl || mockCompanyInfoFallback.logoUrl,
             });
         }

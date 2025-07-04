@@ -43,7 +43,7 @@ const mockCompanyInfoFallback: EmpresaDataForTemplate = {
     ruc: "20123456789",
     phone: "(01) 555-1234",
     email: "ventas@facturacionhc.com",
-    logoUrl: "https://placehold.co/180x60.png?text=Mi+Logo",
+    logoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
 };
 
 const numberToWords = (num: number): string => {
@@ -85,9 +85,9 @@ export default function DetallesVentaPage() {
             setCompanyInfo({
                 name: parsed.companyName || mockCompanyInfoFallback.name,
                 address: parsed.companyAddress || mockCompanyInfoFallback.address,
-                ruc: mockCompanyInfoFallback.ruc,
-                phone: mockCompanyInfoFallback.phone,
-                email: mockCompanyInfoFallback.email,
+                ruc: parsed.companyRuc || mockCompanyInfoFallback.ruc,
+                phone: parsed.companyPhone || mockCompanyInfoFallback.phone,
+                email: parsed.companyEmail || mockCompanyInfoFallback.email,
                 logoUrl: parsed.companyLogoUrl || mockCompanyInfoFallback.logoUrl,
             });
         } catch(e) {

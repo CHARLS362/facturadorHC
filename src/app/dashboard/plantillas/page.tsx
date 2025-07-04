@@ -19,7 +19,7 @@ const mockEmpresaFallback: EmpresaDataForTemplate = {
   ruc: "20123456789",
   phone: "(01) 555-1234",
   email: "ventas@facturacionhc.com",
-  logoUrl: "https://placehold.co/180x60.png?text=Mi+Logo",
+  logoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
 };
 
 const mockVenta: VentaDataForTemplate = {
@@ -62,19 +62,15 @@ export default function PlantillasPage() {
   useEffect(() => {
     try {
       const savedSettings = localStorage.getItem('companySettings');
-      if (savedSettings) {
-        const parsed = JSON.parse(savedSettings);
-        setEmpresa({
-          name: parsed.companyName || mockEmpresaFallback.name,
-          address: parsed.companyAddress || mockEmpresaFallback.address,
-          ruc: mockEmpresaFallback.ruc,
-          phone: mockEmpresaFallback.phone,
-          email: mockEmpresaFallback.email,
-          logoUrl: parsed.companyLogoUrl || mockEmpresaFallback.logoUrl,
-        });
-      } else {
-        setEmpresa(mockEmpresaFallback);
-      }
+      const parsed = savedSettings ? JSON.parse(savedSettings) : {};
+      setEmpresa({
+        name: parsed.companyName || mockEmpresaFallback.name,
+        address: parsed.companyAddress || mockEmpresaFallback.address,
+        ruc: parsed.companyRuc || mockEmpresaFallback.ruc,
+        phone: parsed.companyPhone || mockEmpresaFallback.phone,
+        email: parsed.companyEmail || mockEmpresaFallback.email,
+        logoUrl: parsed.companyLogoUrl || mockEmpresaFallback.logoUrl,
+      });
     } catch (e) {
       console.error("Failed to load company settings from localStorage", e);
       setEmpresa(mockEmpresaFallback);
