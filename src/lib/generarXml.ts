@@ -1,5 +1,9 @@
 import { create } from 'xmlbuilder2';
 
+// --- INTERFACES DE DATOS (El "molde" para la información) ---
+
+export type TipoComprobante = '01' | '03'; // 01: Factura, 03: Boleta
+
 export interface Empresa {
   ruc: string;
   razonSocial: string;
@@ -7,158 +11,177 @@ export interface Empresa {
 }
 
 export interface Cliente {
-  tipoDocumento: '1' | '4' | '6' | '7' | '0';
+  tipoDocumento: '1' | '4' | '6' | '7' | '0' | '-';
   numeroDocumento: string;
   razonSocial: string;
 }
 
-export interface VentaItem {
-  IdProducto: number;
-  NombreProducto: string;
-  Cantidad: number;
-  PrecioUnitario: number;
-  Total: number;
+export interface ItemComprobante {
+  idInterno: string;
+  descripcion: string;
+  cantidad: number;
+  valorUnitario: number; // Precio SIN IGV
+  precioUnitario: number; // Precio CON IGV
+  unidadMedida: string;
+  tipoAfectacionIgv: '10' | '20' | '30'; // 10: Gravado, 20: Exonerado, 30: Inafecto
 }
 
-export interface Venta {
+export interface ComprobanteData {
+  tipoComprobante: TipoComprobante;
   serie: string;
   numero: string;
-  fecha: Date;
-  total: number;
+  fechaEmision: Date;
   moneda: 'PEN' | 'USD';
-  items: VentaItem[];
-}
-
-export interface FacturaData {
   empresa: Empresa;
-  cliente: Cliente;
-  venta: Venta;
-}
-
-interface ItemCalculado extends VentaItem {
-  Id: number;
-  ValorUnitario: number;
-  PrecioUnitarioConIgv: number;
-  SubtotalSinIgv: number;
-  IgvItem: number;
+  cliente?: Cliente; // Cliente es opcional
+  items: ItemComprobante[];
 }
 
 
-export function generarXml(data: FacturaData): string {
-  const { empresa, cliente, venta } = data;
+/**
+ * Genera el XML para Factura o Boleta Electrónica de forma dinámica.
+ * @param data - Los datos del comprobante a generar.
+ * @returns Una cadena de texto con el XML formateado.
+ */
+export function generarComprobanteXml(data: ComprobanteData): string {
+  const { empresa, items } = data;
   const IGV_RATE = 0.18;
 
-  const totalConIgv = venta.total;
-  const totalSinIgv = parseFloat((totalConIgv / (1 + IGV_RATE)).toFixed(2));
-  const totalIgv = parseFloat((totalConIgv - totalSinIgv).toFixed(2));
+  // --- 1. Lógica de Cálculo desde los Items ---
+  let totalGravado = 0, totalExonerado = 0, totalInafecto = 0, totalIgv = 0;
 
-  const itemsCorregidos: ItemCalculado[] = venta.items.map((item, i) => {
-    const precioUnitarioConIgv = item.PrecioUnitario;
-    const valorUnitarioSinIgv = parseFloat((precioUnitarioConIgv / (1 + IGV_RATE)).toFixed(2));
-    const subtotalConIgv = item.Total;
-    const subtotalSinIgv = parseFloat((subtotalConIgv / (1 + IGV_RATE)).toFixed(2));
-    const igvItem = parseFloat((subtotalConIgv - subtotalSinIgv).toFixed(2));
+  const itemsCalculados = items.map((item, index) => {
+    const valorVenta = item.cantidad * item.valorUnitario;
+    let igvItem = 0;
 
-    return {
-      ...item,
-      Id: i + 1,
-      ValorUnitario: valorUnitarioSinIgv,
-      PrecioUnitarioConIgv: precioUnitarioConIgv,
-      SubtotalSinIgv: subtotalSinIgv,
-      IgvItem: igvItem,
-    };
+    if (item.tipoAfectacionIgv === '10') {
+      igvItem = valorVenta * IGV_RATE;
+      totalGravado += valorVenta;
+      totalIgv += igvItem;
+    } else if (item.tipoAfectacionIgv === '20') {
+      totalExonerado += valorVenta;
+    } else {
+      totalInafecto += valorVenta;
+    }
+
+    return { ...item, id: index + 1, valorVenta, igv: igvItem };
   });
+  
+  const totalValorVenta = totalGravado + totalExonerado + totalInafecto;
+  const totalPrecioVenta = totalValorVenta + totalIgv;
 
+  // --- 2. Lógica para Cliente Genérico en Boletas ---
+  let clienteParaXml = data.cliente;
+  if (data.tipoComprobante === '03' && !data.cliente) {
+    // Si es boleta y no viene cliente, se usa el cliente genérico.
+    clienteParaXml = {
+      tipoDocumento: '0',
+      numeroDocumento: '00000000',
+      razonSocial: 'CLIENTES VARIOS',
+    };
+  }
+
+  // --- 3. Construcción del Objeto XML ---
   const xmlObj = {
     Invoice: {
       '@xmlns': 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
       '@xmlns:cac': 'urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2',
       '@xmlns:cbc': 'urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2',
-      '@xmlns:ds': 'http://www.w3.org/2000/09/xmldsig#',
       '@xmlns:ext': 'urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2',
       
-      'ext:UBLExtensions': {
-        'ext:UBLExtension': {
-          'ext:ExtensionContent': {}
-        }
-      },
+      'ext:UBLExtensions': { 'ext:UBLExtension': { 'ext:ExtensionContent': {} } },
       
       'cbc:UBLVersionID': '2.1',
       'cbc:CustomizationID': '2.0',
-      'cbc:ID': `${venta.serie}-${venta.numero}`,
-      'cbc:IssueDate': venta.fecha.toISOString().split('T')[0],
-      'cbc:IssueTime': venta.fecha.toISOString().split('T')[1].substring(0, 8),
-      'cbc:InvoiceTypeCode': { '@listID': '0101', '#': '01' },
-      'cbc:DocumentCurrencyCode': venta.moneda,
+      'cbc:ID': `${data.serie}-${data.numero}`,
+      'cbc:IssueDate': data.fechaEmision.toISOString().split('T')[0],
+      'cbc:IssueTime': data.fechaEmision.toISOString().split('T')[1].substring(0, 8),
+      'cbc:InvoiceTypeCode': { '@listID': '0101', '#': data.tipoComprobante },
+      'cbc:DocumentCurrencyCode': data.moneda,
 
-      'cac:AccountingSupplierParty': {
-        'cac:Party': {
-          'cac:PartyIdentification': { 'cbc:ID': { '@schemeID': '6', '#': empresa.ruc } },
-          'cac:PartyName': { 'cbc:Name': { '$cdata': empresa.nombreComercial } },
-          'cac:PartyLegalEntity': {
-            'cbc:RegistrationName': { '$cdata': empresa.razonSocial },
-            'cac:RegistrationAddress': { 'cbc:AddressTypeCode': '0000' }
+      'cac:AccountingSupplierParty': { /* ... idéntico para ambos ... */ },
+
+      // --- Bloque dinámico para el cliente ---
+      ...(clienteParaXml && {
+        'cac:AccountingCustomerParty': {
+          'cac:Party': {
+            'cac:PartyTaxScheme': {
+              'cbc:RegistrationName': { '$cdata': clienteParaXml.razonSocial },
+              'cbc:CompanyID': { '@schemeID': clienteParaXml.tipoDocumento, '#': clienteParaXml.numeroDocumento }
+            }
           }
-        },
-      },
+        }
+      }),
 
-      'cac:AccountingCustomerParty': {
-        'cac:Party': {
-          'cac:PartyIdentification': { 'cbc:ID': { '@schemeID': cliente.tipoDocumento, '#': cliente.numeroDocumento } },
-          'cac:PartyLegalEntity': {
-            'cbc:RegistrationName': { '$cdata': cliente.razonSocial }
-          },
-        },
-      },
-
-      'cac:TaxTotal': {
-        'cbc:TaxAmount': { '@currencyID': venta.moneda, '#': totalIgv.toFixed(2) },
-        'cac:TaxSubtotal': {
-          'cbc:TaxableAmount': { '@currencyID': venta.moneda, '#': totalSinIgv.toFixed(2) },
-          'cbc:TaxAmount': { '@currencyID': venta.moneda, '#': totalIgv.toFixed(2) },
-          'cac:TaxCategory': {
-            'cac:TaxScheme': { 'cbc:ID': '1000', 'cbc:Name': 'IGV', 'cbc:TaxTypeCode': 'VAT' },
-          },
-        },
-      },
+      'cac:TaxTotal': { /* ... la lógica de totales ya es dinámica ... */ },
 
       'cac:LegalMonetaryTotal': {
-        'cbc:LineExtensionAmount': { '@currencyID': venta.moneda, '#': totalSinIgv.toFixed(2) },
-        'cbc:PayableAmount': { '@currencyID': venta.moneda, '#': totalConIgv.toFixed(2) },
+        'cbc:LineExtensionAmount': { '@currencyID': data.moneda, '#': totalValorVenta.toFixed(2) },
+        'cbc:TaxInclusiveAmount': { '@currencyID': data.moneda, '#': totalPrecioVenta.toFixed(2) },
+        'cbc:PayableAmount': { '@currencyID': data.moneda, '#': totalPrecioVenta.toFixed(2) },
       },
 
-      'cac:InvoiceLine': itemsCorregidos.map((item: ItemCalculado) => ({
-        'cbc:ID': item.Id,
-        'cbc:InvoicedQuantity': { '@unitCode': 'NIU', '#': item.Cantidad },
-        'cbc:LineExtensionAmount': { '@currencyID': venta.moneda, '#': item.SubtotalSinIgv.toFixed(2) },
-        'cac:Item': {
-          'cbc:Description': { '$cdata': item.NombreProducto }
-        },
-        'cac:Price': { 'cbc:PriceAmount': { '@currencyID': venta.moneda, '#': item.ValorUnitario.toFixed(2) } },
-        'cac:PricingReference': {
-            'cac:AlternativeConditionPrice': {
-                'cbc:PriceAmount': { '@currencyID': venta.moneda, '#': item.PrecioUnitarioConIgv.toFixed(2) },
-                'cbc:PriceTypeCode': '01'
-            }
-        },
-        'cac:TaxTotal': {
-            'cbc:TaxAmount': { '@currencyID': venta.moneda, '#': item.IgvItem.toFixed(2) },
-            'cac:TaxSubtotal': {
-                'cbc:TaxableAmount': { '@currencyID': venta.moneda, '#': item.SubtotalSinIgv.toFixed(2) },
-                'cbc:TaxAmount': { '@currencyID': venta.moneda, '#': item.IgvItem.toFixed(2) },
-                'cac:TaxCategory': {
-                    'cbc:ID': { '@schemeID': 'UN/ECE 5305', '#': 'S' },
-                    'cac:TaxScheme': {
-                        'cbc:ID': { '@schemeID': 'UN/ECE 5153', '@schemeAgencyID': '6', '#': '1000' },
-                        'cbc:Name': 'IGV',
-                        'cbc:TaxTypeCode': 'VAT',
-                    }
-                }
-            }
-        }
-      })),
+      'cac:InvoiceLine': itemsCalculados.map((item) => ({ /* ... idéntico para ambos ... */ }))
     },
   };
 
-  return create(xmlObj).end({ prettyPrint: true });
+  // Rellenar las partes que son iguales para no repetir código
+  xmlObj.Invoice['cac:AccountingSupplierParty'] = {
+    'cac:Party': {
+      'cac:PartyName': [{ 'cbc:Name': { '$cdata': empresa.nombreComercial } }],
+      'cac:PartyTaxScheme': {
+        'cbc:RegistrationName': { '$cdata': empresa.razonSocial },
+        'cbc:CompanyID': { '@schemeID': '6', '#': empresa.ruc }
+      }
+    }
+  };
+  
+  xmlObj.Invoice['cac:TaxTotal'] = {
+    'cbc:TaxAmount': { '@currencyID': data.moneda, '#': totalIgv.toFixed(2) },
+    ...(totalGravado > 0 && {
+      'cac:TaxSubtotal': {
+        'cbc:TaxableAmount': { '@currencyID': data.moneda, '#': totalGravado.toFixed(2) },
+        'cbc:TaxAmount': { '@currencyID': data.moneda, '#': totalIgv.toFixed(2) },
+        'cac:TaxCategory': {
+          'cac:TaxScheme': { 'cbc:ID': '1000', 'cbc:Name': 'IGV', 'cbc:TaxTypeCode': 'VAT' }
+        }
+      }
+    }),
+    // Añadir aquí lógica para otros subtotales (exonerado, etc.) si es necesario
+  };
+
+  xmlObj.Invoice['cac:InvoiceLine'] = itemsCalculados.map((item) => ({
+    'cbc:ID': item.id,
+    'cbc:InvoicedQuantity': { '@unitCode': item.unidadMedida, '#': item.cantidad },
+    'cbc:LineExtensionAmount': { '@currencyID': data.moneda, '#': item.valorVenta.toFixed(2) },
+    'cac:Item': {
+      'cbc:Description': { '$cdata': item.descripcion },
+      'cac:SellersItemIdentification': { 'cbc:ID': item.idInterno }
+    },
+    'cac:Price': { 'cbc:PriceAmount': { '@currencyID': data.moneda, '#': item.valorUnitario.toFixed(2) } },
+    'cac:PricingReference': {
+        'cac:AlternativeConditionPrice': {
+            'cbc:PriceAmount': { '@currencyID': data.moneda, '#': item.precioUnitario.toFixed(2) },
+            'cbc:PriceTypeCode': '01'
+        }
+    },
+    'cac:TaxTotal': {
+        'cbc:TaxAmount': { '@currencyID': data.moneda, '#': item.igv.toFixed(2) },
+        'cac:TaxSubtotal': {
+            'cbc:TaxableAmount': { '@currencyID': data.moneda, '#': item.valorVenta.toFixed(2) },
+            'cbc:TaxAmount': { '@currencyID': data.moneda, '#': item.igv.toFixed(2) },
+            'cac:TaxCategory': {
+                'cbc:ID': item.tipoAfectacionIgv === '10' ? 'S' : (item.tipoAfectacionIgv === '20' ? 'E' : 'O'),
+                'cbc:TaxExemptionReasonCode': item.tipoAfectacionIgv,
+                'cac:TaxScheme': {
+                    'cbc:ID': item.tipoAfectacionIgv === '10' ? '1000' : (item.tipoAfectacionIgv === '20' ? '9997' : '9998'),
+                    'cbc:Name': item.tipoAfectacionIgv === '10' ? 'IGV' : (item.tipoAfectacionIgv === '20' ? 'EXO' : 'INA'),
+                    'cbc:TaxTypeCode': item.tipoAfectacionIgv === '10' ? 'VAT' : 'FRE'
+                }
+            }
+        }
+    }
+  }));
+
+  return create({ Invoice: xmlObj.Invoice }).end({ prettyPrint: true });
 }
