@@ -8,8 +8,8 @@
   <cbc:UBLVersionID>2.1</cbc:UBLVersionID>
   <cbc:CustomizationID>2.0</cbc:CustomizationID>
   <cbc:ID>F002-00000001</cbc:ID>
-  <cbc:IssueDate>2025-06-21</cbc:IssueDate>
-  <cbc:IssueTime>17:44:20</cbc:IssueTime>
+  <cbc:IssueDate>2025-06-22</cbc:IssueDate>
+  <cbc:IssueTime>07:52:22</cbc:IssueTime>
   <cbc:InvoiceTypeCode listID="0101">01</cbc:InvoiceTypeCode>
   <cbc:DocumentCurrencyCode>PEN</cbc:DocumentCurrencyCode>
   <cac:AccountingSupplierParty>
@@ -31,18 +31,18 @@
   <cac:AccountingCustomerParty>
     <cac:Party>
       <cac:PartyIdentification>
-        <cbc:ID schemeID="1">12345678</cbc:ID>
+        <cbc:ID schemeID="6">12344423234</cbc:ID>
       </cac:PartyIdentification>
       <cac:PartyLegalEntity>
-        <cbc:RegistrationName><![CDATA[Juan Pérez]]></cbc:RegistrationName>
+        <cbc:RegistrationName><![CDATA[TECNOLOGIA.SAC]]></cbc:RegistrationName>
       </cac:PartyLegalEntity>
     </cac:Party>
   </cac:AccountingCustomerParty>
   <cac:TaxTotal>
-    <cbc:TaxAmount currencyID="PEN">22.88</cbc:TaxAmount>
+    <cbc:TaxAmount currencyID="PEN">9.00</cbc:TaxAmount>
     <cac:TaxSubtotal>
-      <cbc:TaxableAmount currencyID="PEN">127.12</cbc:TaxableAmount>
-      <cbc:TaxAmount currencyID="PEN">22.88</cbc:TaxAmount>
+      <cbc:TaxableAmount currencyID="PEN">50.00</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="PEN">9.00</cbc:TaxAmount>
       <cac:TaxCategory>
         <cac:TaxScheme>
           <cbc:ID>1000</cbc:ID>
@@ -53,13 +53,13 @@
     </cac:TaxSubtotal>
   </cac:TaxTotal>
   <cac:LegalMonetaryTotal>
-    <cbc:LineExtensionAmount currencyID="PEN">127.12</cbc:LineExtensionAmount>
-    <cbc:PayableAmount currencyID="PEN">150.00</cbc:PayableAmount>
+    <cbc:LineExtensionAmount currencyID="PEN">50.00</cbc:LineExtensionAmount>
+    <cbc:PayableAmount currencyID="PEN">59.00</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
   <cac:InvoiceLine>
     <cbc:ID>1</cbc:ID>
-    <cbc:InvoicedQuantity unitCode="NIU">3</cbc:InvoicedQuantity>
-    <cbc:LineExtensionAmount currencyID="PEN">127.12</cbc:LineExtensionAmount>
+    <cbc:InvoicedQuantity unitCode="NIU">1</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="PEN">42.37</cbc:LineExtensionAmount>
     <cac:Item>
       <cbc:Description><![CDATA[Camiseta]]></cbc:Description>
     </cac:Item>
@@ -73,10 +73,10 @@
       </cac:AlternativeConditionPrice>
     </cac:PricingReference>
     <cac:TaxTotal>
-      <cbc:TaxAmount currencyID="PEN">22.88</cbc:TaxAmount>
+      <cbc:TaxAmount currencyID="PEN">7.63</cbc:TaxAmount>
       <cac:TaxSubtotal>
-        <cbc:TaxableAmount currencyID="PEN">127.12</cbc:TaxableAmount>
-        <cbc:TaxAmount currencyID="PEN">22.88</cbc:TaxAmount>
+        <cbc:TaxableAmount currencyID="PEN">42.37</cbc:TaxableAmount>
+        <cbc:TaxAmount currencyID="PEN">7.63</cbc:TaxAmount>
         <cac:TaxCategory>
           <cbc:ID schemeID="UN/ECE 5305">S</cbc:ID>
           <cac:TaxScheme>

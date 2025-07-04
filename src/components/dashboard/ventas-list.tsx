@@ -104,6 +104,14 @@ export function VentasList({ initialData }: { initialData: MockSale[] }) {
     setSelectedSaleForWhatsapp(sale);
     setIsWhatsappDialogOpen(true);
   };
+  
+  const handleDownloadXml = (ventaId: number) => {
+    window.open(`/api/venta/${ventaId}/xml`, '_blank');
+    toast({
+        title: "Descargando XML...",
+        description: "Se está generando el archivo XML para la descarga.",
+    });
+  };
 
   const handleConfirmAndSendWhatsapp = (phoneNumber: string, updateClient: boolean, saleId: string, customerName: string) => {
     const message = `Hola ${customerName}, adjunto los detalles de tu ${selectedSaleForWhatsapp?.documentType.toLowerCase()} con ID: ${saleId}. Gracias por tu compra.`;
@@ -200,7 +208,10 @@ export function VentasList({ initialData }: { initialData: MockSale[] }) {
                               <FileText className="mr-2 h-4 w-4" />
                               <span>Exportar PDF</span>
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="text-blue-500 focus:text-blue-500 focus:bg-blue-500/10">
+                            <DropdownMenuItem 
+                              className="text-blue-500 focus:text-blue-500 focus:bg-blue-500/10"
+                              onSelect={() => handleDownloadXml(sale.ventaId)}
+                            >
                               <FileCode2 className="mr-2 h-4 w-4" />
                               <span>Exportar XML</span>
                             </DropdownMenuItem>
