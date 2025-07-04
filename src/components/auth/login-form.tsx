@@ -49,8 +49,19 @@ export function LoginForm() {
 
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true);
-    login(data, data.rememberMe || false);
-    setIsLoading(false);
+    try {
+      await login(data, data.rememberMe || false);
+      // On successful login, the AuthContext will handle redirection.
+    } catch (error: any) {
+      // The AuthContext now throws the error, so we can catch it here.
+      toast({
+        variant: "destructive",
+        title: "Error al iniciar sesión",
+        description: error.message || "Ha ocurrido un error. Por favor, inténtalo de nuevo.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
