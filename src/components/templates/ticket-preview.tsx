@@ -22,9 +22,9 @@ export function TicketPreview({ venta, empresa }: TicketPreviewProps) {
         <Image 
           src={empresa.logoUrl}
           alt="Business Logo" 
-          width={120} 
-          height={40}
-          className="mx-auto mb-2 object-contain"
+          width={150} 
+          height={50}
+          className="mx-auto mb-2 object-contain h-[50px] w-auto"
           data-ai-hint="small business logo"
         />
         <p className="font-bold text-lg text-primary">{empresa.name}</p>

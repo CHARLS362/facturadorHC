@@ -51,12 +51,12 @@ export function InvoicePreview({ venta, empresa }: InvoicePreviewProps) {
       {/* Header */}
       <header className="grid grid-cols-3 gap-8 mb-8">
         <div className="col-span-2">
-            <div className="h-[60px] mb-4">
+            <div className="h-[70px] mb-4">
               <Image 
                 src={empresa.logoUrl}
                 alt="Company Logo" 
-                width={200}
-                height={60}
+                width={240}
+                height={70}
                 className="h-full w-auto object-contain object-left"
                 data-ai-hint="company logo"
               />
