@@ -108,7 +108,11 @@ body {
 }
 
 .ps-menu-button {
-    @apply hover:bg-accent hover:text-accent-foreground transition-colors duration-150 ease-in-out;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+.ps-menu-button:hover {
+    background-color: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
 }
 
 .ps-menu-button.ps-active {
