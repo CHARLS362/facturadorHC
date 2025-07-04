@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -86,7 +87,7 @@ function DashboardLayoutContent({
             {!collapsed && (
               <div className="flex items-center gap-2 overflow-hidden">
                 <Image
-                  src="https://placehold.co/40x40.png?text=FH"
+                  src="https://placehold.co/40x40.png"
                   alt="FacturacionHC Logo Small"
                   width={32}
                   height={32}
@@ -111,7 +112,9 @@ function DashboardLayoutContent({
           <div className="flex-grow overflow-y-auto">
             <Menu
               menuItemStyles={{
-                button: {
+                button: ({ level, active, disabled }) => ({
+                  color: disabled ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
+                  backgroundColor: active ? 'hsl(var(--primary))' : undefined,
                   '&:hover': {
                     backgroundColor: 'hsl(var(--accent))',
                     color: 'hsl(var(--accent-foreground))',
@@ -120,11 +123,11 @@ function DashboardLayoutContent({
                     backgroundColor: 'hsl(var(--primary))',
                     color: 'hsl(var(--primary-foreground))',
                   },
-                  '&.ps-active:hover': {
+                   '&.ps-active:hover': {
                     backgroundColor: 'hsl(var(--primary) / 0.9)',
                     color: 'hsl(var(--primary-foreground))',
                   },
-                },
+                }),
               }}
             >
               <SidebarNav />

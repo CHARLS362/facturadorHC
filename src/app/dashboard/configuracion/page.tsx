@@ -48,7 +48,7 @@ const mockCompanySettings = {
   companyAddress: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
   companyPhone: "(01) 555-1234",
   companyEmail: "ventas@facturacionhc.com",
-  companyLogoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
+  companyLogoUrl: "https://placehold.co/240x70.png",
 };
 
 
