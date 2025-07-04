@@ -38,27 +38,48 @@ const companySettingsSchema = z.object({
 
 type CompanySettingsFormValues = z.infer<typeof companySettingsSchema>;
 
-// Mock data
+// Mock data as fallback
 const mockCompanySettings = {
   companyName: "FacturacionHC Predeterminada S.A.C.",
   companyAddress: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
   companyLogoUrl: "https://placehold.co/200x80.png?text=Mi+Logo",
 };
 
+
 export default function ConfiguracionPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string | null>(mockCompanySettings.companyLogoUrl || null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   
   const form = useForm<CompanySettingsFormValues>({
     resolver: zodResolver(companySettingsSchema),
     defaultValues: {
-      companyName: mockCompanySettings.companyName || "",
-      companyAddress: mockCompanySettings.companyAddress || "",
-      companyLogoUrl: mockCompanySettings.companyLogoUrl || "",
+      companyName: "",
+      companyAddress: "",
+      companyLogoUrl: "",
       companyLogoFile: null,
     },
   });
+  
+  // Load saved settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('companySettings');
+      const initialValues = savedSettings ? JSON.parse(savedSettings) : mockCompanySettings;
+      form.reset({
+          companyName: initialValues.companyName || "",
+          companyAddress: initialValues.companyAddress || "",
+          companyLogoUrl: initialValues.companyLogoUrl || "",
+          companyLogoFile: null
+      });
+      setLogoPreview(initialValues.companyLogoUrl || null);
+    } catch (e) {
+      console.error("Failed to load company settings, using fallback.", e);
+      form.reset(mockCompanySettings);
+      setLogoPreview(mockCompanySettings.companyLogoUrl);
+    }
+  }, [form]);
+
 
   const watchedLogoUrl = form.watch("companyLogoUrl");
   const watchedLogoFile = form.watch("companyLogoFile");
@@ -73,8 +94,6 @@ export default function ConfiguracionPage() {
         };
         reader.readAsDataURL(file);
       } else {
-        // If file is invalid after selection (e.g. due to direct manipulation not caught by Zod yet)
-        // or if a previously valid file became invalid somehow.
         setLogoPreview(watchedLogoUrl || null); 
       }
     } else if (watchedLogoUrl) {
@@ -84,33 +103,66 @@ export default function ConfiguracionPage() {
     }
   }, [watchedLogoUrl, watchedLogoFile]);
 
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   async function onSubmit(data: CompanySettingsFormValues) {
     setIsSubmitting(true);
-    console.log("Company settings updated:", {
-        ...data,
-        companyLogoFileName: data.companyLogoFile && data.companyLogoFile.length > 0 ? data.companyLogoFile[0].name : null,
-        companyLogoFileType: data.companyLogoFile && data.companyLogoFile.length > 0 ? data.companyLogoFile[0].type : null,
-    });
-    // In a real app, handle file upload here if data.companyLogoFile is present
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Configuración Guardada</span>
-        </div>
-      ),
-      description: "La información de la empresa ha sido actualizada exitosamente.",
-    });
+    
+    let logoUrlToSave = data.companyLogoUrl;
+
+    try {
+        if (data.companyLogoFile && data.companyLogoFile.length > 0) {
+            logoUrlToSave = await fileToDataUrl(data.companyLogoFile[0]);
+        }
+
+        const settingsToSave = {
+            companyName: data.companyName,
+            companyAddress: data.companyAddress,
+            companyLogoUrl: logoUrlToSave
+        };
+
+        localStorage.setItem('companySettings', JSON.stringify(settingsToSave));
+
+        form.reset({
+            ...data,
+            companyLogoUrl: logoUrlToSave,
+            companyLogoFile: null // Clear file input after saving
+        });
+
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <span>Configuración Guardada</span>
+            </div>
+          ),
+          description: "La información de la empresa ha sido actualizada exitosamente.",
+        });
+
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error al guardar",
+            description: "No se pudo procesar y guardar la imagen. Por favor, intente de nuevo."
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   }
+
 
   const handleRemoveFile = () => {
     form.setValue("companyLogoFile", null, { shouldValidate: true });
-    // The useEffect will then update the preview based on companyLogoUrl
   };
 
   return (
@@ -174,7 +226,7 @@ export default function ConfiguracionPage() {
                           type="file" 
                           accept={ACCEPTED_IMAGE_TYPES.join(",")}
                           onChange={(e) => onChange(e.target.files)}
-                          className="hidden" // Visually hidden, triggered by label
+                          className="hidden"
                           {...restField} 
                         />
                       </FormControl>
@@ -225,7 +277,7 @@ export default function ConfiguracionPage() {
                     className="rounded-md object-contain border bg-background"
                     data-ai-hint="company logo preview"
                     onError={() => {
-                      setLogoPreview(null); // Clear preview on error
+                      setLogoPreview(null);
                       toast({ variant: "destructive", title: "Error al cargar URL del logo", description: "La URL proporcionada no es una imagen válida."})
                     }}
                   />
@@ -258,5 +310,3 @@ export default function ConfiguracionPage() {
     </div>
   );
 }
-
-    

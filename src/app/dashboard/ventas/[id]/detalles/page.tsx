@@ -36,7 +36,7 @@ interface VentaFromApi {
   Total: number;
 }
 
-const mockCompanyInfo: EmpresaDataForTemplate = {
+const mockCompanyInfoFallback: EmpresaDataForTemplate = {
     name: "FacturacionHC Predeterminada S.A.C.",
     address: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
     ruc: "20123456789",
@@ -59,24 +59,44 @@ export default function DetallesVentaPage() {
   const ventaId = params.id as string;
 
   const [venta, setVenta] = useState<VentaFromApi | null>(null);
+  const [companyInfo, setCompanyInfo] = useState<EmpresaDataForTemplate | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWhatsappDialogOpen, setIsWhatsappDialogOpen] = useState(false);
   
   useEffect(() => {
-    if (ventaId) {
-      setIsLoading(true);
-      fetch(`/api/venta/${ventaId}`)
-        .then(res => {
-          if (!res.ok) throw new Error("Venta no encontrada");
-          return res.json();
-        })
-        .then(data => {
-          if (data.error) throw new Error(data.error);
-          setVenta(data);
-        })
-        .catch(() => setVenta(null))
-        .finally(() => setIsLoading(false));
-    }
+    setIsLoading(true);
+    
+    const fetchVenta = fetch(`/api/venta/${ventaId}`)
+      .then(res => {
+        if (!res.ok) throw new Error("Venta no encontrada");
+        return res.json();
+      })
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        setVenta(data);
+      })
+      .catch(() => setVenta(null));
+
+    const loadCompanyInfo = () => {
+        try {
+            const savedSettings = localStorage.getItem('companySettings');
+            const parsed = savedSettings ? JSON.parse(savedSettings) : {};
+            setCompanyInfo({
+                name: parsed.companyName || mockCompanyInfoFallback.name,
+                address: parsed.companyAddress || mockCompanyInfoFallback.address,
+                ruc: mockCompanyInfoFallback.ruc,
+                phone: mockCompanyInfoFallback.phone,
+                email: mockCompanyInfoFallback.email,
+                logoUrl: parsed.companyLogoUrl || mockCompanyInfoFallback.logoUrl,
+            });
+        } catch(e) {
+            setCompanyInfo(mockCompanyInfoFallback);
+        }
+    };
+    
+    loadCompanyInfo();
+
+    Promise.all([fetchVenta]).finally(() => setIsLoading(false));
   }, [ventaId]);
 
   const handlePrint = () => {
@@ -156,7 +176,6 @@ export default function DetallesVentaPage() {
 
   const handleDownloadXml = () => {
     if (!ventaId) return;
-    // The browser will handle the download via the Content-Disposition header set by the API
     window.open(`/api/venta/${ventaId}/xml`, '_blank');
     toast({
         title: "Descargando XML...",
@@ -166,14 +185,12 @@ export default function DetallesVentaPage() {
 
   const handleDownloadCdr = () => {
     if (!venta || !mappedData) return;
-
-    // NOTE: This is a simulation. The CDR is a response file from SUNAT.
     const cdrContent = `El comprobante ${mappedData.id} ha sido aceptado por SUNAT.`;
     const blob = new Blob([cdrContent], { type: 'text/plain' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `R-${mappedData.id}.zip`; // CDRs are often delivered in a ZIP
+    a.download = `R-${mappedData.id}.zip`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -211,7 +228,7 @@ export default function DetallesVentaPage() {
     </div>
   );
 
-  if (isLoading) return renderLoading();
+  if (isLoading || !companyInfo) return renderLoading();
   if (!venta || !mappedData) return renderNotFound();
 
   return (
@@ -242,9 +259,9 @@ export default function DetallesVentaPage() {
       <div id="printable-area" className="bg-muted flex justify-center py-8 print:p-0 print:bg-white">
         <div id="printable-area-content" className="transform scale-[0.9] md:scale-[1] origin-top print:transform-none">
           {venta.TipoDocumento === "Factura" ? (
-            <InvoicePreview venta={mappedData} empresa={mockCompanyInfo} />
+            <InvoicePreview venta={mappedData} empresa={companyInfo} />
           ) : (
-            <TicketPreview venta={mappedData} empresa={mockCompanyInfo} />
+            <TicketPreview venta={mappedData} empresa={companyInfo} />
           )}
         </div>
       </div>

@@ -1,16 +1,19 @@
 
+"use client";
 
+import React, { useState, useEffect } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { FileText, Eye, Edit, PlusCircle } from "lucide-react";
+import { FileText, Edit } from "lucide-react";
 import { InvoicePreview, type VentaDataForTemplate, type EmpresaDataForTemplate } from "@/components/templates/invoice-preview";
 import { TicketPreview } from "@/components/templates/ticket-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data for preview purposes
-const mockEmpresa: EmpresaDataForTemplate = {
+const mockEmpresaFallback: EmpresaDataForTemplate = {
   name: "FacturacionHC Predeterminada S.A.C.",
   address: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
   ruc: "20123456789",
@@ -52,6 +55,43 @@ const mockBoleta: VentaDataForTemplate = {
 
 
 export default function PlantillasPage() {
+  const [empresa, setEmpresa] = useState<EmpresaDataForTemplate | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('companySettings');
+      if (savedSettings) {
+        const parsed = JSON.parse(savedSettings);
+        setEmpresa({
+          name: parsed.companyName || mockEmpresaFallback.name,
+          address: parsed.companyAddress || mockEmpresaFallback.address,
+          ruc: mockEmpresaFallback.ruc,
+          phone: mockEmpresaFallback.phone,
+          email: mockEmpresaFallback.email,
+          logoUrl: parsed.companyLogoUrl || mockEmpresaFallback.logoUrl,
+        });
+      } else {
+        setEmpresa(mockEmpresaFallback);
+      }
+    } catch (e) {
+      console.error("Failed to load company settings from localStorage", e);
+      setEmpresa(mockEmpresaFallback);
+    }
+  }, []);
+
+  if (!empresa) {
+      return (
+          <div className="space-y-8">
+              <PageHeader 
+                  title="Plantillas de Documentos"
+                  description="Personaliza y previsualiza tus plantillas de facturas y boletas."
+                  icon={FileText}
+              />
+              <Skeleton className="h-[400px] w-full rounded-lg" />
+          </div>
+      )
+  }
+
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -84,7 +124,7 @@ export default function PlantillasPage() {
             </CardHeader>
             <CardContent className="bg-muted/30 p-4 md:p-8 flex justify-center">
               <div className="w-full max-w-3xl">
-                <InvoicePreview venta={mockVenta} empresa={mockEmpresa} />
+                <InvoicePreview venta={mockVenta} empresa={empresa} />
               </div>
             </CardContent>
           </Card>
@@ -108,7 +148,7 @@ export default function PlantillasPage() {
             </CardHeader>
             <CardContent className="bg-muted/30 p-4 md:p-8 flex justify-center">
               <div className="w-full max-w-md">
-                 <TicketPreview venta={mockBoleta} empresa={mockEmpresa} />
+                 <TicketPreview venta={mockBoleta} empresa={empresa} />
               </div>
             </CardContent>
           </Card>
