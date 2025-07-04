@@ -75,6 +75,7 @@ function DashboardLayoutContent({
         className="shadow-md"
         rootStyles={{
           [`.${sidebarClasses.container}`]: {
+            backgroundColor: 'hsl(var(--card))',
             height: '100vh', 
             position: 'sticky', 
             top: 0,
