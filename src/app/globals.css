@@ -110,17 +110,6 @@ body {
 .ps-menu-button {
     transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
 }
-.ps-menu-button:hover {
-    background-color: hsl(var(--accent));
-    color: hsl(var(--accent-foreground));
-}
-
-.ps-menu-button.ps-active {
-    @apply bg-primary text-primary-foreground;
-}
-.ps-menu-button.ps-active:hover {
-    @apply bg-primary/90 text-primary-foreground;
-}
 
 .ps-submenu-content {
     @apply bg-secondary/40 transition-colors duration-200 ease-in-out;

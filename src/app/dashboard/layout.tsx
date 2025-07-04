@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -20,7 +19,7 @@ function DashboardLayoutContent({
   isAuthenticated 
 }: { 
   children: React.ReactNode; 
-  user: { email?: string; name?: string } | null;
+  user: { email?: string; name?: string; role?: string; } | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 }) {
@@ -110,7 +109,24 @@ function DashboardLayoutContent({
           </div>
 
           <div className="flex-grow overflow-y-auto">
-            <Menu>
+            <Menu
+              menuItemStyles={{
+                button: {
+                  '&:hover': {
+                    backgroundColor: 'hsl(var(--accent))',
+                    color: 'hsl(var(--accent-foreground))',
+                  },
+                  '&.ps-active': {
+                    backgroundColor: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                  },
+                  '&.ps-active:hover': {
+                    backgroundColor: 'hsl(var(--primary) / 0.9)',
+                    color: 'hsl(var(--primary-foreground))',
+                  },
+                },
+              }}
+            >
               <SidebarNav />
             </Menu>
           </div>
