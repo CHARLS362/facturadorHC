@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -69,12 +68,11 @@ export function LoginForm() {
       <CardHeader className="p-0 mb-7 text-center">
         <div className="lg:hidden mx-auto mb-6">
              <Image
-              src="https://placehold.co/150x40.png"
+              src="/image/logoHC.png"
               alt="FacturacionHC Logo"
               width={150}
               height={40}
               className="block"
-              data-ai-hint="modern business logo"
             />
         </div>
         <CardTitle className="font-headline text-2xl text-foreground">Iniciar Sesión</CardTitle>

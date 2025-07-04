@@ -1,4 +1,3 @@
-
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
@@ -46,12 +45,11 @@ export default function LoginPage() {
         <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">
           <div className="mx-auto lg:mx-0 mb-6">
             <Image 
-              src="https://placehold.co/180x50.png" 
+              src="/image/logoHC.png" 
               alt="FacturacionHC Logo" 
               width={180} 
               height={50}
               className="block"
-              data-ai-hint="modern business logo"
             />
           </div>
           <h1 className="my-3 font-headline font-semibold text-4xl text-white">Bienvenido de Nuevo</h1>
