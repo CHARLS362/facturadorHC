@@ -108,7 +108,7 @@ body {
 }
 
 .ps-menu-button {
-    @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
+    @apply hover:bg-accent hover:text-accent-foreground transition-colors duration-150 ease-in-out;
 }
 
 .ps-menu-button.ps-active {
