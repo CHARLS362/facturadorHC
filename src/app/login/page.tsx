@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
@@ -45,7 +46,7 @@ export default function LoginPage() {
         <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">
           <div className="mx-auto lg:mx-0 mb-6">
             <Image 
-              src="/image/logoHC.png" 
+              src="/logoHC.png" 
               alt="FacturacionHC Logo" 
               width={180} 
               height={50}
