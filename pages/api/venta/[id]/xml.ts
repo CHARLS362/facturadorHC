@@ -102,12 +102,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const privateKeyPathEnv = process.env.PRIVATE_KEY_PATH;
     const certificatePassword = process.env.CERTIFICATE_PASSWORD;
 
+    // Gracefully handle missing environment variables for development
     if (!certPathEnv || !privateKeyPathEnv || !certificatePassword) {
-        console.error('Faltan variables de entorno para la firma: CERTIFICATE_PATH, PRIVATE_KEY_PATH, CERTIFICATE_PASSWORD');
-        return res.status(500).json({ 
-            error: 'Error de configuración del servidor.',
-            details: 'Faltan las variables de entorno para la firma digital. Asegúrate de configurar CERTIFICATE_PATH, PRIVATE_KEY_PATH y CERTIFICATE_PASSWORD en tu entorno.'
-        });
+        console.warn('ADVERTENCIA: Faltan variables de entorno para la firma. Devolviendo XML sin firmar. Configure CERTIFICATE_PATH, PRIVATE_KEY_PATH, y CERTIFICATE_PASSWORD en un archivo .env.local para obtener un XML firmado.');
+        
+        res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+        const nombreArchivoDescarga = `${facturaParaXml.empresa.ruc}-01-${facturaParaXml.venta.serie}-${facturaParaXml.venta.numero}-SIN-FIRMAR.xml`;
+        res.setHeader('Content-Disposition', `attachment; filename=${nombreArchivoDescarga}`);
+        
+        return res.status(200).send(xmlSinFirma);
     }
 
     const certificatePath = path.join(process.cwd(), certPathEnv);
