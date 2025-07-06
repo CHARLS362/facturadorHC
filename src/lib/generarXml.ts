@@ -20,8 +20,8 @@ export interface ItemComprobante {
   idInterno: string;
   descripcion: string;
   cantidad: number;
-  valorUnitario: number; // Precio SIN IGV
-  precioUnitario: number; // Precio CON IGV
+  valorUnitario: number; 
+  precioUnitario: number; 
   unidadMedida: string;
   tipoAfectacionIgv: '10' | '20' | '30'; // 10: Gravado, 20: Exonerado, 30: Inafecto
 }
@@ -39,15 +39,13 @@ export interface ComprobanteData {
 
 
 /**
- * Genera el XML para Factura o Boleta Electrónica de forma dinámica.
- * @param data - Los datos del comprobante a generar.
- * @returns Una cadena de texto con el XML formateado.
+ * @param 
+ * @returns 
  */
 export function generarComprobanteXml(data: ComprobanteData): string {
   const { empresa, items } = data;
   const IGV_RATE = 0.18;
 
-  // --- 1. Lógica de Cálculo desde los Items ---
   let totalGravado = 0, totalExonerado = 0, totalInafecto = 0, totalIgv = 0;
 
   const itemsCalculados = items.map((item, index) => {
@@ -70,10 +68,8 @@ export function generarComprobanteXml(data: ComprobanteData): string {
   const totalValorVenta = totalGravado + totalExonerado + totalInafecto;
   const totalPrecioVenta = totalValorVenta + totalIgv;
 
-  // --- 2. Lógica para Cliente Genérico en Boletas ---
   let clienteParaXml = data.cliente;
   if (data.tipoComprobante === '03' && !data.cliente) {
-    // Si es boleta y no viene cliente, se usa el cliente genérico.
     clienteParaXml = {
       tipoDocumento: '0',
       numeroDocumento: '00000000',
@@ -81,7 +77,6 @@ export function generarComprobanteXml(data: ComprobanteData): string {
     };
   }
 
-  // --- 3. Construcción del Objeto XML ---
   const xmlObj = {
     Invoice: {
       '@xmlns': 'urn:oasis:names:specification:ubl:schema:xsd:Invoice-2',
@@ -99,9 +94,8 @@ export function generarComprobanteXml(data: ComprobanteData): string {
       'cbc:InvoiceTypeCode': { '@listID': '0101', '#': data.tipoComprobante },
       'cbc:DocumentCurrencyCode': data.moneda,
 
-      'cac:AccountingSupplierParty': { /* ... idéntico para ambos ... */ },
+      'cac:AccountingSupplierParty': { },
 
-      // --- Bloque dinámico para el cliente ---
       ...(clienteParaXml && {
         'cac:AccountingCustomerParty': {
           'cac:Party': {
@@ -113,7 +107,7 @@ export function generarComprobanteXml(data: ComprobanteData): string {
         }
       }),
 
-      'cac:TaxTotal': { /* ... la lógica de totales ya es dinámica ... */ },
+      'cac:TaxTotal': {  },
 
       'cac:LegalMonetaryTotal': {
         'cbc:LineExtensionAmount': { '@currencyID': data.moneda, '#': totalValorVenta.toFixed(2) },
@@ -121,11 +115,10 @@ export function generarComprobanteXml(data: ComprobanteData): string {
         'cbc:PayableAmount': { '@currencyID': data.moneda, '#': totalPrecioVenta.toFixed(2) },
       },
 
-      'cac:InvoiceLine': itemsCalculados.map((item) => ({ /* ... idéntico para ambos ... */ }))
+      'cac:InvoiceLine': itemsCalculados.map((item) => ({  }))
     },
   };
 
-  // Rellenar las partes que son iguales para no repetir código
   xmlObj.Invoice['cac:AccountingSupplierParty'] = {
     'cac:Party': {
       'cac:PartyName': [{ 'cbc:Name': { '$cdata': empresa.nombreComercial } }],
@@ -147,7 +140,7 @@ export function generarComprobanteXml(data: ComprobanteData): string {
         }
       }
     }),
-    // Añadir aquí lógica para otros subtotales (exonerado, etc.) si es necesario
+
   };
 
   xmlObj.Invoice['cac:InvoiceLine'] = itemsCalculados.map((item) => ({
