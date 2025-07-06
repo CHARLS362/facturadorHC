@@ -9,8 +9,33 @@ import { SaleExportPreview, type MockSale } from '@/components/dashboard/sale-ex
 import { Skeleton } from '@/components/ui/skeleton';
 import html2pdf from 'html2pdf.js';
 
+type MockSaleWithEstado = MockSale & {
+  Estado: string;
+  FechaVenta?: string;
+  Total?: number | string;
+  NombreFormaPago?: string;
+  TipoDocumento?: string;
+  EmailCliente?: string;
+  TelefonoCliente?: string;
+  IdVenta: number;
+  NombreCliente?: string;
+};
+
+type ExportSale = MockSaleWithEstado & {
+  status: string;
+  date: string;
+  total: string;
+  paymentMethod: string;
+  documentType: string;
+  clientEmail: string;
+  clientPhone: string;
+  id: string;
+  ventaId: number;
+  customer: string;
+};
+
 export default function ExportarVentasPage() {
-  const [sales, setSales] = useState<MockSale[]>([]);
+  const [sales, setSales] = useState<ExportSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -20,7 +45,7 @@ export default function ExportarVentasPage() {
         setIsLoading(true);
         const response = await fetch('/api/venta');
         if (!response.ok) throw new Error("Error al obtener ventas");
-        const data: MockSale[] = await response.json();
+        const data: MockSaleWithEstado[] = await response.json();
 
         // Mapear Estado => status para evitar errores en SaleExportPreview
         const transformed = data.map((venta) => ({
@@ -29,7 +54,7 @@ export default function ExportarVentasPage() {
           date: venta.FechaVenta ? new Date(venta.FechaVenta).toLocaleDateString('es-PE') : "",
           total: `S/ ${Number(venta.Total).toFixed(2)}`,
           paymentMethod: venta.NombreFormaPago || "Desconocido",
-          documentType: venta.TipoDocumento === "Boleta" ? "Boleta" : "Factura",
+          documentType: (venta.TipoDocumento === "Boleta" ? "Boleta" : "Factura") as "Boleta" | "Factura",
           clientEmail: venta.EmailCliente || "",
           clientPhone: venta.TelefonoCliente || "",
           id: `VENTA${venta.IdVenta.toString().padStart(3, '0')}`,
