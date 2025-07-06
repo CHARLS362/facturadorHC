@@ -9,14 +9,6 @@ import { ProductExportPreview, type MockProduct } from '@/components/dashboard/p
 import { Skeleton } from '@/components/ui/skeleton';
 import html2pdf from 'html2pdf.js';
 
-// Using mock data from the products list page
-const initialMockProducts: MockProduct[] = [
-  { id: "PROD001", name: "Camisa de Algodón Premium", category: "Ropa", price: "S/ 79.90", stock: 120, status: "En Stock" },
-  { id: "PROD002", name: "Pantalón Cargo Resistente", category: "Ropa", price: "S/ 119.90", stock: 75, status: "En Stock" },
-  { id: "PROD003", name: "Zapatillas Urbanas Clásicas", category: "Calzado", price: "S/ 249.90", stock: 0, status: "Agotado" },
-  { id: "PROD004", name: "Mochila Antirrobo Impermeable", category: "Accesorios", price: "S/ 189.50", stock: 45, status: "Stock Bajo" },
-];
-
 export default function ExportarProductosPage() {
   const [products, setProducts] = useState<MockProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,24 +16,45 @@ export default function ExportarProductosPage() {
 
   useEffect(() => {
     const fetchProducts = async () => {
-      setIsLoading(true);
-      // Simulate API call
-      // In a real app, you would fetch from `/api/productos`
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setProducts(initialMockProducts);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/producto');
+        if (!response.ok) throw new Error("Error al obtener productos");
+        const data: MockProduct[] = await response.json();
+
+        // Transformar Estado => status
+        const transformed = data.map((producto) => ({
+          ...producto,
+          status: producto.Estado,
+          stock: producto.Stock || 0,
+          price: `S/ ${Number(producto.Precio).toFixed(2)}`,
+          id: `PROD${producto.IdProducto.toString().padStart(3, '0')}`,
+          productoId: producto.IdProducto,
+          name: producto.Nombre || "Sin nombre",
+          category: producto.CategoriaNombre || "Sin categoría",
+          description: producto.Descripcion || "Sin descripción",
+        }));
+
+        setProducts(transformed);
+      } catch (error) {
+        console.error("Error cargando productos:", error);
+        setProducts([]);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     fetchProducts();
   }, []);
 
   const handleDownloadPdf = () => {
     const element = document.getElementById('printable-area');
     const opt = {
-      margin:       0.5,
-      filename:     'reporte-productos.pdf',
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
-      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+      margin: 0.5,
+      filename: 'reporte-productos.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
     };
     html2pdf().from(element).set(opt).save();
   };
@@ -74,17 +87,17 @@ export default function ExportarProductosPage() {
 
       {isLoading ? (
         <div className="p-10 border rounded-lg bg-card">
-           <div className="flex items-center space-x-4 mb-6">
-              <Skeleton className="h-12 w-12" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-[250px]" />
-                <Skeleton className="h-4 w-[200px]" />
-              </div>
+          <div className="flex items-center space-x-4 mb-6">
+            <Skeleton className="h-12 w-12" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
             </div>
-            <Skeleton className="h-8 w-full mb-4" />
-            <Skeleton className="h-8 w-full mb-2" />
-            <Skeleton className="h-8 w-full mb-2" />
-            <Skeleton className="h-8 w-full mb-2" />
+          </div>
+          <Skeleton className="h-8 w-full mb-4" />
+          <Skeleton className="h-8 w-full mb-2" />
+          <Skeleton className="h-8 w-full mb-2" />
+          <Skeleton className="h-8 w-full mb-2" />
         </div>
       ) : (
         <ProductExportPreview products={products} />
