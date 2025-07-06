@@ -1,7 +1,4 @@
 import { create } from 'xmlbuilder2';
-
-// --- INTERFACES DE DATOS (El "molde" para la información) ---
-
 export type TipoComprobante = '01' | '03'; // 01: Factura, 03: Boleta
 
 export interface Empresa {
