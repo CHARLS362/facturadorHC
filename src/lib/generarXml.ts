@@ -1,8 +1,5 @@
 import { create } from 'xmlbuilder2';
-
-// --- INTERFACES DE DATOS (El "molde" para la información) ---
-
-export type TipoComprobante = '01' | '03'; // 01: Factura, 03: Boleta
+export type TipoComprobante = '01' | '03'; 
 
 export interface Empresa {
   ruc: string;
@@ -23,7 +20,7 @@ export interface ItemComprobante {
   valorUnitario: number; 
   precioUnitario: number; 
   unidadMedida: string;
-  tipoAfectacionIgv: '10' | '20' | '30'; // 10: Gravado, 20: Exonerado, 30: Inafecto
+  tipoAfectacionIgv: '10' | '20' | '30'; 
 }
 
 export interface ComprobanteData {
@@ -33,12 +30,13 @@ export interface ComprobanteData {
   fechaEmision: Date;
   moneda: 'PEN' | 'USD';
   empresa: Empresa;
-  cliente?: Cliente; // Cliente es opcional
+  cliente?: Cliente; 
   items: ItemComprobante[];
 }
 
 
 /**
+ * 
  * @param 
  * @returns 
  */
@@ -70,12 +68,14 @@ export function generarComprobanteXml(data: ComprobanteData): string {
 
   let clienteParaXml = data.cliente;
   if (data.tipoComprobante === '03' && !data.cliente) {
+
     clienteParaXml = {
       tipoDocumento: '0',
       numeroDocumento: '00000000',
       razonSocial: 'CLIENTES VARIOS',
     };
   }
+
 
   const xmlObj = {
     Invoice: {
@@ -107,7 +107,7 @@ export function generarComprobanteXml(data: ComprobanteData): string {
         }
       }),
 
-      'cac:TaxTotal': {  },
+      'cac:TaxTotal': {},
 
       'cac:LegalMonetaryTotal': {
         'cbc:LineExtensionAmount': { '@currencyID': data.moneda, '#': totalValorVenta.toFixed(2) },
@@ -115,7 +115,7 @@ export function generarComprobanteXml(data: ComprobanteData): string {
         'cbc:PayableAmount': { '@currencyID': data.moneda, '#': totalPrecioVenta.toFixed(2) },
       },
 
-      'cac:InvoiceLine': itemsCalculados.map((item) => ({  }))
+      'cac:InvoiceLine': itemsCalculados.map((item) => ({}))
     },
   };
 
@@ -140,7 +140,6 @@ export function generarComprobanteXml(data: ComprobanteData): string {
         }
       }
     }),
-
   };
 
   xmlObj.Invoice['cac:InvoiceLine'] = itemsCalculados.map((item) => ({
