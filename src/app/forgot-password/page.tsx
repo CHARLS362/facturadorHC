@@ -91,7 +91,7 @@ export default function ForgotPasswordPage() {
       } catch (error) {
         toast({
           title: "Error al enviar",
-          description: "No se pudo enviar el correo. Verifica la configuración de Resend.",
+          description: "No se pudo enviar el correo. ",
           variant: "destructive",
         });
       }
@@ -105,9 +105,35 @@ export default function ForgotPasswordPage() {
         toast({ title: "Código Inválido", description: "El código ingresado es incorrecto. Intenta de nuevo.", variant: 'destructive' });
         form.setError("pin", { type: "manual", message: "Código incorrecto." });
       }
-    } else if (currentStep === 'reset') {
-      setCurrentStep('success');
-    }
+      } else if (currentStep === 'reset') {
+        try {
+          const res = await fetch('/api/reset-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: userEmail, password: data.password }),
+          });
+
+          if (!res.ok) {
+            const result = await res.json();
+            throw new Error(result.message || 'Error al cambiar la contraseña');
+          }
+
+          toast({
+            title: "Contraseña actualizada",
+            description: "Ahora puedes iniciar sesión con tu nueva contraseña.",
+            variant: "success",
+          });
+
+          setCurrentStep('success');
+        } catch (error: any) {
+          toast({
+            title: "Error",
+            description: error.message || "Hubo un problema al cambiar la contraseña.",
+            variant: "destructive",
+          });
+        }
+      }
+
   };
   
   const renderStepContent = () => {
