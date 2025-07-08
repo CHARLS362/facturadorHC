@@ -9,8 +9,30 @@ import { ProductExportPreview, type MockProduct } from '@/components/dashboard/p
 import { Skeleton } from '@/components/ui/skeleton';
 import html2pdf from 'html2pdf.js';
 
+type MockProductWithEstado = MockProduct & {
+  Estado: string;
+  Stock?: number;
+  Precio?: number | string;
+  IdProducto: number;
+  Nombre?: string;
+  CategoriaNombre?: string;
+  Descripcion?: string;
+};
+
+type ExportProduct = MockProductWithEstado & {
+  status: string;
+  stock: number;
+  price: string;
+  id: string;
+  productoId: number;
+  name: string;
+  category: string;
+  description: string;
+};
+
+
 export default function ExportarProductosPage() {
-  const [products, setProducts] = useState<MockProduct[]>([]);
+  const [products, setProducts] = useState<ExportProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -20,7 +42,7 @@ export default function ExportarProductosPage() {
         setIsLoading(true);
         const response = await fetch('/api/producto');
         if (!response.ok) throw new Error("Error al obtener productos");
-        const data: MockProduct[] = await response.json();
+        const data: MockProductWithEstado[] = await response.json();
 
         // Transformar Estado => status
         const transformed = data.map((producto) => ({
