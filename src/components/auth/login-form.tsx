@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +22,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import Image from "next/image"; 
 import { Label } from "@/components/ui/label";
+import logoImg from '@/img/facturahc.png';
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Por favor ingresa un correo electrónico válido." }),
@@ -69,11 +69,12 @@ export function LoginForm() {
       <CardHeader className="p-0 mb-7 text-center">
         <div className="lg:hidden mx-auto mb-6">
              <Image
-              src="/logoHC.png"
+              src={logoImg}
               alt="FacturacionHC Logo"
               width={150}
               height={40}
               className="block"
+              priority
             />
         </div>
         <CardTitle className="font-headline text-2xl text-foreground">Iniciar Sesión</CardTitle>

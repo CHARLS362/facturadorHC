@@ -1,4 +1,3 @@
-
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
@@ -7,6 +6,7 @@ import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import logoImg from '@/img/facturahc.png';
 
 export default function LoginPage() {
   const { theme, setTheme } = useTheme();
@@ -46,11 +46,12 @@ export default function LoginPage() {
         <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">
           <div className="mx-auto lg:mx-0 mb-6">
             <Image 
-              src="/logoHC.png" 
+              src={logoImg} 
               alt="FacturacionHC Logo" 
               width={180} 
               height={50}
               className="block"
+              priority
             />
           </div>
           <h1 className="my-3 font-headline font-semibold text-4xl text-white">Bienvenido de Nuevo</h1>

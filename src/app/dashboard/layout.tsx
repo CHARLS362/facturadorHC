@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { PanelLeft, Menu as MenuIconLucide } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/img/facturahc.png';
 
 function DashboardLayoutContent({ 
   children, 
@@ -86,7 +87,7 @@ function DashboardLayoutContent({
             {!collapsed && (
               <div className="flex items-center gap-2 overflow-hidden">
                 <Image
-                  src="/logoHC.png"
+                  src={logoImg}
                   alt="FacturacionHC Logo Small"
                   width={32}
                   height={32}
