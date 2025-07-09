@@ -28,7 +28,7 @@ function DashboardLayoutContent({
   const { collapseSidebar, toggleSidebar, collapsed, broken, toggled } = useProSidebar();
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const isPrintOrExportPage = pathname.includes('/exportar') || pathname.includes('/imprimir');
+  const isPrintOrExportPage = pathname?.includes('/exportar') || pathname?.includes('/imprimir');
 
   useEffect(() => {
     setIsMounted(true);
@@ -113,7 +113,7 @@ function DashboardLayoutContent({
               menuItemStyles={{
                 button: ({ level, active, disabled }) => ({
                   color: disabled ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
-                  backgroundColor: active ? 'hsl(var(--primary))' : undefined,
+                  backgroundColor: 'transparent',
                   '&:hover': {
                     backgroundColor: 'hsl(var(--accent))',
                     color: 'hsl(var(--accent-foreground))',
