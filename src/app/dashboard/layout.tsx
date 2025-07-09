@@ -87,7 +87,7 @@ function DashboardLayoutContent({
             {!collapsed && (
               <div className="flex items-center gap-2 overflow-hidden">
                 <Image
-                  src="/logoHC.png"
+                  src="/facturahc.png"
                   alt="FacturacionHC Logo Small"
                   width={32}
                   height={32}
