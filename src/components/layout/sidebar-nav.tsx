@@ -15,7 +15,7 @@ import {
   KeyRound,
   Landmark,
   ClipboardList,
-  Warehouse, // Added
+  Warehouse,
   type LucideIcon
 } from 'lucide-react';
 import { useProSidebar } from 'react-pro-sidebar';
