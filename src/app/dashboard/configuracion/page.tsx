@@ -20,7 +20,10 @@ const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/sv
 
 const companySettingsSchema = z.object({
   companyName: z.string().min(3, { message: "El nombre de la empresa es requerido (mín. 3 caracteres)." }),
+  companyRuc: z.string().length(11, { message: "El RUC debe tener 11 dígitos." }).refine(val => /^\d+$/.test(val), { message: "El RUC solo debe contener números." }),
   companyAddress: z.string().min(10, { message: "La dirección es requerida (mín. 10 caracteres)." }),
+  companyPhone: z.string().optional(),
+  companyEmail: z.string().email({ message: "Ingrese un correo válido." }).optional().or(z.literal('')),
   companyLogoUrl: z.string().url({ message: "Ingrese una URL válida para el logo." }).optional().or(z.literal('')),
   companyLogoFile: z
     .custom<FileList>((val) => val === null || val instanceof FileList, "Se esperaba un archivo.")
@@ -38,27 +41,57 @@ const companySettingsSchema = z.object({
 
 type CompanySettingsFormValues = z.infer<typeof companySettingsSchema>;
 
-// Mock data
+// Mock data as fallback
 const mockCompanySettings = {
   companyName: "FacturacionHC Predeterminada S.A.C.",
+  companyRuc: "20123456789",
   companyAddress: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
-  companyLogoUrl: "https://placehold.co/200x80.png?text=Mi+Logo",
+  companyPhone: "(01) 555-1234",
+  companyEmail: "ventas@facturacionhc.com",
+  companyLogoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
 };
+
 
 export default function ConfiguracionPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [logoPreview, setLogoPreview] = useState<string | null>(mockCompanySettings.companyLogoUrl || null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   
   const form = useForm<CompanySettingsFormValues>({
     resolver: zodResolver(companySettingsSchema),
     defaultValues: {
-      companyName: mockCompanySettings.companyName || "",
-      companyAddress: mockCompanySettings.companyAddress || "",
-      companyLogoUrl: mockCompanySettings.companyLogoUrl || "",
+      companyName: "",
+      companyRuc: "",
+      companyAddress: "",
+      companyPhone: "",
+      companyEmail: "",
+      companyLogoUrl: "",
       companyLogoFile: null,
     },
   });
+  
+  // Load saved settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('companySettings');
+      const initialValues = savedSettings ? JSON.parse(savedSettings) : mockCompanySettings;
+      form.reset({
+          companyName: initialValues.companyName || "",
+          companyRuc: initialValues.companyRuc || "",
+          companyAddress: initialValues.companyAddress || "",
+          companyPhone: initialValues.companyPhone || "",
+          companyEmail: initialValues.companyEmail || "",
+          companyLogoUrl: initialValues.companyLogoUrl || "",
+          companyLogoFile: null
+      });
+      setLogoPreview(initialValues.companyLogoUrl || null);
+    } catch (e) {
+      console.error("Failed to load company settings, using fallback.", e);
+      form.reset(mockCompanySettings);
+      setLogoPreview(mockCompanySettings.companyLogoUrl);
+    }
+  }, [form]);
+
 
   const watchedLogoUrl = form.watch("companyLogoUrl");
   const watchedLogoFile = form.watch("companyLogoFile");
@@ -73,8 +106,6 @@ export default function ConfiguracionPage() {
         };
         reader.readAsDataURL(file);
       } else {
-        // If file is invalid after selection (e.g. due to direct manipulation not caught by Zod yet)
-        // or if a previously valid file became invalid somehow.
         setLogoPreview(watchedLogoUrl || null); 
       }
     } else if (watchedLogoUrl) {
@@ -82,35 +113,71 @@ export default function ConfiguracionPage() {
     } else {
       setLogoPreview(null);
     }
-  }, [watchedLogoUrl, watchedLogoFile]);
+  }, [watchedLogoUrl, watchedLogoFile, toast]);
+
+  const fileToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
 
   async function onSubmit(data: CompanySettingsFormValues) {
     setIsSubmitting(true);
-    console.log("Company settings updated:", {
-        ...data,
-        companyLogoFileName: data.companyLogoFile && data.companyLogoFile.length > 0 ? data.companyLogoFile[0].name : null,
-        companyLogoFileType: data.companyLogoFile && data.companyLogoFile.length > 0 ? data.companyLogoFile[0].type : null,
-    });
-    // In a real app, handle file upload here if data.companyLogoFile is present
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Configuración Guardada</span>
-        </div>
-      ),
-      description: "La información de la empresa ha sido actualizada exitosamente.",
-    });
+    
+    let logoUrlToSave = data.companyLogoUrl;
+
+    try {
+        if (data.companyLogoFile && data.companyLogoFile.length > 0) {
+            logoUrlToSave = await fileToDataUrl(data.companyLogoFile[0]);
+        }
+
+        const settingsToSave = {
+            companyName: data.companyName,
+            companyRuc: data.companyRuc,
+            companyAddress: data.companyAddress,
+            companyPhone: data.companyPhone,
+            companyEmail: data.companyEmail,
+            companyLogoUrl: logoUrlToSave
+        };
+
+        localStorage.setItem('companySettings', JSON.stringify(settingsToSave));
+
+        form.reset({
+            ...data,
+            companyLogoUrl: logoUrlToSave,
+            companyLogoFile: null // Clear file input after saving
+        });
+
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
+                <CheckCircle2 className="h-5 w-5 text-white" />
+              </div>
+              <span>Configuración Guardada</span>
+            </div>
+          ),
+          description: "La información de la empresa ha sido actualizada exitosamente.",
+        });
+
+    } catch (error) {
+        toast({
+            variant: "destructive",
+            title: "Error al guardar",
+            description: "No se pudo procesar y guardar la imagen. Por favor, intente de nuevo."
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
   }
+
 
   const handleRemoveFile = () => {
     form.setValue("companyLogoFile", null, { shouldValidate: true });
-    // The useEffect will then update the preview based on companyLogoUrl
   };
 
   return (
@@ -130,19 +197,35 @@ export default function ConfiguracionPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="companyName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre de la Empresa / Razón Social</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ej: Tu Empresa S.A.C." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid md:grid-cols-2 gap-6">
+                 <FormField
+                    control={form.control}
+                    name="companyName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre de la Empresa / Razón Social</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: Tu Empresa S.A.C." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="companyRuc"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>RUC</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ej: 20123456789" {...field} maxLength={11} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+              </div>
+
               <FormField
                 control={form.control}
                 name="companyAddress"
@@ -156,6 +239,35 @@ export default function ConfiguracionPage() {
                   </FormItem>
                 )}
               />
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="companyPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teléfono de Contacto (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: (01) 555-1234" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="companyEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email de Contacto (Opcional)</FormLabel>
+                      <FormControl>
+                        <Input type="email" placeholder="Ej: contacto@empresa.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <div className="space-y-2 p-4 border rounded-md bg-muted/30">
                 <h3 className="text-md font-medium text-foreground mb-1">Logo de la Empresa</h3>
@@ -174,7 +286,7 @@ export default function ConfiguracionPage() {
                           type="file" 
                           accept={ACCEPTED_IMAGE_TYPES.join(",")}
                           onChange={(e) => onChange(e.target.files)}
-                          className="hidden" // Visually hidden, triggered by label
+                          className="hidden"
                           {...restField} 
                         />
                       </FormControl>
@@ -217,18 +329,20 @@ export default function ConfiguracionPage() {
               {logoPreview ? (
                 <div className="mt-4 p-4 border rounded-md bg-muted/50">
                   <FormLabel className="mb-2 block">Vista Previa del Logo:</FormLabel>
-                  <Image 
-                    src={logoPreview} 
-                    alt="Vista previa del logo" 
-                    width={200} 
-                    height={80} 
-                    className="rounded-md object-contain border bg-background"
-                    data-ai-hint="company logo preview"
-                    onError={() => {
-                      setLogoPreview(null); // Clear preview on error
-                      toast({ variant: "destructive", title: "Error al cargar URL del logo", description: "La URL proporcionada no es una imagen válida."})
-                    }}
-                  />
+                  <div className="h-[80px] w-[200px]">
+                     <Image 
+                      src={logoPreview} 
+                      alt="Vista previa del logo" 
+                      width={200} 
+                      height={80} 
+                      className="rounded-md object-contain border bg-background h-full w-auto"
+                      data-ai-hint="company logo preview"
+                      onError={() => {
+                        setLogoPreview(null);
+                        toast({ variant: "destructive", title: "Error al cargar URL del logo", description: "La URL proporcionada no es una imagen válida."})
+                      }}
+                    />
+                  </div>
                 </div>
               ) : (
                 <div className="mt-4 p-4 border rounded-md bg-muted/50 text-center">
@@ -258,5 +372,3 @@ export default function ConfiguracionPage() {
     </div>
   );
 }
-
-    

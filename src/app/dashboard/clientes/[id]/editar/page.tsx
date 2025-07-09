@@ -43,6 +43,17 @@ async function getClientData(id: string) {
   }
 }
 
+// Define an interface for the form data to ensure type safety
+interface ClientFormData {
+  type: "Empresa" | "Persona";
+  name: string;
+  rucDni: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+}
+
 export default async function EditarClientePage({ params }: { params: { id: string } }) {
   const clientData = await getClientData(params.id);
 
@@ -50,7 +61,8 @@ export default async function EditarClientePage({ params }: { params: { id: stri
     notFound();
   }
   
-  const initialData = {
+  // Explicitly type the initialData object
+  const initialData: ClientFormData = {
     type: clientData.TipoCliente === "Persona Jurídica" ? "Empresa" : "Persona",
     name: clientData.Nombre || "",
     rucDni: clientData.NumeroDocumento || "",

@@ -1,22 +1,25 @@
 
+"use client";
 
+import React, { useState, useEffect } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
-import { FileText, Eye, Edit, PlusCircle } from "lucide-react";
+import { FileText, Edit } from "lucide-react";
 import { InvoicePreview, type VentaDataForTemplate, type EmpresaDataForTemplate } from "@/components/templates/invoice-preview";
 import { TicketPreview } from "@/components/templates/ticket-preview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data for preview purposes
-const mockEmpresa: EmpresaDataForTemplate = {
+const mockEmpresaFallback: EmpresaDataForTemplate = {
   name: "FacturacionHC Predeterminada S.A.C.",
   address: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
   ruc: "20123456789",
   phone: "(01) 555-1234",
   email: "ventas@facturacionhc.com",
-  logoUrl: "https://placehold.co/180x60.png?text=Mi+Logo",
+  logoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
 };
 
 const mockVenta: VentaDataForTemplate = {
@@ -36,7 +39,8 @@ const mockVenta: VentaDataForTemplate = {
   opGravada: 2314.00,
   igv: 416.52,
   totalGeneral: 2730.52,
-  totalEnLetras: "DOS MIL SETECIENTOS TREINTA Y 52/100 SOLES"
+  totalEnLetras: "DOS MIL SETECIENTOS TREINTA Y 52/100 SOLES",
+  paymentMethod: "Tarjeta de Crédito",
 };
 
 const mockBoleta: VentaDataForTemplate = {
@@ -47,11 +51,45 @@ const mockBoleta: VentaDataForTemplate = {
         documento: "12345678",
         tipoDocumento: "DNI",
         direccion: "Av. Sol 123, Cusco"
-    }
+    },
+    paymentMethod: "Efectivo",
 };
 
 
 export default function PlantillasPage() {
+  const [empresa, setEmpresa] = useState<EmpresaDataForTemplate | null>(null);
+
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('companySettings');
+      const parsed = savedSettings ? JSON.parse(savedSettings) : {};
+      setEmpresa({
+        name: parsed.companyName || mockEmpresaFallback.name,
+        address: parsed.companyAddress || mockEmpresaFallback.address,
+        ruc: parsed.companyRuc || mockEmpresaFallback.ruc,
+        phone: parsed.companyPhone || mockEmpresaFallback.phone,
+        email: parsed.companyEmail || mockEmpresaFallback.email,
+        logoUrl: parsed.companyLogoUrl || mockEmpresaFallback.logoUrl,
+      });
+    } catch (e) {
+      console.error("Failed to load company settings from localStorage", e);
+      setEmpresa(mockEmpresaFallback);
+    }
+  }, []);
+
+  if (!empresa) {
+      return (
+          <div className="space-y-8">
+              <PageHeader 
+                  title="Plantillas de Documentos"
+                  description="Personaliza y previsualiza tus plantillas de facturas y boletas."
+                  icon={FileText}
+              />
+              <Skeleton className="h-[400px] w-full rounded-lg" />
+          </div>
+      )
+  }
+
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -84,7 +122,7 @@ export default function PlantillasPage() {
             </CardHeader>
             <CardContent className="bg-muted/30 p-4 md:p-8 flex justify-center">
               <div className="w-full max-w-3xl">
-                <InvoicePreview venta={mockVenta} empresa={mockEmpresa} />
+                <InvoicePreview venta={mockVenta} empresa={empresa} />
               </div>
             </CardContent>
           </Card>
@@ -108,7 +146,7 @@ export default function PlantillasPage() {
             </CardHeader>
             <CardContent className="bg-muted/30 p-4 md:p-8 flex justify-center">
               <div className="w-full max-w-md">
-                 <TicketPreview venta={mockBoleta} empresa={mockEmpresa} />
+                 <TicketPreview venta={mockBoleta} empresa={empresa} />
               </div>
             </CardContent>
           </Card>

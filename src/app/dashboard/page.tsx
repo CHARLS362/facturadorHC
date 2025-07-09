@@ -136,19 +136,19 @@ export default function DashboardPage() {
           <CardDescription>Accede rápidamente a las funciones más comunes.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Button asChild size="lg" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out bg-primary hover:bg-primary/90">
+          <Button asChild size="lg" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out">
             <Link href="/dashboard/ventas/nueva">
               <ShoppingCart className="mr-3 h-6 w-6" />
               Registrar Nueva Venta
             </Link>
           </Button>
-          <Button asChild size="lg" variant="secondary" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out">
+          <Button asChild size="lg" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out">
             <Link href="/dashboard/clientes/nuevo">
               <UserPlus2 className="mr-3 h-6 w-6" />
               Añadir Nuevo Cliente
             </Link>
           </Button>
-          <Button asChild size="lg" variant="outline" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out border-primary/50 hover:border-primary hover:bg-primary/5">
+          <Button asChild size="lg" className="font-headline text-base py-8 hover:scale-[1.03] transition-transform duration-200 ease-out">
             <Link href="/dashboard/productos/nuevo">
               <PackagePlusIcon className="mr-3 h-6 w-6" />
               Añadir Nuevo Producto

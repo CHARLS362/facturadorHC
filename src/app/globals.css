@@ -108,14 +108,7 @@ body {
 }
 
 .ps-menu-button {
-    @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
-}
-
-.ps-menu-button.ps-active {
-    @apply bg-primary text-primary-foreground;
-}
-.ps-menu-button.ps-active:hover {
-    @apply bg-primary/90 text-primary-foreground;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
 }
 
 .ps-submenu-content {
