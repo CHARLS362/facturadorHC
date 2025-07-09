@@ -1,44 +1,18 @@
-
 'use client';
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Warehouse } from "lucide-react";
 import { AlmacenesList } from '@/components/dashboard/almacenes-list';
-import { Skeleton } from '@/components/ui/skeleton';
+
+// Mock data as requested. This will be used as the initial state if localStorage is empty.
+const mockAlmacenes = [
+  { IdAlmacen: 1, Nombre: 'Almacén Principal (Lima)', Direccion: 'Av. La Marina 123, San Miguel', Estado: true },
+  { IdAlmacen: 2, Nombre: 'Sucursal Arequipa', Direccion: 'Calle Mercaderes 456, Arequipa', Estado: true },
+  { IdAlmacen: 3, Nombre: 'Depósito Surco (Inactivo)', Direccion: 'Jr. Montebello 789, Surco', Estado: false },
+];
 
 export default function AlmacenesPage() {
-  const [almacenes, setAlmacenes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchAlmacenes = async () => {
-      try {
-        const response = await fetch('/api/almacen');
-        if (!response.ok) {
-          throw new Error('Error al obtener los datos de los almacenes.');
-        }
-        const data = await response.json();
-        setAlmacenes(data);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchAlmacenes();
-  }, []);
-
-  const LoadingSkeleton = () => (
-     <div className="space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-    </div>
-  );
-
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -56,13 +30,8 @@ export default function AlmacenesPage() {
           </div>
         }
       />
-      {isLoading ? (
-        <LoadingSkeleton />
-      ) : error ? (
-        <p className="text-red-500">Error: {error}</p>
-      ) : (
-        <AlmacenesList initialData={almacenes} />
-      )}
+      {/* The AlmacenesList component will now manage its own state, initialized with this mock data */}
+      <AlmacenesList initialData={mockAlmacenes} />
     </div>
   );
 }

@@ -1,7 +1,6 @@
-
 "use client";
 import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,12 +26,31 @@ interface Almacen {
   Estado: boolean;
 }
 
+const ALMACENES_STORAGE_KEY = 'facturacionhc_mock_almacenes';
+
 export function AlmacenesList({ initialData }: { initialData: Almacen[] }) {
-  const [almacenes, setAlmacenes] = useState<Almacen[]>(initialData);
+  const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
   const [almacenToDelete, setAlmacenToDelete] = useState<Almacen | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
+
+  useEffect(() => {
+    // On component mount, try to load from localStorage
+    try {
+      const storedAlmacenes = localStorage.getItem(ALMACENES_STORAGE_KEY);
+      if (storedAlmacenes) {
+        setAlmacenes(JSON.parse(storedAlmacenes));
+      } else {
+        // If nothing in storage, use initialData and save it
+        setAlmacenes(initialData);
+        localStorage.setItem(ALMACENES_STORAGE_KEY, JSON.stringify(initialData));
+      }
+    } catch (error) {
+        console.error("Failed to access localStorage:", error);
+        setAlmacenes(initialData);
+    }
+  }, [initialData]);
 
   const filteredAlmacenes = useMemo(() => {
     if (!searchTerm) return almacenes;
@@ -42,32 +60,22 @@ export function AlmacenesList({ initialData }: { initialData: Almacen[] }) {
     );
   }, [almacenes, searchTerm]);
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!almacenToDelete) return;
+    
+    // Simulate frontend deletion
+    const updatedAlmacenes = almacenes.filter(a => a.IdAlmacen !== almacenToDelete.IdAlmacen);
+    setAlmacenes(updatedAlmacenes);
+    localStorage.setItem(ALMACENES_STORAGE_KEY, JSON.stringify(updatedAlmacenes));
 
-    try {
-      const res = await fetch(`/api/almacen/${almacenToDelete.IdAlmacen}`, {
-        method: 'DELETE',
-      });
+    toast({
+      variant: "success",
+      title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Almacén Eliminado</span></div>,
+      description: `El almacén ${almacenToDelete.Nombre} ha sido eliminado.`,
+    });
 
-      if (!res.ok) throw new Error('Error al eliminar el almacén');
-
-      setAlmacenes(prev => prev.filter(a => a.IdAlmacen !== almacenToDelete.IdAlmacen));
-      toast({
-        variant: "success",
-        title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Almacén Eliminado</span></div>,
-        description: `El almacén ${almacenToDelete.Nombre} ha sido eliminado.`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo eliminar el almacén. Puede que tenga productos asociados.",
-      });
-    } finally {
-      setAlmacenToDelete(null);
-      setIsDeleteDialogOpen(false);
-    }
+    setAlmacenToDelete(null);
+    setIsDeleteDialogOpen(false);
   };
 
   const openDeleteDialog = (almacen: Almacen) => {

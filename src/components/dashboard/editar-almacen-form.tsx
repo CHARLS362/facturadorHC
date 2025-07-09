@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,6 +13,15 @@ import { Save, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import React, { useState } from "react";
+
+const ALMACENES_STORAGE_KEY = 'facturacionhc_mock_almacenes';
+
+interface Almacen {
+  IdAlmacen: number;
+  Nombre: string;
+  Direccion: string;
+  Estado: boolean;
+}
 
 const almacenSchema = z.object({
   Nombre: z.string().min(3, { message: "El nombre es requerido (mín. 3 caracteres)." }),
@@ -40,35 +48,35 @@ export function EditarAlmacenForm({ almacenId, initialData }: EditarAlmacenFormP
 
   async function onSubmit(data: AlmacenFormValues) {
     setIsSubmitting(true);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+
     try {
-      const res = await fetch(`/api/almacen/${almacenId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+        const storedAlmacenes = localStorage.getItem(ALMACENES_STORAGE_KEY);
+        if (!storedAlmacenes) throw new Error("Warehouse data not found");
+        
+        let almacenes: Almacen[] = JSON.parse(storedAlmacenes);
+        const numericId = parseInt(almacenId);
+        almacenes = almacenes.map(a => 
+            a.IdAlmacen === numericId ? { ...a, ...data } : a
+        );
+        
+        localStorage.setItem(ALMACENES_STORAGE_KEY, JSON.stringify(almacenes));
 
-      if (!res.ok) {
-        const result = await res.json();
-        throw new Error(result.error || "No se pudo actualizar el almacén.");
-      }
+        toast({
+            variant: "success",
+            title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Almacén Actualizado</span></div>,
+            description: `El almacén ${data.Nombre} ha sido actualizado (simulación).`,
+        });
 
-      toast({
-        variant: "success",
-        title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Almacén Actualizado</span></div>,
-        description: `El almacén ${data.Nombre} ha sido actualizado exitosamente.`,
-      });
-      
-      router.push("/dashboard/almacenes");
-      router.refresh();
-
+        router.push("/dashboard/almacenes");
     } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message,
-      });
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message || "No se pudo actualizar el almacén.",
+        });
     } finally {
-      setIsSubmitting(false);
+        setIsSubmitting(false);
     }
   }
 

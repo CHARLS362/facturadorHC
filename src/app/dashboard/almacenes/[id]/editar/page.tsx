@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -9,6 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Warehouse } from "lucide-react";
 import { EditarAlmacenForm } from '@/components/dashboard/editar-almacen-form';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const ALMACENES_STORAGE_KEY = 'facturacionhc_mock_almacenes';
+
+export interface Almacen {
+  IdAlmacen: number;
+  Nombre: string;
+  Direccion: string;
+  Estado: boolean;
+}
 
 export interface AlmacenFormData {
   Nombre: string;
@@ -26,28 +34,28 @@ export default function EditarAlmacenPage() {
   useEffect(() => {
     if (!id) return;
 
-    async function fetchAlmacenData() {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`/api/almacen/${id}`);
-
-        if (res.status === 404) {
+    // Simulate fetching data from localStorage
+    setIsLoading(true);
+    try {
+      const storedAlmacenes = localStorage.getItem(ALMACENES_STORAGE_KEY);
+      if (!storedAlmacenes) {
           notFound();
           return;
-        }
-        if (!res.ok) {
-          throw new Error('Error al cargar datos del almacén');
-        }
-        const data = await res.json();
-        setInitialData(data);
-      } catch (error) {
-        console.error(error);
-        setInitialData(null); // Set to null on error
-      } finally {
-        setIsLoading(false);
       }
+      const almacenes: Almacen[] = JSON.parse(storedAlmacenes);
+      const almacen = almacenes.find(a => a.IdAlmacen === parseInt(id));
+
+      if (!almacen) {
+          notFound();
+          return;
+      }
+      setInitialData(almacen);
+    } catch (error) {
+      console.error("Failed to load warehouse data from storage", error);
+      setInitialData(null);
+    } finally {
+        setIsLoading(false);
     }
-    fetchAlmacenData();
   }, [id]);
 
   if (isLoading) {
@@ -67,8 +75,7 @@ export default function EditarAlmacenPage() {
   }
 
   if (!initialData) {
-    // This could be a more user-friendly error component
-    return <div>No se pudo cargar la información del almacén.</div>;
+    return <div>No se pudo cargar la información del almacén. Intente volver al listado.</div>;
   }
 
   return (

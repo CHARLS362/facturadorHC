@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,6 +14,8 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
+
+const ALMACENES_STORAGE_KEY = 'facturacionhc_mock_almacenes';
 
 const almacenSchema = z.object({
   nombre: z.string().min(3, { message: "El nombre es requerido (mín. 3 caracteres)." }),
@@ -38,38 +39,37 @@ export default function NuevoAlmacenPage() {
 
   async function onSubmit(data: AlmacenFormValues) {
     setIsSubmitting(true);
+    
+    // Simulate API call with a short delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
     try {
-      const payload = {
+      const storedAlmacenes = localStorage.getItem(ALMACENES_STORAGE_KEY);
+      const almacenes = storedAlmacenes ? JSON.parse(storedAlmacenes) : [];
+      
+      const nuevoAlmacen = {
+        IdAlmacen: new Date().getTime(), // Use timestamp for a unique ID in simulation
         Nombre: data.nombre,
         Direccion: data.direccion,
-        Estado: 1, // Active by default
+        Estado: true, // Active by default
       };
 
-      const res = await fetch("/api/almacen", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const result = await res.json();
-        throw new Error(result.error || "No se pudo crear el almacén.");
-      }
+      const updatedAlmacenes = [...almacenes, nuevoAlmacen];
+      localStorage.setItem(ALMACENES_STORAGE_KEY, JSON.stringify(updatedAlmacenes));
       
       toast({
         variant: "success",
         title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Almacén Creado</span></div>,
-        description: `El almacén ${data.nombre} ha sido creado exitosamente.`,
+        description: `El almacén ${data.nombre} ha sido creado exitosamente (simulación).`,
       });
 
       router.push("/dashboard/almacenes");
-      router.refresh();
 
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message,
+        description: "No se pudo guardar el almacén en el almacenamiento local.",
       });
     } finally {
       setIsSubmitting(false);
