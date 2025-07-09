@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState } from 'react';
@@ -87,7 +86,7 @@ function DashboardLayoutContent({
             {!collapsed && (
               <div className="flex items-center gap-2 overflow-hidden">
                 <Image
-                  src="/facturahc.png"
+                  src="/logoHC.png"
                   alt="FacturacionHC Logo Small"
                   width={32}
                   height={32}

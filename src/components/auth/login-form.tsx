@@ -69,7 +69,7 @@ export function LoginForm() {
       <CardHeader className="p-0 mb-7 text-center">
         <div className="lg:hidden mx-auto mb-6">
              <Image
-              src="/facturahc.png"
+              src="/logoHC.png"
               alt="FacturacionHC Logo"
               width={150}
               height={40}
