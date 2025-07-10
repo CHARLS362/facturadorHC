@@ -7,6 +7,8 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import type { VariantProps } from "class-variance-authority";
+import type { EmpresaDataForTemplate } from "@/components/templates/invoice-preview";
+import { cn } from "@/lib/utils";
 
 
 export interface MockSale {
@@ -141,4 +143,3 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
     </Card>
   );
 }
-
