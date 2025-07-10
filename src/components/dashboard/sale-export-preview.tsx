@@ -5,9 +5,8 @@ import Image from "next/image";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Badge, badgeVariants } from "@/components/ui/badge";
-import type { VariantProps } from "class-variance-authority";
-
+import { Badge } from "@/components/ui/badge";
+import type { EmpresaDataForTemplate } from "@/components/templates/invoice-preview";
 
 export interface MockSale {
   id: string;

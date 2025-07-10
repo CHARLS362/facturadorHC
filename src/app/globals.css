@@ -36,42 +36,6 @@ body {
     --chart-4: 40 90% 60%; /* A yellow/gold tone */
     --chart-5: 300 70% 60%; /* A purple tone */
   }
-
-  .dark {
-    --background: 0 0% 8%; /* Very dark gray for main background */
-    --foreground: 0 0% 98%; /* Off-white */
-    
-    --card: 0 0% 4%; /* Almost Black for sidebar/cards */
-    --card-foreground: 0 0% 98%;
-    
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 16 100% 63.3%; /* Orange */
-    --primary-foreground: 0 0% 98%;
-    
-    --secondary: 0 0% 15%; /* A dark gray for hovers etc */
-    --secondary-foreground: 0 0% 98%;
-
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 63.9%;
-
-    --accent: 174 60% 40%; /* Teal */
-    --accent-foreground: 0 0% 98%;
-    
-    --destructive: 9 85% 63%; /* Red */
-    --destructive-foreground: 0 0% 98%;
-    
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 16 100% 63.3%; /* Primary color for rings */
-
-    --chart-1: 16 100% 63.3%;
-    --chart-2: 174 60% 40%;
-    --chart-3: 200 70% 65%;
-    --chart-4: 40 80% 65%;
-    --chart-5: 300 60% 65%;
-  }
 }
 
 @layer base {
@@ -111,14 +75,12 @@ body {
     @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
 }
 
-/* Correctly target the active menu item's button */
-.ps-menu-item.ps-active > .ps-menu-button {
-    @apply bg-primary text-primary-foreground;
+.ps-submenu-content {
+    @apply bg-secondary/40 transition-colors duration-200 ease-in-out;
 }
 
-/* Ensure the hover state on an active button doesn't lose its active style */
-.ps-menu-item.ps-active > .ps-menu-button:hover {
-    @apply bg-primary/90 text-primary-foreground;
+.ps-menu-button.ps-disabled {
+    @apply text-muted-foreground;
 }
 
 /* React Pro Sidebar - Original Structure (keep for functionality) */

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useMemo } from "react";
@@ -122,7 +121,7 @@ export function ProductPopularityChart() {
               strokeWidth={2}
               stroke="hsl(var(--background))" 
               activeIndex={activeIndex}
-              activeShape={ActiveShape}
+              activeShape={ActiveShape as any} 
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(undefined)}
               paddingAngle={2}
