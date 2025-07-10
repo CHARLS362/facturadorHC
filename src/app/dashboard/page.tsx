@@ -1,5 +1,3 @@
-"use client";
-import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -68,9 +66,15 @@ const kpiData: CustomKpiData[] = [
 ];
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // You can add useEffect here if you want to fetch data and set loading
+  useEffect(() => {
+    // Simulate data fetching
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 750);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -85,7 +89,7 @@ export default function DashboardPage() {
           <KpiCard 
             key={index} 
             title={kpi.title} 
-            value={loading ? "..." : kpi.value} 
+            value={kpi.value} 
             change={kpi.change} 
             iconName={kpi.iconName} 
             description={kpi.description} 
