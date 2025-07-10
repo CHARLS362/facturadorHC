@@ -70,6 +70,8 @@ const kpiData: CustomKpiData[] = [
 export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
 
+  // You can add useEffect here if you want to fetch data and set loading
+
   return (
     <div className="space-y-8">
       <PageHeader 

@@ -1,4 +1,3 @@
-
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getConnection } from '@/lib/db';
 import sql from 'mssql';
@@ -98,36 +97,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const xmlSinFirma = generarXml(facturaParaXml);
 
-    const certPathEnv = process.env.CERTIFICATE_PATH;
-    const privateKeyPathEnv = process.env.PRIVATE_KEY_PATH;
-    const certificatePassword = process.env.CERTIFICATE_PASSWORD;
+    // Guarda el XML en la raíz del proyecto con un nombre único
+    const nombreArchivo = `${facturaParaXml.empresa.ruc}-01-${facturaParaXml.venta.serie}-${facturaParaXml.venta.numero}.xml`;
+    const xmlPath = path.join(process.cwd(), nombreArchivo);
+    fs.writeFileSync(xmlPath, xmlSinFirma, 'utf8');
+    // --- INICIO DE CÓDIGO DE DEPURACIÓN TEMPORAL ---
+    const rawCertPath = process.env.CERTIFICATE_PATH;
+    const rawCertPass = process.env.CERTIFICATE_PASSWORD;
+    const fullCalculatedPath = path.join(process.cwd(), rawCertPath || '');
 
-    // Gracefully handle missing environment variables for development
-    if (!certPathEnv || !privateKeyPathEnv || !certificatePassword) {
-        console.warn('ADVERTENCIA: Faltan variables de entorno para la firma. Devolviendo XML sin firmar. Configure CERTIFICATE_PATH, PRIVATE_KEY_PATH, y CERTIFICATE_PASSWORD en un archivo .env.local para obtener un XML firmado.');
-        
-        res.setHeader('Content-Type', 'application/xml; charset=utf-8');
-        const nombreArchivoDescarga = `${facturaParaXml.empresa.ruc}-01-${facturaParaXml.venta.serie}-${facturaParaXml.venta.numero}-SIN-FIRMAR.xml`;
-        res.setHeader('Content-Disposition', `attachment; filename=${nombreArchivoDescarga}`);
-        
-        return res.status(200).send(xmlSinFirma);
-    }
+    console.log('\n\n--- DEBUG INFO ---');
+    console.log('Valor de process.cwd():', process.cwd());
+    console.log('Ruta leída de .env (CERTIFICATE_PATH):', rawCertPath);
+    console.log('Contraseña leída de .env (CERTIFICATE_PASSWORD):', rawCertPass ? 'Sí, la contraseña existe.' : 'NO, la contraseña está vacía o es undefined.');
+    console.log('Ruta completa calculada para el certificado:', fullCalculatedPath);
+    console.log('¿Existe el archivo en esa ruta? (fs.existsSync):', fs.existsSync(fullCalculatedPath));
+    console.log('------------------\n\n');
+    // --- FIN DE CÓDIGO DE DEPURACIÓN TEMPORAL ---
+    
+    const certificatePath = path.join(process.cwd(), process.env.CERTIFICATE_PATH!);
+    const certificatePassword = process.env.CERTIFICATE_PASSWORD!;
 
-    const certificatePath = path.join(process.cwd(), certPathEnv);
-    const privateKeyPath = path.join(process.cwd(), privateKeyPathEnv);
-
-    if (!fs.existsSync(certificatePath)) {
-        console.error(`No se encontró el archivo del certificado en: ${certificatePath}`);
-        return res.status(500).json({ error: 'Error de configuración del servidor.', details: `No se encontró el archivo del certificado en la ruta especificada: ${certPathEnv}` });
-    }
-
-    if (!fs.existsSync(privateKeyPath)) {
-        console.error(`No se encontró el archivo de la clave privada en: ${privateKeyPath}`);
-        return res.status(500).json({ error: 'Error de configuración del servidor.', details: `No se encontró el archivo de la clave privada en la ruta especificada: ${privateKeyPathEnv}` });
+    if (!fs.existsSync(certificatePath) || !certificatePassword) {
+        console.error('Certificado o contraseña no encontrados. Verifica las variables de entorno.');
+        return res.status(500).json({ error: 'Error de configuración del servidor.' });
     }
     
     const certificatePem = fs.readFileSync(certificatePath, 'utf8');
-    const privateKeyPem = fs.readFileSync(privateKeyPath, 'utf8');
+    const privateKeyPem = fs.readFileSync(process.env.PRIVATE_KEY_PATH!, 'utf8'); // Ajusta la variable si es necesario
 
     const xmlFirmado = firmarXml(xmlSinFirma, privateKeyPem, certificatePem);
 

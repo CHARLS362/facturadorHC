@@ -1,9 +1,9 @@
-
 "use client";
 
 import { LoginForm } from '@/components/auth/login-form';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import logoImg from '@/img/facturahc.png';
 
 export default function LoginPage() {
   const [mounted, setMounted] = useState(false);
@@ -13,19 +13,19 @@ export default function LoginPage() {
   }, []);
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-700 via-blue-800 to-indigo-900 bg-[length:200%_200%] animate-gradient-pan">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 bg-[length:200%_200%] animate-gradient-pan">
       
       <main className="relative z-10 flex flex-col lg:flex-row items-center justify-center w-full max-w-4xl">
         {/* Welcome Text Section (for larger screens) */}
         <div className="hidden lg:flex flex-col self-center text-left lg:px-14 lg:max-w-md xl:max-w-lg mb-10 lg:mb-0 animate-fade-in">
           <div className="mx-auto lg:mx-0 mb-6">
             <Image 
-              src="https://placehold.co/180x50.png?text=FacturaHC" 
+              src={logoImg} 
               alt="FacturacionHC Logo" 
               width={180} 
               height={50}
               className="block"
-              data-ai-hint="modern business logo"
+              priority
             />
           </div>
           <h1 className="my-3 font-headline font-semibold text-4xl text-white">Bienvenido de Nuevo</h1>

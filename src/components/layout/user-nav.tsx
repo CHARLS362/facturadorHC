@@ -17,7 +17,7 @@ import { LogOut, UserCircle, Settings } from "lucide-react";
 import Link from "next/link";
 
 interface UserNavProps {
-  user: { email?: string; name?: string } | null;
+  user: { email?: string; name?: string; avatarUrl?: string | null; } | null;
 }
 
 const getInitials = (name?: string): string => {
@@ -44,7 +44,7 @@ export function UserNav({ user }: UserNavProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar>
-              <AvatarImage src="https://placehold.co/40x40.png" alt={user?.name || "Usuario"} data-ai-hint="person portrait" />
+              <AvatarImage src={`https://avatar.vercel.sh/${user?.email || 'default'}.png`} alt={user?.name || "Usuario"} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>

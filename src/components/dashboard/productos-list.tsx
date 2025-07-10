@@ -124,7 +124,7 @@ export function ProductosList({ initialData }: { initialData: MockProduct[] }) {
                   <TableRow key={product.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell>
                       <Image 
-                        src={product.imageUrl || `https://placehold.co/64x64.png?text=${String(product.name).substring(0,3)}`}
+                        src={product.imageUrl || 'https://placehold.co/64x64.png'}
                         alt={product.name} 
                         width={48} 
                         height={48} 

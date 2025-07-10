@@ -75,11 +75,12 @@ body {
     @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
 }
 
-.ps-menu-button.ps-active {
-    @apply bg-primary text-primary-foreground;
+.ps-submenu-content {
+    @apply bg-secondary/40 transition-colors duration-200 ease-in-out;
 }
-.ps-menu-button.ps-active:hover {
-    @apply bg-primary/90 text-primary-foreground;
+
+.ps-menu-button.ps-disabled {
+    @apply text-muted-foreground;
 }
 
 /* React Pro Sidebar - Original Structure (keep for functionality) */

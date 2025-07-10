@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -300,7 +299,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-700 via-blue-800 to-indigo-900 bg-[length:200%_200%] animate-gradient-pan">
+    <div className="relative min-h-screen overflow-hidden flex flex-col items-center justify-center p-4 selection:bg-primary/20 selection:text-primary bg-gradient-to-br from-sky-500 via-blue-600 to-indigo-700 bg-[length:200%_200%] animate-gradient-pan">
       <main className="relative z-10 w-full max-w-md">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>

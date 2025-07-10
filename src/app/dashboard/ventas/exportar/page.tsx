@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -18,7 +19,7 @@ const initialMockSales: MockSale[] = [
 ];
 
 export default function ExportarVentasPage() {
-  const [sales, setSales] = useState<ExportSale[]>([]);
+  const [sales, setSales] = useState<MockSale[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import type { EmpresaDataForTemplate } from "@/components/templates/invoice-preview";
 
 export interface MockSale {
   id: string;
@@ -29,7 +30,7 @@ const mockCompanyInfoFallback: EmpresaDataForTemplate = {
     ruc: "20123456789",
     phone: "(01) 555-1234",
     email: "reportes@facturacionhc.com",
-    logoUrl: "https://placehold.co/60x60.png?text=FH",
+    logoUrl: "https://placehold.co/60x60.png",
 };
 
 export function SaleExportPreview({ sales }: SaleExportPreviewProps) {

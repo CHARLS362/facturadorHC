@@ -19,7 +19,7 @@ const mockEmpresaFallback: EmpresaDataForTemplate = {
   ruc: "20123456789",
   phone: "(01) 555-1234",
   email: "ventas@facturacionhc.com",
-  logoUrl: "https://placehold.co/240x70.png?text=Mi+Logo",
+  logoUrl: "https://placehold.co/240x70.png",
 };
 
 const mockVenta: VentaDataForTemplate = {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,13 +22,12 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-
-
+import { useRouter } from "next/navigation";
 const IGV_RATE = 0.18; // 18% IGV for Peru
 
 
 const ventaSchema = z.object({
-  clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione o consulte un cliente." }),
+  clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione el tipo de documento del cliente." }),
   clientDocumentNumber: z.string()
     .min(1, { message: "El número de documento es requerido."})
     .refine(val => /^\d+$/.test(val), { message: "Solo se permiten números." }),
@@ -69,14 +69,14 @@ type VentaFormValues = z.infer<typeof ventaSchema>;
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
-  const [searchMethod, setSearchMethod] = useState<ClientSearchMethod>('ruc');
-  const [isClientDataFetched, setIsClientDataFetched] = useState(false);
-  const [isConsultingSunat, setIsConsultingSunat] = useState(false);
+  const router = useRouter(); 
+
+  const [isConsulting, setIsConsulting] = useState(false);
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [availableProducts, setAvailableProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("/api/producto") // Cambia la ruta si tu endpoint es diferente
+    fetch("/api/producto") 
       .then(res => res.json())
       .then(data => setAvailableProducts(
         data.map((p: any) => ({
@@ -91,11 +91,6 @@ export default function NuevaVentaPage() {
 
   const [currentQuantity, setCurrentQuantity] = useState<number>(1);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
-  
-  const [clientSearchOpen, setClientSearchOpen] = useState(false);
-  const [clientSearchValue, setClientSearchValue] = useState("");
-  const [newClientDoc, setNewClientDoc] = useState("");
-
 
   const form = useForm<VentaFormValues>({
     resolver: zodResolver(ventaSchema),
@@ -139,66 +134,54 @@ export default function NuevaVentaPage() {
     form.setValue("igvAmount", igv, { shouldValidate: true });
     form.setValue("grandTotal", total, { shouldValidate: true });
   }, [calculatedSubtotal, form]);
-
-  const handleClientSelect = (client: { documentType: "DNI" | "RUC", documentNumber: string, name: string, address?: string }) => {
-    form.setValue("clientDocumentType", client.documentType);
-    form.setValue("clientDocumentNumber", client.documentNumber);
-    form.setValue("clientFullName", client.name);
-    form.setValue("clientAddress", client.address || "");
-    form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
-    
-    // Reset other input methods
-    setClientSearchValue("");
-    setNewClientDoc("");
-    setClientSearchOpen(false);
-  };
   
-  const handleSunatQuery = async () => {
-    const docType = searchMethod;
-    if (docType === 'search') return;
-    
+  const handleApiQuery = async () => {
+    const docType = form.getValues("clientDocumentType");
     const docNumber = form.getValues("clientDocumentNumber");
-
-    form.setValue("clientDocumentType", docType.toUpperCase() as "DNI" | "RUC", { shouldValidate: true });
     
-    const isValidDocNumber = await form.trigger("clientDocumentNumber");
-    if (!isValidDocNumber) {
-         toast({
-            variant: "destructive",
-            title: "Error de Validación",
-            description: "Por favor, corrija el número de documento.",
-          });
+    if (!docType || !docNumber) {
+        toast({ variant: "destructive", title: "Datos incompletos", description: "Seleccione un tipo y número de documento." });
         return;
     }
-    if (!docType || !docNumber) return;
-    
-    setIsConsultingSunat(true);
-    // Simulate API call to SUNAT/RENIEC
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    
-    let mockName = "Cliente Ejemplo S.A.C.";
-    let mockAddress = "Av. Javier Prado Este 123, San Isidro, Lima";
-    if (docType === "dni") {
-      mockName = "Juan Pérez Gonzales";
-      mockAddress = "Calle Las Begonias 456, Lince, Lima";
+
+    const isValidDocNumber = await form.trigger("clientDocumentNumber");
+    if (!isValidDocNumber) {
+      toast({
+        variant: "destructive",
+        title: "Error de Validación",
+        description: "Por favor, corrija el número de documento.",
+      });
+      return;
     }
     
-    form.setValue("clientFullName", mockName, { shouldValidate: true });
-    form.setValue("clientAddress", mockAddress);
-    setIsClientDataFetched(true);
-    setIsConsultingSunat(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Consulta Exitosa (Simulada)</span>
-        </div>
-      ),
-      description: "Datos del cliente recuperados.",
-    });
+    setIsConsulting(true);
+
+    try {
+      const res = await fetch(`/api/consulta-externa?tipo=${docType}&numero=${docNumber}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "No se encontró el cliente.");
+      }
+      
+      form.setValue("clientFullName", data.nombre || "", { shouldValidate: true });
+      form.setValue("clientAddress", data.direccion || "");
+      toast({
+        variant: "success",
+        title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Consulta Exitosa</span></div>,
+        description: "Datos del cliente recuperados.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "No encontrado",
+        description: error.message || "No se encontró cliente con ese documento.",
+      });
+      form.setValue("clientFullName", "", { shouldValidate: true });
+      form.setValue("clientAddress", "");
+    } finally {
+      setIsConsulting(false);
+    }
   };
 
   const handleAddProduct = () => {
@@ -292,11 +275,8 @@ export default function NuevaVentaPage() {
         ),
         description: `La venta para ${data.clientFullName} ha sido registrada exitosamente.`,
       });
-      form.reset();
-      setSearchMethod('ruc');
-      setIsClientDataFetched(false);
-      setCurrentProductId(null);
-      setCurrentQuantity(1);
+      router.push("/dashboard/ventas");
+      return; 
     } else {
       toast({
         variant: "destructive",
@@ -311,7 +291,7 @@ export default function NuevaVentaPage() {
       description: "Error de red al registrar venta.",
     });
   }
-  }
+}
   
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
 
@@ -328,107 +308,47 @@ export default function NuevaVentaPage() {
           <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
-              <CardDescription>Busque un cliente existente o consulte uno nuevo por DNI/RUC.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-                <RadioGroup onValueChange={handleSearchMethodChange} value={searchMethod} className="flex flex-col sm:flex-row gap-4 sm:gap-8">
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="ruc" id="r-ruc" />
-                        <Label htmlFor="r-ruc" className="cursor-pointer">Consultar por RUC</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="dni" id="r-dni" />
-                        <Label htmlFor="r-dni" className="cursor-pointer">Consultar por DNI</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="search" id="r-search" />
-                        <Label htmlFor="r-search" className="cursor-pointer">Buscar Cliente Registrado</Label>
-                    </div>
-                </RadioGroup>
-
-                <Separator />
-                
-                <div className="grid md:grid-cols-3 gap-6 items-end">
-                    {(searchMethod === 'dni' || searchMethod === 'ruc') && (
-                        <>
-                            <FormField
-                                control={form.control}
-                                name="clientDocumentNumber"
-                                render={({ field }) => (
-                                    <FormItem className="md:col-span-2">
-                                    <FormLabel>Nro. de {searchMethod.toUpperCase()}</FormLabel>
-                                    <FormControl>
-                                        <Input 
-                                            placeholder={searchMethod === "dni" ? "8 dígitos" : "11 dígitos"} 
-                                            {...field} 
-                                            maxLength={searchMethod === "dni" ? 8 : 11}
-                                            onChange={(e) => {
-                                                const { value } = e.target;
-                                                if (/^\d*$/.test(value)) {
-                                                    field.onChange(value);
-                                                }
-                                                setIsClientDataFetched(false);
-                                                form.setValue("clientFullName", "", { shouldValidate: false });
-                                                form.setValue("clientAddress", "", { shouldValidate: false });
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-                            <Button type="button" onClick={handleSunatQuery} disabled={isConsultingSunat || !form.watch("clientDocumentNumber")} className="w-full md:w-auto bg-accent hover:bg-accent/90 text-accent-foreground">
-                            {isConsultingSunat ? (
-                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>
-                            ) : (
-                                <SearchCheck className="mr-2 h-4 w-4" />
-                            )}
-                            Consultar
+            <CardContent className="space-y-4">
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <FormField
+                    control={form.control}
+                    name="clientDocumentType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Documento</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Seleccione tipo"/></SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="DNI">DNI</SelectItem>
+                            <SelectItem value="RUC">RUC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="clientDocumentNumber"
+                    render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                        <FormLabel>N° de Documento</FormLabel>
+                        <div className="flex gap-2">
+                            <FormControl>
+                                <Input placeholder="Ingrese el número..." {...field} />
+                            </FormControl>
+                            <Button type="button" onClick={handleApiQuery} disabled={isConsulting}>
+                                {isConsulting ? (<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>) : <SearchCheck className="mr-2 h-4 w-4"/>}
+                                Consultar
                             </Button>
-                        </>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
                     )}
-                    
-                    {searchMethod === 'search' && (
-                       <div className="md:col-span-3">
-                           <FormLabel>Buscar Cliente</FormLabel>
-                           <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button variant="outline" role="combobox" aria-expanded={clientSearchOpen} className="w-full justify-between font-normal mt-2">
-                                        {form.getValues("clientFullName") || "Seleccionar cliente..."}
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                                    <Command>
-                                        <CommandInput placeholder="Buscar cliente por nombre o documento..." />
-                                        <CommandEmpty>No se encontró ningún cliente.</CommandEmpty>
-                                        <CommandList>
-                                            <CommandGroup>
-                                            {availableClients.map((client) => (
-                                                <CommandItem
-                                                    key={client.id}
-                                                    value={client.name}
-                                                    onSelect={() => {
-                                                        form.setValue("clientDocumentType", client.documentType);
-                                                        form.setValue("clientDocumentNumber", client.documentNumber);
-                                                        form.setValue("clientFullName", client.name);
-                                                        form.setValue("clientAddress", client.address || "");
-                                                        form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
-                                                        setIsClientDataFetched(true);
-                                                        setClientSearchOpen(false);
-                                                    }}
-                                                >
-                                                    <Check className={cn("mr-2 h-4 w-4", form.getValues("clientDocumentNumber") === client.documentNumber ? "opacity-100" : "opacity-0")} />
-                                                    {client.name} ({client.documentType}: {client.documentNumber})
-                                                </CommandItem>
-                                            ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                           </Popover>
-                       </div>
-                    )}
+                  />
                 </div>
 
                 <FormField
@@ -438,34 +358,20 @@ export default function NuevaVentaPage() {
                     <FormItem>
                         <FormLabel>Nombre / Razón Social</FormLabel>
                         <FormControl>
-                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
+                          <Input placeholder="Se completará tras la consulta" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
-                 <FormField
-                    control={form.control}
-                    name="clientDocumentNumber"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Nro. Documento</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
-                 <FormField
+                <FormField
                     control={form.control}
                     name="clientAddress"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Dirección del Cliente</FormLabel>
+                        <FormLabel>Dirección del Cliente (Opcional)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
+                          <Input placeholder="Se completará tras la consulta" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -685,9 +591,6 @@ export default function NuevaVentaPage() {
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border/30 mt-6">
               <Button type="button" variant="outline" onClick={() => { 
                   form.reset(); 
-                  setClientSearchValue("");
-                  setCurrentProductId(null);
-                  setCurrentQuantity(1);
                   while(saleItemsFields.length > 0) {
                       removeSaleItem(0);
                   }

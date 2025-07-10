@@ -14,7 +14,8 @@ import {
   Settings,
   KeyRound,
   Landmark,
-  ClipboardList, // Added
+  ClipboardList,
+  Warehouse,
   type LucideIcon
 } from 'lucide-react';
 import { useProSidebar } from 'react-pro-sidebar';
@@ -30,9 +31,10 @@ interface NavItem {
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Panel Central', icon: LayoutDashboard },
   { href: '/dashboard/usuarios', label: 'Usuarios', icon: Users },
+  { href: '/dashboard/almacenes', label: 'Almacenes', icon: Warehouse },
   { href: '/dashboard/productos', label: 'Productos', icon: Package },
   { href: '/dashboard/ventas', label: 'Ventas', icon: ShoppingCart },
-  { href: '/dashboard/compras', label: 'Compras', icon: ClipboardList }, // Added
+  { href: '/dashboard/compras', label: 'Compras', icon: ClipboardList },
   { href: '/dashboard/caja', label: 'Caja', icon: Landmark },
   { href: '/dashboard/clientes', label: 'Clientes', icon: UsersRound },
   { href: '/dashboard/plantillas', label: 'Plantillas Factura', icon: FileText },

@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { PanelLeft, Menu as MenuIconLucide } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import logoImg from '@/img/facturahc.png';
 
 function DashboardLayoutContent({ 
   children, 
@@ -27,7 +28,7 @@ function DashboardLayoutContent({
   const { collapseSidebar, toggleSidebar, collapsed, broken, toggled } = useProSidebar();
   const [isMounted, setIsMounted] = useState(false);
   const pathname = usePathname();
-  const isPrintOrExportPage = pathname.includes('/exportar') || pathname.includes('/imprimir');
+  const isPrintOrExportPage = pathname?.includes('/exportar') || pathname?.includes('/imprimir');
 
   useEffect(() => {
     setIsMounted(true);
@@ -86,12 +87,11 @@ function DashboardLayoutContent({
             {!collapsed && (
               <div className="flex items-center gap-2 overflow-hidden">
                 <Image
-                  src="https://placehold.co/40x40.png?text=FH"
+                  src={logoImg}
                   alt="FacturacionHC Logo Small"
                   width={32}
                   height={32}
                   className="rounded-md"
-                  data-ai-hint="modern business logo"
                 />
                 <h1 className="font-headline text-xl font-semibold truncate text-primary">FacturaHC</h1>
               </div>
@@ -111,7 +111,9 @@ function DashboardLayoutContent({
           <div className="flex-grow overflow-y-auto">
             <Menu
               menuItemStyles={{
-                button: {
+                button: ({ level, active, disabled }) => ({
+                  color: disabled ? 'hsl(var(--muted-foreground))' : 'hsl(var(--foreground))',
+                  backgroundColor: 'transparent',
                   '&:hover': {
                     backgroundColor: 'hsl(var(--accent))',
                     color: 'hsl(var(--accent-foreground))',
@@ -120,11 +122,11 @@ function DashboardLayoutContent({
                     backgroundColor: 'hsl(var(--primary))',
                     color: 'hsl(var(--primary-foreground))',
                   },
-                  '&.ps-active:hover': {
+                   '&.ps-active:hover': {
                     backgroundColor: 'hsl(var(--primary) / 0.9)',
                     color: 'hsl(var(--primary-foreground))',
                   },
-                },
+                }),
               }}
             >
               <SidebarNav />
