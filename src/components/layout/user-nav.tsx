@@ -19,7 +19,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 interface UserNavProps {
-  user: { email?: string; name?: string } | null;
+  user: { email?: string; name?: string; avatarUrl?: string | null; } | null;
 }
 
 const getInitials = (name?: string): string => {
@@ -71,7 +71,7 @@ export function UserNav({ user }: UserNavProps) {
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
             <Avatar>
-              <AvatarImage src="https://placehold.co/40x40.png" alt={user?.name || "Usuario"} data-ai-hint="person portrait" />
+              <AvatarImage src={user?.avatarUrl || ''} alt={user?.name || "Usuario"} />
               <AvatarFallback>{userInitials}</AvatarFallback>
             </Avatar>
           </Button>

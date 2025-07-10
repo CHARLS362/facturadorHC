@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { ReactNode } from 'react';
@@ -8,6 +9,7 @@ interface User {
   email?: string;
   name?: string;
   role?: string;
+  avatarUrl?: string | null;
 }
 
 interface AuthContextType {
@@ -15,6 +17,7 @@ interface AuthContextType {
   user: User | null;
   login: (loginData: any, rememberMe: boolean) => void;
   logout: () => void;
+  updateUser: (newUserData: User | null) => void;
   isLoading: boolean;
 }
 
@@ -36,17 +39,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
+  const getStorage = (): Storage => {
+    // Check if localStorage has 'user' which indicates "remember me" was checked.
+    return localStorage.getItem('user') ? localStorage : sessionStorage;
+  };
+
   useEffect(() => {
     try {
-      // Prefer localStorage (remember me) over sessionStorage
-      let storedUser = localStorage.getItem('user');
-      if (!storedUser) {
-        storedUser = sessionStorage.getItem('user');
-      }
+      const storage = getStorage();
+      let storedUser = storage.getItem('user');
 
       if (storedUser) {
         const userData = JSON.parse(storedUser);
-        setUser({ email: userData.Email, name: userData.Nombre, role: getRoleFromId(userData.IdRol) });
+        setUser({ 
+            email: userData.Email, 
+            name: userData.Nombre, 
+            role: getRoleFromId(userData.IdRol),
+            avatarUrl: userData.avatarUrl || null 
+        });
         setIsAuthenticated(true);
       }
     } catch (error) {
@@ -55,6 +65,33 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       sessionStorage.removeItem('user');
     } finally {
       setIsLoading(false);
+    }
+  }, []);
+
+  const updateUser = useCallback((newUserData: User | null) => {
+    if (newUserData) {
+        const storage = getStorage();
+        // Update user state
+        setUser(newUserData);
+        // Update persisted storage
+        const storedUser = storage.getItem('user');
+        if (storedUser) {
+            try {
+                const parsedStoredUser = JSON.parse(storedUser);
+                // Merge new data with existing data to keep things like IdRol etc.
+                const updatedStoredUser = {
+                    ...parsedStoredUser,
+                    Nombre: newUserData.name,
+                    avatarUrl: newUserData.avatarUrl,
+                };
+                storage.setItem('user', JSON.stringify(updatedStoredUser));
+            } catch (e) {
+                console.error("Could not update user in storage", e);
+            }
+        }
+    } else {
+        // Handle case where user is set to null (e.g., logout)
+        setUser(null);
     }
   }, []);
 
@@ -76,24 +113,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       const userData = result.usuario;
 
-      // Clear previous storage to avoid conflicts
       localStorage.removeItem('user');
       sessionStorage.removeItem('user');
 
-      if (rememberMe) {
-        localStorage.setItem('user', JSON.stringify(userData));
-      } else {
-        sessionStorage.setItem('user', JSON.stringify(userData));
-      }
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(userData));
       
-      setUser({ email: userData.Email, name: userData.Nombre, role: getRoleFromId(userData.IdRol) });
+      setUser({ 
+          email: userData.Email, 
+          name: userData.Nombre, 
+          role: getRoleFromId(userData.IdRol), 
+          avatarUrl: userData.avatarUrl || null 
+      });
       setIsAuthenticated(true);
       router.replace('/dashboard');
 
     } catch (error: any) {
-      // The component calling login should handle toast notifications
       console.error("Login failed:", error.message);
-      throw error; // Re-throw error to be caught by the calling component
+      throw error;
     }
   }, [router]);
 
@@ -106,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [router]);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, updateUser, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
