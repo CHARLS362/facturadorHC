@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,6 +67,14 @@ const ventaSchema = z.object({
 });
 
 type VentaFormValues = z.infer<typeof ventaSchema>;
+
+// MOCK DATA - Replace with API call
+const availableClients: { id: string; documentType: "DNI" | "RUC", documentNumber: string, name: string, address?: string }[] = [
+    { id: '1', documentType: 'RUC', documentNumber: '20123456789', name: 'Empresa XYZ S.A.C.', address: 'Av. El Sol 123, Lima' },
+    { id: '2', documentType: 'DNI', documentNumber: '12345678', name: 'Juan Pérez Gómez', address: 'Jr. Luna 456, Arequipa' }
+];
+
+type ClientSearchMethod = 'dni' | 'ruc' | 'search';
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
@@ -154,26 +163,24 @@ export default function NuevaVentaPage() {
   };
   
   const handleSunatQuery = async () => {
-    const docType = searchMethod;
-    if (docType === 'search') return;
-    
-    const docNumber = form.getValues("clientDocumentNumber");
+    if (!clientSearchValue) return;
 
-    form.setValue("clientDocumentType", docType.toUpperCase() as "DNI" | "RUC", { shouldValidate: true });
-    
+    const docType = /^\d{8}$/.test(clientSearchValue) ? "DNI" : "RUC";
+
+    form.setValue("clientDocumentType", docType, { shouldValidate: true });
+    form.setValue("clientDocumentNumber", clientSearchValue, { shouldValidate: true });
+
     const isValidDocNumber = await form.trigger("clientDocumentNumber");
     if (!isValidDocNumber) {
-         toast({
+        toast({
             variant: "destructive",
             title: "Error de Validación",
             description: "Por favor, corrija el número de documento.",
-          });
+        });
         return;
     }
-    if (!docType || !docNumber) return;
     
     setIsConsultingSunat(true);
-    const docType = /^\d{8}$/.test(clientSearchValue) ? "DNI" : "RUC";
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500)); 
@@ -645,3 +652,4 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
+
