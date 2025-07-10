@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Edit, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { Search, Edit, Trash2, AlertTriangle, CheckCircle2, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { 
   AlertDialog,
@@ -120,6 +120,12 @@ export function AlmacenesList({ initialData }: { initialData: Almacen[] }) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
+                      <Link href={`/dashboard/almacenes/${almacen.IdAlmacen}`}>
+                        <Eye className="h-4 w-4" />
+                        <span className="sr-only">Ver Detalles</span>
+                      </Link>
+                    </Button>
                     <Button variant="ghost" size="icon" className="hover:text-primary transition-colors" asChild>
                       <Link href={`/dashboard/almacenes/${almacen.IdAlmacen}/editar`}>
                         <Edit className="h-4 w-4" />
