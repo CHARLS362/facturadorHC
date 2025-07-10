@@ -20,15 +20,12 @@ import Link from "next/link";
 import React, { useEffect, useState, useMemo, } from "react";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-
 
 const IGV_RATE = 0.18; // 18% IGV for Peru
 
 
 const ventaSchema = z.object({
-  clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione o consulte un cliente." }),
+  clientDocumentType: z.enum(["DNI", "RUC"], { required_error: "Seleccione un tipo de documento." }),
   clientDocumentNumber: z.string()
     .min(1, { message: "El número de documento es requerido."})
     .refine(val => /^\d+$/.test(val), { message: "Solo se permiten números." }),
@@ -68,23 +65,14 @@ const ventaSchema = z.object({
 
 type VentaFormValues = z.infer<typeof ventaSchema>;
 
-// MOCK DATA - Replace with API calls in a real app
-type ClientSearchMethod = 'dni' | 'ruc' | 'search';
-const availableClients = [
-    { id: "CLI001", documentType: "RUC" as "DNI" | "RUC", documentNumber: "20123456789", name: "Empresa Ejemplo S.A.C.", address: "Av. Principal 123, Lima" },
-    { id: "CLI002", documentType: "DNI" as "DNI" | "RUC", documentNumber: "12345678", name: "Juan Pérez", address: "Calle Secundaria 456, Arequipa" },
-];
-
 export default function NuevaVentaPage() {
   const { toast } = useToast();
-  const [searchMethod, setSearchMethod] = useState<ClientSearchMethod>('ruc');
-  const [isClientDataFetched, setIsClientDataFetched] = useState(false);
   const [isConsultingSunat, setIsConsultingSunat] = useState(false);
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [availableProducts, setAvailableProducts] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch("/api/producto") // Cambia la ruta si tu endpoint es diferente
+    fetch("/api/producto")
       .then(res => res.json())
       .then(data => setAvailableProducts(
         data.map((p: any) => ({
@@ -99,11 +87,6 @@ export default function NuevaVentaPage() {
 
   const [currentQuantity, setCurrentQuantity] = useState<number>(1);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
-  
-  const [clientSearchOpen, setClientSearchOpen] = useState(false);
-  const [clientSearchValue, setClientSearchValue] = useState("");
-  const [newClientDoc, setNewClientDoc] = useState("");
-
 
   const form = useForm<VentaFormValues>({
     resolver: zodResolver(ventaSchema),
@@ -147,63 +130,42 @@ export default function NuevaVentaPage() {
     form.setValue("igvAmount", igv, { shouldValidate: true });
     form.setValue("grandTotal", total, { shouldValidate: true });
   }, [calculatedSubtotal, form]);
-
-  const handleClientSelect = (client: { documentType: "DNI" | "RUC", documentNumber: string, name: string, address?: string }) => {
-    form.setValue("clientDocumentType", client.documentType);
-    form.setValue("clientDocumentNumber", client.documentNumber);
-    form.setValue("clientFullName", client.name);
-    form.setValue("clientAddress", client.address || "");
-    form.trigger(["clientDocumentType", "clientDocumentNumber", "clientFullName"]);
-    
-    // Reset other input methods
-    setClientSearchValue("");
-    setNewClientDoc("");
-    setClientSearchOpen(false);
-  };
   
   const handleSunatQuery = async () => {
-    if (!clientSearchValue) return;
-
-    let docType: "DNI" | "RUC" = /^\d{8}$/.test(clientSearchValue) ? "DNI" : "RUC";
-    form.setValue("clientDocumentNumber", clientSearchValue, { shouldValidate: true });
-    form.setValue("clientDocumentType", docType, { shouldValidate: true });
-
-    const isValidDocNumber = await form.trigger("clientDocumentNumber");
-    if (!isValidDocNumber) {
-         toast({
-            variant: "destructive",
-            title: "Error de Validación",
-            description: "Por favor, corrija el número de documento.",
-          });
+    const docType = form.getValues("clientDocumentType");
+    const docNumber = form.getValues("clientDocumentNumber");
+    
+    if (!docType || !docNumber) {
+        toast({ variant: "destructive", title: "Datos incompletos", description: "Seleccione un tipo y número de documento." });
         return;
     }
 
-    setIsConsultingSunat(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    
-    const mockData = {
-      documentType: docType,
-      documentNumber: clientSearchValue,
-      name: docType === 'DNI' ? `Cliente DNI ${clientSearchValue}` : `Empresa RUC ${clientSearchValue}`,
-      address: 'Av. Simulación 123, Lima'
-    };
+    const isValidDocNumber = await form.trigger("clientDocumentNumber");
+    if (!isValidDocNumber) return;
 
-    handleClientSelect(mockData);
-    setIsConsultingSunat(false);
-    toast({
-      variant: "success",
-      title: (
-        <div className="flex items-center gap-2">
-          <div className="flex-shrink-0 p-1 bg-emerald-500 rounded-full">
-            <CheckCircle2 className="h-5 w-5 text-white" />
-          </div>
-          <span>Consulta Exitosa (Simulada)</span>
-        </div>
-      ),
-      description: "Datos del cliente recuperados.",
-    });
+    setIsConsultingSunat(true);
+    try {
+        const response = await fetch(`/api/cliente/consulta-cliente?tipo=${docType}&numero=${docNumber}`);
+        const data = await response.json();
+
+        if (!response.ok) {
+            toast({
+                variant: "destructive",
+                title: "Cliente no encontrado",
+                description: "No se encontró un cliente con ese documento. Puede registrarlo manualmente.",
+            });
+            form.setValue("clientFullName", "");
+            form.setValue("clientAddress", "");
+        } else {
+            form.setValue("clientFullName", data.Nombre || "");
+            form.setValue("clientAddress", data.Direccion || "");
+            toast({ variant: "success", title: "Cliente encontrado", description: "Datos del cliente cargados." });
+        }
+    } catch (error) {
+        toast({ variant: "destructive", title: "Error de red", description: "No se pudo realizar la consulta." });
+    } finally {
+        setIsConsultingSunat(false);
+    }
   };
 
   const handleAddProduct = () => {
@@ -262,7 +224,7 @@ export default function NuevaVentaPage() {
       IdComprobante: data.documentType === "Factura" ? 1 : 2,
       FechaVenta: new Date().toISOString(),
       Total: data.grandTotal,
-      Estado: "Pendiente",
+      Estado: "Pagado", // Changed from "Pendiente" to "Pagado"
       items: data.saleItems.map(item => ({
         IdProducto: parseInt(item.productId.replace("PROD", "")),
         Cantidad: item.quantity,
@@ -290,7 +252,6 @@ export default function NuevaVentaPage() {
           description: `La venta para ${data.clientFullName} ha sido registrada.`,
         });
         form.reset();
-        setClientSearchValue("");
         setCurrentProductId(null);
         setCurrentQuantity(1);
       } else {
@@ -302,12 +263,6 @@ export default function NuevaVentaPage() {
   }
   
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
-
-  const isDniQuery = /^\d{8}$/.test(clientSearchValue);
-  const isRucQuery = /^\d{11}$/.test(clientSearchValue);
-  const filteredClients = clientSearchValue ? availableClients.filter(c =>
-    c.name.toLowerCase().includes(clientSearchValue.toLowerCase())
-  ) : availableClients;
 
   return (
     <div className="space-y-8 pb-12">
@@ -322,55 +277,49 @@ export default function NuevaVentaPage() {
           <Card className="shadow-xl rounded-lg w-full max-w-5xl mx-auto border-border/50">
             <CardHeader>
               <CardTitle className="font-headline text-2xl">Información del Cliente</CardTitle>
-              <CardDescription>Busque un cliente existente o consulte uno nuevo por DNI/RUC.</CardDescription>
+              <CardDescription>Consulte un cliente por DNI/RUC o ingrese los datos manualmente.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-               <FormItem>
-                <FormLabel>Buscar Cliente (Nombre, DNI o RUC)</FormLabel>
-                <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button variant="outline" role="combobox" className={cn("w-full justify-between", !form.getValues("clientFullName") && "text-muted-foreground")}>
-                        {form.getValues("clientFullName") || "Seleccione un cliente..."}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                    <Command>
-                      <CommandInput 
-                        placeholder="Buscar cliente..." 
-                        value={clientSearchValue}
-                        onValueChange={setClientSearchValue}
-                      />
-                      <CommandList>
-                         {(filteredClients.length === 0 && !isDniQuery && !isRucQuery) && (
-                            <CommandEmpty>No se encontraron clientes.</CommandEmpty>
-                         )}
-                         {(isDniQuery || isRucQuery) && (
-                           <CommandItem onSelect={handleSunatQuery} className="cursor-pointer bg-accent/50">
-                             <SearchCheck className="mr-2 h-4 w-4"/>
-                             <span>Consultar {isDniQuery ? 'DNI' : 'RUC'}: {clientSearchValue}</span>
-                           </CommandItem>
-                         )}
-                        <CommandGroup>
-                          {filteredClients.map((client) => (
-                            <CommandItem
-                              value={client.name}
-                              key={client.id}
-                              onSelect={() => handleClientSelect(client)}
-                            >
-                              <Check className={cn("mr-2 h-4 w-4", client.documentNumber === form.getValues("clientDocumentNumber") ? "opacity-100" : "opacity-0")} />
-                              {client.name}
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </FormItem>
-              
+               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                  <FormField
+                    control={form.control}
+                    name="clientDocumentType"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tipo de Documento</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Seleccione tipo"/></SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="DNI">DNI</SelectItem>
+                            <SelectItem value="RUC">RUC</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="clientDocumentNumber"
+                    render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                        <FormLabel>N° de Documento</FormLabel>
+                        <div className="flex gap-2">
+                            <FormControl>
+                                <Input placeholder="Ingrese el número..." {...field} />
+                            </FormControl>
+                            <Button type="button" onClick={handleSunatQuery} disabled={isConsultingSunat}>
+                                {isConsultingSunat ? (<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>) : <SearchCheck className="mr-2 h-4 w-4"/>}
+                                Consultar
+                            </Button>
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+               </div>
               <div className="grid md:grid-cols-2 gap-4 pt-2">
                  <FormField
                     control={form.control}
@@ -379,7 +328,7 @@ export default function NuevaVentaPage() {
                     <FormItem>
                         <FormLabel>Nombre / Razón Social</FormLabel>
                         <FormControl>
-                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
+                          <Input placeholder="Se completará tras la consulta" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
@@ -387,31 +336,18 @@ export default function NuevaVentaPage() {
                 />
                  <FormField
                     control={form.control}
-                    name="clientDocumentNumber"
+                    name="clientAddress"
                     render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Nro. Documento</FormLabel>
+                        <FormLabel>Dirección del Cliente (Editable)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
+                          <Input placeholder="Se completará tras la consulta" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>
                     )}
                 />
               </div>
-                 <FormField
-                    control={form.control}
-                    name="clientAddress"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Dirección del Cliente</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Se completará tras la búsqueda" {...field} readOnly className="bg-muted/50" />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
             </CardContent>
           </Card>
 
@@ -626,7 +562,6 @@ export default function NuevaVentaPage() {
             <CardFooter className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-border/30 mt-6">
               <Button type="button" variant="outline" onClick={() => { 
                   form.reset(); 
-                  setClientSearchValue("");
                   setCurrentProductId(null);
                   setCurrentQuantity(1);
                   while(saleItemsFields.length > 0) {
@@ -650,3 +585,5 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
+
+    
