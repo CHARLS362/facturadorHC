@@ -1,8 +1,8 @@
+
 "use client"
 
 import React, { useMemo } from "react";
 import { Pie, PieChart, Sector, Cell } from "recharts"
-import type { PieSectorDataItem } from "recharts"
 import * as _ from "lodash";
 
 import {
@@ -45,6 +45,21 @@ const chartConfig = {
   },
 } satisfies Record<string, any>;
 
+// Define a local interface for the active shape props
+interface ActiveShapeProps {
+  cx?: number;
+  cy?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  startAngle?: number;
+  endAngle?: number;
+  fill?: string;
+  payload?: {
+    category: string;
+    salesValue: number;
+  };
+}
+
 
 export function ProductPopularityChart() {
   const [activeIndex, setActiveIndex] = React.useState<number | undefined>(undefined);
@@ -52,7 +67,7 @@ export function ProductPopularityChart() {
   const chartData = useMemo(() => {
     return initialChartData.map(item => ({
       ...item,
-      fill: chartConfig[item.colorName]?.color || "hsl(var(--muted))",
+      fill: chartConfig[item.colorName as keyof typeof chartConfig].color || "hsl(var(--muted))",
     }));
   }, []);
 
@@ -60,11 +75,11 @@ export function ProductPopularityChart() {
     return _.round(chartData.reduce((acc, curr) => acc + curr.salesValue, 0), 2);
   }, [chartData]);
 
-  const ActiveShape = (props: PieSectorDataItem) => {
+  const ActiveShape = (props: ActiveShapeProps) => {
     const { cx=0, cy=0, innerRadius=0, outerRadius=0, startAngle=0, endAngle=0, fill, payload } = props;
     
-    const categoryName = (payload && typeof payload === 'object' && 'category' in payload) ? String(payload.category) : 'Unknown';
-    const salesValue = (payload && typeof payload === 'object' && 'salesValue' in payload) ? Number(payload.salesValue).toFixed(2) : '0.00'
+    const categoryName = payload?.category || 'Unknown';
+    const salesValue = payload?.salesValue.toFixed(2) || '0.00'
 
     return (
       <g>
@@ -106,7 +121,7 @@ export function ProductPopularityChart() {
               strokeWidth={2}
               stroke="hsl(var(--background))" 
               activeIndex={activeIndex}
-              activeShape={ActiveShape as any} // Type assertion if ActiveShape type doesn't match exactly
+              activeShape={ActiveShape}
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(undefined)}
               paddingAngle={2}
