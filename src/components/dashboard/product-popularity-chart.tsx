@@ -22,6 +22,7 @@ const initialChartData = [
 const chartConfig = {
   salesValue: {
     label: "Ventas",
+    color: "hsl(var(--muted))", // Added fallback color
   },
   ropa: {
     label: "Ropa",
@@ -43,7 +44,7 @@ const chartConfig = {
     label: "Otros",
     color: "hsl(var(--chart-5))",
   },
-} satisfies Record<string, any>;
+} satisfies Record<string, { label: string; color: string; }>;
 
 // Define a local interface for the active shape props
 interface ActiveShapeProps {
@@ -67,7 +68,7 @@ export function ProductPopularityChart() {
   const chartData = useMemo(() => {
     return initialChartData.map(item => ({
       ...item,
-      fill: chartConfig[item.colorName as keyof typeof chartConfig].color || "hsl(var(--muted))",
+      fill: chartConfig[item.colorName as keyof typeof chartConfig]?.color || "hsl(var(--muted))",
     }));
   }, []);
 
