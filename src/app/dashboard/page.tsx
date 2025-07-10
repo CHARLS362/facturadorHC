@@ -17,7 +17,7 @@ import {
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { KpiCard } from "@/components/dashboard/kpi-card";
+import { KpiCard, KpiCardProps } from "@/components/dashboard/kpi-card";
 import { LowStockProducts } from "@/components/dashboard/low-stock-products";
 
 interface CustomKpiData extends KpiCardProps {}
@@ -66,6 +66,17 @@ const kpiData: CustomKpiData[] = [
     iconColorClass: "text-primary-foreground"
   },
 ];
+
+export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data fetching
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 750);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="space-y-8">

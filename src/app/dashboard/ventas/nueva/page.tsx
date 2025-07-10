@@ -66,6 +66,7 @@ const ventaSchema = z.object({
 });
 
 type VentaFormValues = z.infer<typeof ventaSchema>;
+type ClientSearchMethod = "ruc" | "dni" | "search";
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
@@ -76,6 +77,8 @@ export default function NuevaVentaPage() {
   const [isConsultingSunat, setIsConsultingSunat] = useState(false);
   const [currentProductId, setCurrentProductId] = useState<string | null>(null);
   const [availableProducts, setAvailableProducts] = useState<any[]>([]);
+  const [registeredClients, setRegisteredClients] = useState<any[]>([]);
+
 
   useEffect(() => {
     fetch("/api/producto") 
@@ -89,6 +92,11 @@ export default function NuevaVentaPage() {
         }))
       ))
       .catch(() => setAvailableProducts([]));
+    
+    fetch("/api/cliente/listar")
+      .then(res => res.json())
+      .then(data => setRegisteredClients(data))
+      .catch(() => setRegisteredClients([]));
   }, []);
 
   const [currentQuantity, setCurrentQuantity] = useState<number>(1);
@@ -324,7 +332,7 @@ export default function NuevaVentaPage() {
       description: "Error de red al registrar venta.",
     });
   }
-  }
+}
   
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";
 
@@ -378,8 +386,10 @@ export default function NuevaVentaPage() {
                                 {isConsultingSunat ? (<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>) : <SearchCheck className="mr-2 h-4 w-4"/>}
                                 Consultar
                             </Button>
-                        </>
+                        </div>
+                    </FormItem>
                     )}
+                  />
                     
                     {searchMethod === 'search' && (
                        <div className="md:col-span-3">
@@ -453,7 +463,6 @@ export default function NuevaVentaPage() {
                     </FormItem>
                     )}
                 />
-              </div>
             </CardContent>
           </Card>
 
@@ -693,5 +702,3 @@ export default function NuevaVentaPage() {
     </div>
   );
 }
-
-    

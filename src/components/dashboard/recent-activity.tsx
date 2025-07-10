@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils";
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
-import { cn } from "@/lib/utils";
 
 const activities = [
   { name: "Olivia Martin", email: "olivia.martin@email.com", amount: "+S/1,999.00", type: "Venta", avatarInitials: "OM" },
