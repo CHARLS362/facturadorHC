@@ -164,16 +164,41 @@ export default function DetallesVentaPage() {
   
   const mappedData = getMappedVentaData();
 
-  const handleEmail = () => {
-    if (!mappedData || !venta) return;
-    const mailtoLink = `mailto:${venta.EmailCliente || ''}?subject=Comprobante%20Electrónico:%20${mappedData.id}&body=Estimado(a)%20${venta.NombreCliente},%0A%0AAdjuntamos%20los%20detalles%20de%20su%20comprobante.%0A%0AGracias%20por%20su%20preferencia.`;
+  const handleEmailWithPdf = async () => {
+    if (!mappedData || !venta || !companyInfo) return;
 
-    toast({
-        title: "Paso siguiente: Adjuntar PDF",
-        description: "No olvides descargar el PDF primero para adjuntarlo a tu correo.",
-        variant: "default",
-    });
-    window.location.href = mailtoLink;
+    try {
+      const res = await fetch('/api/enviar-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          venta: mappedData,
+          empresa: companyInfo,
+          email: venta.EmailCliente,
+        })
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Correo enviado",
+          description: `El comprobante fue enviado a ${venta.EmailCliente}`,
+          variant: "success"
+        });
+      } else {
+        const data = await res.json();
+        toast({
+          title: "Error al enviar",
+          description: data.error || "No se pudo enviar el correo.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error de red",
+        description: "Verifica tu conexión o intenta más tarde.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleDownloadXml = () => {
@@ -250,7 +275,11 @@ export default function DetallesVentaPage() {
               <Button variant="secondary" onClick={handleDownloadXml}><FileCode2 className="mr-2 h-4 w-4"/>XML</Button>
               <Button variant="secondary" onClick={handleDownloadCdr}><FileCheck2 className="mr-2 h-4 w-4"/>CDR</Button>
               <Button variant="outline" className="text-green-600 border-green-500/50 hover:bg-green-500/10" onClick={() => setIsWhatsappDialogOpen(true)}><Send className="mr-2 h-4 w-4"/>WhatsApp</Button>
-              <Button onClick={handleEmail} variant="outline" className="text-orange-600 border-orange-500/50 hover:bg-orange-500/10">
+              <Button
+                onClick={handleEmailWithPdf}
+                variant="outline"
+                className="text-orange-600 border-orange-500/50 hover:bg-orange-500/10"
+              >
                 <Mail className="mr-2 h-4 w-4"/>Email
               </Button>
             </div>
