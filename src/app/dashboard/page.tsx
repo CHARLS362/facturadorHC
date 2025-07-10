@@ -1,4 +1,5 @@
-
+"use client";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,7 +17,7 @@ import {
 import { SalesOverviewChart } from "@/components/dashboard/sales-overview-chart";
 import { ProductPopularityChart } from "@/components/dashboard/product-popularity-chart";
 import { RecentActivity } from "@/components/dashboard/recent-activity";
-import { KpiCard, type KpiCardProps } from "@/components/dashboard/kpi-card";
+import { KpiCard } from "@/components/dashboard/kpi-card";
 import { LowStockProducts } from "@/components/dashboard/low-stock-products";
 
 interface CustomKpiData extends KpiCardProps {}
@@ -30,8 +31,8 @@ const kpiData: CustomKpiData[] = [
     description: "comparado a ayer", 
     trend: "up", 
     href: "/dashboard/ventas",
-    iconBgClass: "bg-chart-1",
-    iconColorClass: "text-primary-foreground"
+    iconBgClass: "bg-green-500 dark:bg-green-600",
+    iconColorClass: "text-white"
   },
   { 
     title: "NUEVOS CLIENTES (MES)", 
@@ -41,8 +42,8 @@ const kpiData: CustomKpiData[] = [
     description: "este mes", 
     trend: "up", 
     href: "/dashboard/clientes",
-    iconBgClass: "bg-chart-2",
-    iconColorClass: "text-accent-foreground"
+    iconBgClass: "bg-blue-500 dark:bg-blue-600",
+    iconColorClass: "text-white"
   },
   { 
     title: "FACTURAS EMITIDAS (MES)", 
@@ -51,8 +52,8 @@ const kpiData: CustomKpiData[] = [
     description: "Meta mensual: 500", 
     progressValue: 64, // (320/500)*100
     href: "/dashboard/ventas",
-    iconBgClass: "bg-chart-3",
-    iconColorClass: "text-primary-foreground"
+    iconBgClass: "bg-orange-500 dark:bg-orange-600",
+    iconColorClass: "text-white"
   },
   { 
     title: "TOTAL FACTURADO (MES)", 
@@ -61,12 +62,11 @@ const kpiData: CustomKpiData[] = [
     description: "en el mes actual",
     trend: "neutral", // Or 'up'/'down' if comparing to previous month
     href: "/dashboard/ventas",
-    iconBgClass: "bg-chart-4",
+    iconBgClass: "bg-primary", // Using theme primary
     iconColorClass: "text-primary-foreground"
   },
 ];
 
-export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <PageHeader 
@@ -80,7 +80,7 @@ export default function DashboardPage() {
           <KpiCard 
             key={index} 
             title={kpi.title} 
-            value={kpi.value} 
+            value={loading ? "..." : kpi.value} 
             change={kpi.change} 
             iconName={kpi.iconName} 
             description={kpi.description} 
@@ -171,7 +171,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-
     </div>
   );
 }

@@ -1,5 +1,4 @@
-
-"use client";
+  "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -15,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRouter } from "next/navigation";
 
 const permissionIds = [
   'panelCentral', 'usuarios', 'productos', 'ventas', 
@@ -56,6 +56,7 @@ export default function NuevoUsuarioPage() {
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const form = useForm<UsuarioFormValues>({
     resolver: zodResolver(usuarioSchema),
@@ -103,6 +104,7 @@ export default function NuevoUsuarioPage() {
         description: `El usuario ${data.fullName} ha sido creado exitosamente.`,
       });
       form.reset();
+      router.push('/dashboard/usuarios');
     } catch (error: any) {
       toast({
         variant: "destructive",

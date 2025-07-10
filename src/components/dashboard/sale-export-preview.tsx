@@ -6,8 +6,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-
 
 export interface MockSale {
   id: string;
@@ -25,8 +23,18 @@ interface SaleExportPreviewProps {
   sales: MockSale[];
 }
 
+const mockCompanyInfoFallback: EmpresaDataForTemplate = {
+    name: "FacturacionHC Predeterminada S.A.C.",
+    address: "Av. La Innovación 123, Distrito Tecnológico, Lima, Perú",
+    ruc: "20123456789",
+    phone: "(01) 555-1234",
+    email: "reportes@facturacionhc.com",
+    logoUrl: "https://placehold.co/60x60.png?text=FH",
+};
+
 export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
   const [currentDate, setCurrentDate] = useState("");
+  const [companyInfo, setCompanyInfo] = useState<EmpresaDataForTemplate>(mockCompanyInfoFallback);
 
   useEffect(() => {
     setCurrentDate(new Date().toLocaleDateString('es-PE', {
@@ -36,6 +44,23 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
       hour: '2-digit',
       minute: '2-digit'
     }));
+    
+    try {
+        const savedSettings = localStorage.getItem('companySettings');
+        if (savedSettings) {
+            const parsed = JSON.parse(savedSettings);
+            setCompanyInfo({
+                name: parsed.companyName || mockCompanyInfoFallback.name,
+                address: parsed.companyAddress || mockCompanyInfoFallback.address,
+                ruc: parsed.companyRuc || mockCompanyInfoFallback.ruc,
+                phone: parsed.companyPhone || mockCompanyInfoFallback.phone,
+                email: parsed.companyEmail || mockCompanyInfoFallback.email,
+                logoUrl: parsed.companyLogoUrl || mockCompanyInfoFallback.logoUrl,
+            });
+        }
+    } catch(e) {
+        console.error("Failed to load company settings for export preview", e);
+    }
   }, []);
   
   const getStatusBadgeClass = (status: string) => {
@@ -53,11 +78,11 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
           <div className="flex items-center gap-4">
             <Image
-              src="https://placehold.co/60x60.png?text=FH"
+              src={companyInfo.logoUrl}
               alt="FacturacionHC Logo"
               width={60}
               height={60}
-              className="rounded-md print:block"
+              className="rounded-md print:block object-contain"
               data-ai-hint="modern business logo"
             />
             <div>
@@ -65,10 +90,9 @@ export function SaleExportPreview({ sales }: SaleExportPreviewProps) {
               <CardDescription>Generado el: {currentDate}</CardDescription>
             </div>
           </div>
-          <div className="text-left md:text-right mt-4 md:mt-0">
-            <p className="font-bold text-lg">FacturacionHC</p>
+          <div className="text-left md:text-right">
+            <p className="font-semibold">FacturacionHC</p>
             <p className="text-sm text-muted-foreground">reportes@facturacionhc.com</p>
-            <p className="text-sm text-muted-foreground">www.facturacionhc.com</p>
           </div>
         </div>
       </CardHeader>

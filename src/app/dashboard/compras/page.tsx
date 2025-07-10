@@ -1,23 +1,54 @@
-
+"use client";
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ClipboardList } from "lucide-react";
 import { ComprasList } from '@/components/dashboard/compras-list';
 
-// In a real app, this would fetch from an API endpoint `/api/compras`
-async function getComprasData() {
-  const mockData = [
-    { id: "COMP001", compraId: 1, date: "2024-07-26", provider: "Proveedor Textil S.A.", total: "S/ 3,500.00", status: "Recibido" },
-    { id: "COMP002", compraId: 2, date: "2024-07-25", provider: "Importaciones Electrónicas EIRL", total: "S/ 12,800.00", status: "Pendiente" },
-    { id: "COMP003", compraId: 3, date: "2024-07-22", provider: "Distribuidora de Accesorios ABC", total: "S/ 1,250.00", status: "Recibido" },
-    { id: "COMP004", compraId: 4, date: "2024-07-20", provider: "Proveedor Textil S.A.", total: "S/ 2,100.00", status: "Cancelado" },
-  ];
-  return Promise.resolve(mockData);
+type CompraStatus = "Recibido" | "Pendiente" | "Cancelado";
+
+interface CompraData {
+  id: string;
+  compraId: number;
+  date: string;
+  provider: string;
+  total: string;
+  status: CompraStatus;
 }
 
-export default async function ComprasPage() {
-  const comprasData = await getComprasData();
+export default function ComprasPage() {
+  const [comprasData, setComprasData] = useState<CompraData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/compra');
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos de las compras.');
+        }
+        const rawData = await response.json();
+        const allowedStatuses = ["Recibido", "Pendiente", "Cancelado"] as const;
+        const formattedData = rawData.map((item: any, idx: number) => ({
+          id: item.Compra_id,
+          compraId: idx + 1,
+          date: item.Fecha,
+          provider: item.Proveedor,
+          total: `S/ ${Number(item.Total).toLocaleString("es-PE", { minimumFractionDigits: 2 })}`,
+          status: allowedStatuses.includes(item.Estado) ? item.Estado : "Pendiente",
+        }));
+        setComprasData(formattedData);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -36,7 +67,13 @@ export default async function ComprasPage() {
           </div>
         }
       />
-      <ComprasList initialData={comprasData} />
+      {isLoading ? (
+        <p>Cargando compras...</p>
+      ) : error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : (
+        <ComprasList initialData={comprasData} />
+      )}
     </div>
   );
 }

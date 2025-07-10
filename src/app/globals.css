@@ -75,13 +75,10 @@ body {
     @apply hover:bg-secondary/80 transition-colors duration-150 ease-in-out;
 }
 
-/* Active menu item style */
-.ps-menu-item.ps-active > .ps-menu-button {
+.ps-menu-button.ps-active {
     @apply bg-primary text-primary-foreground;
 }
-
-/* Hover style for an active menu item to ensure it doesn't lose its color */
-.ps-menu-item.ps-active > .ps-menu-button:hover {
+.ps-menu-button.ps-active:hover {
     @apply bg-primary/90 text-primary-foreground;
 }
 

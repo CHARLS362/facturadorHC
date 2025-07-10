@@ -63,22 +63,22 @@ export function ProductPopularityChart() {
   const ActiveShape = (props: PieSectorDataItem) => {
     const { cx=0, cy=0, innerRadius=0, outerRadius=0, startAngle=0, endAngle=0, fill, payload } = props;
     
-    // Ensure payload and its properties are defined before accessing
     const categoryName = (payload && typeof payload === 'object' && 'category' in payload) ? String(payload.category) : 'Unknown';
+    const salesValue = (payload && typeof payload === 'object' && 'salesValue' in payload) ? Number(payload.salesValue).toFixed(2) : '0.00'
 
     return (
       <g>
-        <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill={fill} className="text-sm font-semibold">
+        <text x={cx} y={cy - 10} dy={8} textAnchor="middle" fill={fill} className="text-base font-semibold">
           {categoryName}
         </text>
-         <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill="hsl(var(--foreground))" className="text-xs">
-          S/ {payload && typeof payload === 'object' && 'salesValue' in payload ? Number(payload.salesValue).toFixed(2) : '0.00'}
+         <text x={cx} y={cy + 10} dy={8} textAnchor="middle" fill="hsl(var(--foreground))" className="text-sm">
+          S/ {salesValue}
         </text>
         <Sector
           cx={cx}
           cy={cy}
           innerRadius={innerRadius}
-          outerRadius={outerRadius + 5} // Makes the active sector slightly larger
+          outerRadius={outerRadius + 5} 
           startAngle={startAngle}
           endAngle={endAngle}
           fill={fill}
@@ -97,10 +97,6 @@ export function ProductPopularityChart() {
           className="mx-auto aspect-square h-full w-full max-w-[280px] md:max-w-[300px]"
         >
           <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-            <ChartTooltip
-              cursor={true}
-              content={<ChartTooltipContent hideLabel />}
-            />
             <Pie
               data={chartData}
               dataKey="salesValue"
@@ -110,7 +106,7 @@ export function ProductPopularityChart() {
               strokeWidth={2}
               stroke="hsl(var(--background))" 
               activeIndex={activeIndex}
-              activeShape={ActiveShape as any}
+              activeShape={ActiveShape as any} // Type assertion if ActiveShape type doesn't match exactly
               onMouseEnter={(_, index) => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(undefined)}
               paddingAngle={2}
@@ -121,14 +117,12 @@ export function ProductPopularityChart() {
             </Pie>
           </PieChart>
         </ChartContainer>
-        {activeIndex === undefined && (
-          <div className="absolute text-center pointer-events-none flex flex-col items-center justify-center transition-opacity duration-300">
-            <p className="text-2xl md:text-3xl font-bold font-headline text-foreground">
-              S/{totalSales.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">Ventas Totales</p>
-          </div>
-        )}
+        <div className="absolute text-center pointer-events-none flex flex-col items-center justify-center">
+          <p className="text-2xl md:text-3xl font-bold font-headline text-foreground">
+            S/{totalSales.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">Ventas Totales</p>
+        </div>
       </div>
 
       <div className="w-full md:w-1/2 md:pl-6 space-y-3">

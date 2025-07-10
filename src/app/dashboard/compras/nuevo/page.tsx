@@ -1,5 +1,4 @@
-
-"use client";
+  "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -110,13 +109,52 @@ export default function NuevaCompraPage() {
   };
 
   async function onSubmit(data: CompraFormValues) {
-    console.log("Datos de Compra:", data);
-    toast({
-      variant: "success",
-      title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Compra Registrada (Simulación)</span></div>,
-      description: `La compra al proveedor ${data.providerName} ha sido registrada.`,
-    });
-    form.reset();
+    // Genera un ID único para la compra (puedes usar un generador real si tienes uno)
+    const compraId = `COMP${Date.now()}`;
+    const fechaHoy = new Date().toISOString().slice(0, 10); // yyyy-mm-dd
+
+    const payload = {
+      Compra_id: compraId,
+      Fecha: fechaHoy,
+      Proveedor: data.providerName,
+      Total: data.grandTotal,
+      Estado: "Pendiente", // O el estado que corresponda
+      // Puedes agregar más campos si tu tabla los requiere
+    };
+
+    try {
+      const res = await fetch('/api/compra', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        toast({
+          variant: "success",
+          title: (
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-white" />
+              <span>Compra Registrada</span>
+            </div>
+          ),
+          description: `La compra al proveedor ${data.providerName} ha sido registrada.`,
+        });
+        form.reset();
+      } else {
+        const errorData = await res.json();
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: errorData.error || "Error al registrar la compra.",
+        });
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Error de red al registrar la compra.",
+      });
+    }
   }
 
   const selectedProductName = currentProductId ? availableProducts.find(p => p.id === currentProductId)?.name : "Seleccionar producto...";

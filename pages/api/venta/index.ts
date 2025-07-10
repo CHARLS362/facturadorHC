@@ -102,6 +102,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         IdFormaPago = formaPagoResult.recordset[0].IdFormaPago;
       }
 
+      // 3.1 Validar stock de todos los productos antes de registrar la venta
+      for (const item of items) {
+        const stockResult = await pool.request()
+          .input('IdProducto', sql.Int, item.IdProducto)
+          .query('SELECT Stock FROM Producto WHERE IdProducto = @IdProducto');
+        const stockActual = stockResult.recordset[0]?.Stock ?? 0;
+        if (item.Cantidad > stockActual) {
+          return res.status(400).json({
+            error: `Stock insuficiente para el producto con ID ${item.IdProducto}. Stock disponible: ${stockActual}, solicitado: ${item.Cantidad}`
+          });
+        }
+      }
+
       // 3. Insertar venta y obtener el IdVenta generado
       const ventaResult = await pool.request()
         .input('IdComprobante', sql.Int, IdComprobante)
@@ -131,6 +144,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           .query(`
             INSERT INTO DetalleVenta (IdVenta, IdProducto, Cantidad, PrecioUnitario, Total)
             VALUES (@IdVenta, @IdProducto, @Cantidad, @PrecioUnitario, @Total)
+          `);
+
+        // ↓↓↓ ACTUALIZA EL STOCK DEL PRODUCTO AQUÍ ↓↓↓
+        await pool.request()
+          .input('IdProducto', sql.Int, item.IdProducto)
+          .input('Cantidad', sql.Int, item.Cantidad)
+          .query(`
+            UPDATE Producto
+            SET Stock = Stock - @Cantidad
+            WHERE IdProducto = @IdProducto
           `);
       }
 

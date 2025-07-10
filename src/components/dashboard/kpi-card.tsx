@@ -86,17 +86,25 @@ export function KpiCard({
       </CardHeader>
       <CardContent className="pt-0 flex-grow">
         <div className="text-3xl font-bold font-headline text-foreground mb-1">{value}</div>
-        {change && description && (
-          <div className="text-xs text-muted-foreground flex items-center">
-            <span className={cn("flex items-center mr-1", changeColor)}>{trendIcon}{change}</span>
-            {description}
-          </div>
-        )}
-        {!change && description && (
-           <p className="text-xs text-muted-foreground">{description}</p>
-        )}
-        {progressValue !== undefined && (
+        
+        {/* Description container with a minimum height to ensure consistent spacing */}
+        <div className="min-h-[1rem]">
+            {change && description && (
+            <div className="text-xs text-muted-foreground flex items-center">
+                <span className={cn("flex items-center mr-1", changeColor)}>{trendIcon}{change}</span>
+                {description}
+            </div>
+            )}
+            {!change && description && (
+            <p className="text-xs text-muted-foreground">{description}</p>
+            )}
+        </div>
+        
+        {/* Progress bar or placeholder */}
+        {progressValue !== undefined ? (
           <Progress value={progressValue} className="h-1.5 mt-3" />
+        ) : (
+          <div className="mt-3 h-1.5" />
         )}
       </CardContent>
     </Card>

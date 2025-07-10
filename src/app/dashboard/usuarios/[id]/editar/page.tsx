@@ -1,66 +1,76 @@
+'use client';
 
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { PageHeader } from "@/components/shared/page-header";
-import { UserCog } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { getConnection } from '@/lib/db';
-import { sql } from 'mssql';
-import { notFound } from 'next/navigation';
+import { UserCog } from "lucide-react";
 import { EditarUsuarioForm } from "@/components/dashboard/editar-usuario-form";
 
-async function getUserData(id: string) {
-  try {
-    const pool = await getConnection();
-    const result = await pool
-      .request()
-      .input('Id', sql.Int, parseInt(id))
-      .query(`
-        SELECT 
-          u.IdUsuario, u.Nombre, u.Email, r.Nombre AS Rol, 
-          u.FechaRegistro AS FechaIngreso, 
-          CASE WHEN u.Estado = 1 THEN 'Activo' ELSE 'Inactivo' END AS Estado
-        FROM Usuario u
-        LEFT JOIN Rol r ON u.IdRol = r.IdRol
-        WHERE u.IdUsuario = @Id
-      `);
-    
-    if (result.recordset.length === 0) {
-      return null;
-    }
-    return result.recordset[0];
-  } catch (error) {
-    console.error("Error fetching user data:", error);
-    return null;
-  }
+interface UsuarioData {
+  id: number;
+  fullName: string;
+  email: string;
+  role: "Admin" | "Vendedor" | "Soporte";
+  status: "Activo" | "Inactivo";
 }
 
-export default async function EditarUsuarioPage({ params }: { params: { id: string } }) {
-  const userData = await getUserData(params.id);
-  if (!userData) {
-    notFound();
+export default function EditarUsuarioPage() {
+  const params = useParams();
+  const id = (params?.id ?? "") as string;
+  // Validar que params e id no sean nulos o vacíos
+  if (!params || !id) {
+    return <p className="text-red-500">ID de usuario no válido.</p>;
   }
+  const [userData, setUserData] = useState<UsuarioData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const initialData = {
-    fullName: userData.Nombre,
-    email: userData.Email,
-    password: "", // Password field is for changing, not displaying
-    role: userData.Rol,
-    status: userData.Estado,
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/usuario/${id}`);
+        if (!response.ok) {
+          throw new Error('Error al obtener los datos del usuario.');
+        }
+        const rawData = await response.json();
+        setUserData({
+          id: rawData.IdUsuario,
+          fullName: rawData.Nombre,
+          email: rawData.Email,
+          role: ["Admin", "Vendedor", "Soporte"].includes(rawData.Rol) ? rawData.Rol : "Vendedor",
+          status: ["Activo", "Inactivo"].includes(rawData.Estado) ? rawData.Estado : "Activo",
+        });
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   return (
     <div className="space-y-8">
       <PageHeader
-        title={`Editar Usuario: ${initialData.fullName || params.id}`}
+        title={`Editar Usuario: ${userData?.fullName || id}`}
         description="Modifique la información del usuario."
         icon={UserCog}
         actions={
-            <Button variant="outline" asChild>
-                <Link href="/dashboard/usuarios">Volver al Listado</Link>
-            </Button>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/usuarios">Volver al Listado</Link>
+          </Button>
         }
       />
-      <EditarUsuarioForm userId={params.id} initialData={initialData} />
+      {isLoading ? (
+        <p>Cargando usuario...</p>
+      ) : error ? (
+        <p className="text-red-500">Error: {error}</p>
+      ) : userData ? (
+        <EditarUsuarioForm userId={userData.id.toString()} initialData={userData} />
+      ) : null}
     </div>
   );
 }
