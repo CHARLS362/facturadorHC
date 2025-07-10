@@ -24,6 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         LEFT JOIN TipoComprobante tc ON s.IdTipoComprobante = tc.IdTipoComprobante
         LEFT JOIN Cliente cl ON v.IdCliente = cl.IdCliente
         LEFT JOIN FormaPago fp ON v.IdFormaPago = fp.IdFormaPago
+        ORDER BY v.FechaVenta DESC
       `);
       return res.status(200).json(result.recordset);
     } catch (error: any) {
