@@ -14,6 +14,7 @@ import { UserPlus2, Save, RotateCcw, CheckCircle2, SearchCheck } from "lucide-re
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 const clientSchema = z.object({
   type: z.enum(["Empresa", "Persona"], { required_error: "Seleccione el tipo de cliente." }),
@@ -54,6 +55,7 @@ export default function NuevoClientePage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConsulting, setIsConsulting] = useState(false);
+  const router = useRouter();
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -160,6 +162,7 @@ export default function NuevoClientePage() {
           description: `El cliente ${data.name} ha sido creado exitosamente.`,
         });
         form.reset();
+        router.push("/dashboard/clientes");
       } else {
         toast({
           variant: "destructive",
