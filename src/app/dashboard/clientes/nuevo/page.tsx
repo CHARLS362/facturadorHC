@@ -10,7 +10,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { UserPlus2, Save, RotateCcw, CheckCircle2 } from "lucide-react";
+import { UserPlus2, Save, RotateCcw, CheckCircle2, SearchCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import React, { useState } from "react";
@@ -53,6 +53,7 @@ type ClientFormValues = z.infer<typeof clientSchema>;
 export default function NuevoClientePage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConsulting, setIsConsulting] = useState(false);
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
@@ -68,6 +69,56 @@ export default function NuevoClientePage() {
   });
 
   const clientType = form.watch("type");
+
+  const handleApiQuery = async () => {
+    const docType = form.getValues("type") === "Empresa" ? "RUC" : "DNI";
+    const docNumber = form.getValues("rucDni");
+    
+    if (!docType || !docNumber) {
+        toast({ variant: "destructive", title: "Datos incompletos", description: "Seleccione un tipo y número de documento." });
+        return;
+    }
+
+    const isValidDocNumber = await form.trigger("rucDni");
+    if (!isValidDocNumber) {
+      toast({
+        variant: "destructive",
+        title: "Error de Validación",
+        description: "Por favor, corrija el número de documento.",
+      });
+      return;
+    }
+    
+    setIsConsulting(true);
+
+    try {
+      const res = await fetch(`/api/consulta-externa?tipo=${docType}&numero=${docNumber}`);
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "No se encontró el cliente.");
+      }
+      
+      form.setValue("name", data.nombre || "", { shouldValidate: true });
+      form.setValue("address", data.direccion || "");
+      toast({
+        variant: "success",
+        title: <div className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-white" /><span>Consulta Exitosa</span></div>,
+        description: "Datos del cliente recuperados.",
+      });
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "No encontrado",
+        description: error.message || "No se encontró cliente con ese documento.",
+      });
+      form.setValue("name", "", { shouldValidate: true });
+      form.setValue("address", "");
+    } finally {
+      setIsConsulting(false);
+    }
+  };
+
 
   async function onSubmit(data: ClientFormValues) {
     setIsSubmitting(true);
@@ -159,8 +210,8 @@ export default function NuevoClientePage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Persona">Persona Natural</SelectItem>
-                        <SelectItem value="Empresa">Empresa</SelectItem>
+                        <SelectItem value="Persona">Persona Natural (DNI)</SelectItem>
+                        <SelectItem value="Empresa">Empresa (RUC)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -168,6 +219,34 @@ export default function NuevoClientePage() {
                 )}
               />
               
+               <FormField
+                control={form.control}
+                name="rucDni"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{clientType === "Persona" ? "DNI" : "RUC"}</FormLabel>
+                     <div className="flex gap-2">
+                        <FormControl>
+                          <Input 
+                            placeholder={clientType === "Persona" ? "8 dígitos" : "11 dígitos"} 
+                            {...field} 
+                            maxLength={clientType === "Persona" ? 8 : 11}
+                            onChange={(e) => {
+                                const { value } = e.target;
+                                if (/^\d*$/.test(value)) { field.onChange(value); }
+                            }}
+                          />
+                        </FormControl>
+                        <Button type="button" onClick={handleApiQuery} disabled={isConsulting || !clientType}>
+                            {isConsulting ? (<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-foreground mr-2"></div>) : <SearchCheck className="mr-2 h-4 w-4"/>}
+                            Consultar
+                        </Button>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="name"
@@ -182,29 +261,6 @@ export default function NuevoClientePage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="rucDni"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{clientType === "Persona" ? "DNI" : "RUC"}</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder={clientType === "Persona" ? "8 dígitos" : "11 dígitos"} 
-                        {...field} 
-                        maxLength={clientType === "Persona" ? 8 : 11}
-                        onChange={(e) => {
-                            const { value } = e.target;
-                            if (/^\d*$/.test(value)) { // Allow only numbers
-                                field.onChange(value);
-                            }
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               
               {clientType === "Empresa" && (
                 <FormField
