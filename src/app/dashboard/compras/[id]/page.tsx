@@ -9,10 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ClipboardList, ArrowLeft, Printer } from "lucide-react";
+import { ClipboardList, ArrowLeft, Printer, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import html2pdf from 'html2pdf.js';
 
 interface CompraDetalle {
   Compra_id: string;
@@ -63,6 +64,20 @@ export default function DetalleCompraPage() {
     fetchCompra();
   }, [id]);
 
+  const handleDownloadPdf = () => {
+    const element = document.getElementById('printable-area');
+    if (!element) return;
+    const opt = {
+      margin:       0.5,
+      filename:     `compra_${compra?.Compra_id || id}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+    };
+    html2pdf().from(element).set(opt).save();
+  };
+
+
   const getStatusBadgeVariant = (status?: string) => {
     switch (status?.toLowerCase()) {
       case "recibido": return "default";
@@ -100,29 +115,31 @@ export default function DetalleCompraPage() {
 
   return (
     <div className="space-y-8">
-      <div className="print-hide">
-        <PageHeader
-          title={`Detalle de Compra: ${compra.Compra_id}`}
-          description={`Realizada a ${compra.Proveedor} el ${format(new Date(compra.Fecha), "d 'de' MMMM 'de' yyyy", { locale: es })}`}
-          icon={ClipboardList}
-          actions={
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => router.back()}>
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Volver
-              </Button>
-              <Button onClick={() => window.print()}>
-                <Printer className="mr-2 h-4 w-4" />
-                Imprimir
-              </Button>
-            </div>
-          }
-        />
-      </div>
+      <PageHeader
+        title={`Detalle de Compra: ${compra.Compra_id}`}
+        description={`Realizada a ${compra.Proveedor} el ${format(new Date(compra.Fecha), "d 'de' MMMM 'de' yyyy", { locale: es })}`}
+        icon={ClipboardList}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => router.back()}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Volver
+            </Button>
+            <Button variant="outline" onClick={handleDownloadPdf}>
+              <Download className="mr-2 h-4 w-4" />
+              Descargar PDF
+            </Button>
+            <Button onClick={() => router.push(`/dashboard/compras/${id}/imprimir`)}>
+              <Printer className="mr-2 h-4 w-4" />
+              Imprimir
+            </Button>
+          </div>
+        }
+      />
 
       <div id="printable-area">
-        <Card className="w-full max-w-4xl mx-auto shadow-lg print:shadow-none print:border-0">
-          <CardHeader className="flex flex-row justify-between items-start bg-muted/30 p-6 print:bg-transparent">
+        <Card className="w-full max-w-4xl mx-auto shadow-lg">
+          <CardHeader className="flex flex-row justify-between items-start bg-muted/30 p-6">
             <div>
               <CardTitle className="text-2xl font-headline">Orden de Compra</CardTitle>
               <CardDescription>ID: {compra.Compra_id}</CardDescription>
@@ -156,7 +173,7 @@ export default function DetalleCompraPage() {
               </TableBody>
             </Table>
           </CardContent>
-          <CardFooter className="bg-muted/30 p-6 flex justify-end print:bg-transparent">
+          <CardFooter className="bg-muted/30 p-6 flex justify-end">
             <div className="w-full max-w-xs space-y-2">
                 <div className="flex justify-between"><span className="text-muted-foreground">Subtotal:</span><span>S/ {compra.subtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">IGV (18%):</span><span>S/ {compra.igv.toFixed(2)}</span></div>
