@@ -1,3 +1,4 @@
+
 import { PageHeader } from "@/components/shared/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,12 +34,6 @@ async function getDashboardData() {
         `);
         const ventasHoy = ventasHoyResult.recordset[0].TotalVentasHoy;
 
-<<<<<<< HEAD
-export default function DashboardPage() {
-  const [loading, setLoading] = useState(false);
-
-  // You can add useEffect here if you want to fetch data and set loading
-=======
         // 2. Nuevos clientes (mes)
         const nuevosClientesResult = await pool.request().query(`
             SELECT COUNT(IdCliente) as NuevosClientes
@@ -53,7 +48,8 @@ export default function DashboardPage() {
             FROM Ventas v
             INNER JOIN Comprobante c ON v.IdComprobante = c.IdComprobante
             INNER JOIN Serie s ON c.IdSerie = s.IdSerie
-            WHERE s.IdTipoComprobante = (SELECT IdTipoComprobante FROM TipoComprobante WHERE Descripcion = 'Factura')
+            INNER JOIN TipoComprobante tc ON s.IdTipoComprobante = tc.IdTipoComprobante
+            WHERE tc.Descripcion = 'Factura'
               AND MONTH(v.FechaVenta) = MONTH(GETDATE()) AND YEAR(v.FechaVenta) = YEAR(GETDATE())
               AND v.Estado <> 'Anulado'
         `);
@@ -89,6 +85,7 @@ export default function DashboardPage() {
 export default async function DashboardPage() {
   const data = await getDashboardData();
   const facturasMeta = 500;
+  
   const kpiData: KpiCardProps[] = [
     { 
       title: "VENTAS DEL DÍA", 
@@ -128,7 +125,6 @@ export default async function DashboardPage() {
       iconColorClass: "text-primary-foreground"
     },
   ];
->>>>>>> de17c3d (tenemos problemas en el dashboarb principal este componente estaba conec)
 
   return (
     <div className="space-y-8">
