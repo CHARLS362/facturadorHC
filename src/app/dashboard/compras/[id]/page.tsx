@@ -100,27 +100,29 @@ export default function DetalleCompraPage() {
 
   return (
     <div className="space-y-8">
-      <PageHeader
-        title={`Detalle de Compra: ${compra.Compra_id}`}
-        description={`Realizada a ${compra.Proveedor} el ${format(new Date(compra.Fecha), "d 'de' MMMM 'de' yyyy", { locale: es })}`}
-        icon={ClipboardList}
-        actions={
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => router.back()}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Volver
-            </Button>
-            <Button onClick={() => window.print()}>
-              <Printer className="mr-2 h-4 w-4" />
-              Imprimir
-            </Button>
-          </div>
-        }
-      />
+      <div className="print-hide">
+        <PageHeader
+          title={`Detalle de Compra: ${compra.Compra_id}`}
+          description={`Realizada a ${compra.Proveedor} el ${format(new Date(compra.Fecha), "d 'de' MMMM 'de' yyyy", { locale: es })}`}
+          icon={ClipboardList}
+          actions={
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => router.back()}>
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Volver
+              </Button>
+              <Button onClick={() => window.print()}>
+                <Printer className="mr-2 h-4 w-4" />
+                Imprimir
+              </Button>
+            </div>
+          }
+        />
+      </div>
 
       <div id="printable-area">
-        <Card className="w-full max-w-4xl mx-auto shadow-lg print:shadow-none">
-          <CardHeader className="flex flex-row justify-between items-start bg-muted/30 p-6">
+        <Card className="w-full max-w-4xl mx-auto shadow-lg print:shadow-none print:border-0">
+          <CardHeader className="flex flex-row justify-between items-start bg-muted/30 p-6 print:bg-transparent">
             <div>
               <CardTitle className="text-2xl font-headline">Orden de Compra</CardTitle>
               <CardDescription>ID: {compra.Compra_id}</CardDescription>
@@ -154,7 +156,7 @@ export default function DetalleCompraPage() {
               </TableBody>
             </Table>
           </CardContent>
-          <CardFooter className="bg-muted/30 p-6 flex justify-end">
+          <CardFooter className="bg-muted/30 p-6 flex justify-end print:bg-transparent">
             <div className="w-full max-w-xs space-y-2">
                 <div className="flex justify-between"><span className="text-muted-foreground">Subtotal:</span><span>S/ {compra.subtotal.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">IGV (18%):</span><span>S/ {compra.igv.toFixed(2)}</span></div>
