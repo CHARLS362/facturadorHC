@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -66,6 +67,13 @@ const ventaSchema = z.object({
 });
 
 type VentaFormValues = z.infer<typeof ventaSchema>;
+
+// MOCK DATA - Replace with API calls in a real app
+type ClientSearchMethod = 'dni' | 'ruc' | 'search';
+const availableClients = [
+    { id: "CLI001", documentType: "RUC" as "DNI" | "RUC", documentNumber: "20123456789", name: "Empresa Ejemplo S.A.C.", address: "Av. Principal 123, Lima" },
+    { id: "CLI002", documentType: "DNI" as "DNI" | "RUC", documentNumber: "12345678", name: "Juan Pérez", address: "Calle Secundaria 456, Arequipa" },
+];
 
 export default function NuevaVentaPage() {
   const { toast } = useToast();
@@ -154,13 +162,12 @@ export default function NuevaVentaPage() {
   };
   
   const handleSunatQuery = async () => {
-    const docType = searchMethod;
-    if (docType === 'search') return;
-    
-    const docNumber = form.getValues("clientDocumentNumber");
+    if (!clientSearchValue) return;
 
-    form.setValue("clientDocumentType", docType.toUpperCase() as "DNI" | "RUC", { shouldValidate: true });
-    
+    let docType: "DNI" | "RUC" = /^\d{8}$/.test(clientSearchValue) ? "DNI" : "RUC";
+    form.setValue("clientDocumentNumber", clientSearchValue, { shouldValidate: true });
+    form.setValue("clientDocumentType", docType, { shouldValidate: true });
+
     const isValidDocNumber = await form.trigger("clientDocumentNumber");
     if (!isValidDocNumber) {
          toast({
@@ -170,10 +177,8 @@ export default function NuevaVentaPage() {
           });
         return;
     }
-    if (!docType || !docNumber) return;
-    
+
     setIsConsultingSunat(true);
-    const docType = /^\d{8}$/.test(clientSearchValue) ? "DNI" : "RUC";
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500)); 
