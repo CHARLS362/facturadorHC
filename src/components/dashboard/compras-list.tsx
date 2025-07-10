@@ -81,9 +81,11 @@ export function ComprasList({ initialData }: { initialData: MockCompra[] }) {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-1">
-                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors">
-                      <Eye className="mr-1.5 h-4 w-4" />
-                      <span>Ver</span>
+                    <Button asChild variant="ghost" size="sm" className="text-primary hover:text-primary/80 transition-colors">
+                      <Link href={`/dashboard/compras/${compra.id}`}>
+                        <Eye className="mr-1.5 h-4 w-4" />
+                        <span>Ver</span>
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
